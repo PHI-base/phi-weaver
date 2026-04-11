@@ -1,9 +1,0 @@
-{
-	"nodes":[
-		{"id":"442c959b2a280752","type":"text","text":"\n\n```dataviewjs\nconst headers = [\"🚶/🚴\", \"🗒️\", \"⏱️\", \"📅\"]  \n  \nconst pages = dv.pages()  \n.where(b => b.type == \"log\")  \n.where(b => b.ActivityDate >= dv.date(\"2023-10-03\")) \n.sort(b => b.ActivityDate, \"desc\")  \n.map(b => [  \nb.Activity,  \nb.Distance,  \nb.Duration,  \nb.ActivityDate  \n])  \n  \n  \ndv.header(3, \"Activity since October 3, 2023\")  \ndv.table(headers, pages)\n```\n","x":-360,"y":160,"width":840,"height":460},
-		{"id":"b7ffd98bb85993fd","type":"text","text":"Dataview dashboard","x":-124,"y":-300,"width":368,"height":90}
-	],
-	"edges":[
-		{"id":"e97284915b4cf80e","fromNode":"b7ffd98bb85993fd","fromSide":"bottom","toNode":"442c959b2a280752","toSide":"top"}
-	]
-}

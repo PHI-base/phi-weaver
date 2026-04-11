@@ -53,6 +53,9 @@ __pycache__/
 # /Personal/
 # *.private.md
 
+# Templates folder (exclude template files)
+_Templates/
+
 # Large binary files that don't need versioning
 # (uncomment if you have such files)
 # *.pdf

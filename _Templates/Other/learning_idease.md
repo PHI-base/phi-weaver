@@ -1,1 +1,0 @@
-- [ ] List passions, hobbies and business ideas

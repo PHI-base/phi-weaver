@@ -1,1 +1,0 @@
-- [ ] Regularly attend industry events to meet peers
