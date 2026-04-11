@@ -1,0 +1,16 @@
+.nav-folder-title-highlighted {
+    background-color: var(--text-selection);
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+.folder-separator {
+    color: var(--text-muted);
+    font-size: 0.85em;
+    text-align: center;
+    padding: 5px 0;
+    font-style: italic;
+    border-bottom: 1px solid var(--background-modifier-border);
+    margin-bottom: 5px;
+    pointer-events: none;
+}

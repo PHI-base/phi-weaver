@@ -1,0 +1,51 @@
+# Reorganisation config for OBS-PHI-Canto vault
+# Use with: python obsidian_reorganise.py --config reorganise-config-OBS-PHI-Canto.yaml
+#
+# IMPORTANT: OBS-PHI-Canto must be the active vault in Obsidian for --execute to work.
+# Verify with: /mnt/c/Windows/System32/cmd.exe /c 'D:\ObsidianProgram\Obsidian.com vault list'
+
+vault_path: /mnt/z/OBS-PHI-Canto/OBS-PHI-Canto
+target_folder: 00-Inbox
+obsidian_cli: 'D:\ObsidianProgram\Obsidian.com'
+extensions: [".md", ".canvas"]
+
+scratch_patterns:
+  - Untitled
+  - test
+  - new note
+
+scratch_exact:
+  - "#.md"
+
+# Rules — expand as vault grows
+rules:
+
+  - folder: To-curate/
+    keywords:
+      - curation
+      - curate
+      - PHI-Canto
+      - annotation
+
+  - folder: Protocols/
+    keywords:
+      - protocol
+      - SOP
+      - how to
+      - How to
+      - complementation
+      - transformation
+
+  - folder: Literature/
+    keywords:
+      - review
+      - paper
+      - publication
+      - journal
+
+  - folder: Training/
+    keywords:
+      - training
+      - tutorial
+      - course
+      - guide

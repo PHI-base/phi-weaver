@@ -1,0 +1,15 @@
+{
+  "baseFontSize": 20,
+  "theme": "moonstone",
+  "cssTheme": "Border",
+  "enabledCssSnippets": [
+    "graph_short_canvasNames",
+    "dateKeyValue",
+    "custom-priority-icons"
+  ],
+  "interfaceFontFamily": "Segoe UI,Calibri,Arial,Roboto",
+  "textFontFamily": "",
+  "accentColor": "",
+  "baseFontSizeAction": true,
+  "nativeMenus": false
+}

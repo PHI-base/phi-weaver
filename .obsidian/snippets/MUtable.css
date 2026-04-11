@@ -1,0 +1,39 @@
+/* --------------------------------------------   */
+/* Markdown Table Styling: Date, Copy of Date, Key, Value */
+/* --------------------------------------------   */
+
+/* Apply to all tables rendered in preview mode */
+.markdown-preview-view table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-family: sans-serif;
+}
+
+.markdown-preview-view th,
+.markdown-preview-view td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: left;
+  word-wrap: break-word;
+}
+
+/* Date column */
+.markdown-preview-view tr > *:nth-child(1) {
+  width: 10ch;
+}
+
+/* Copy of Date column */
+.markdown-preview-view tr > *:nth-child(2) {
+  width: 10ch;
+}
+
+/* Key column */
+.markdown-preview-view tr > *:nth-child(3) {
+  width: 30ch;
+}
+
+/* Value column */
+.markdown-preview-view tr > *:nth-child(4) {
+  width: auto;
+}

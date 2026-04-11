@@ -1,0 +1,6 @@
+#calendar-container [data-tags~="flagged"] {
+  color: var(--text-error); /* Make the text red */
+
+
+}
+   

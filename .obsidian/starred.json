@@ -1,0 +1,39 @@
+{
+  "items": [
+    {
+      "type": "file",
+      "title": "030 PHI-Base",
+      "path": "030 PHI-Base.md"
+    },
+    {
+      "type": "file",
+      "title": "Advanced search design",
+      "path": "files/Advanced search design.md"
+    },
+    {
+      "type": "search",
+      "title": "\"- [ ]\"",
+      "query": "\"- [ ]\""
+    },
+    {
+      "type": "file",
+      "title": "MM_Shortcuts",
+      "path": "3️⃣ Resources/020_Markmind/MM_Shortcuts.md"
+    },
+    {
+      "type": "file",
+      "title": "2022-08-15",
+      "path": "Calendar/Daily/2022-08-15.md"
+    },
+    {
+      "type": "search",
+      "title": "short",
+      "query": "short"
+    },
+    {
+      "type": "file",
+      "title": "CAN_babvs server",
+      "path": "🌎 Overview/022_Canvas/CAN_babvs server.canvas"
+    }
+  ]
+}

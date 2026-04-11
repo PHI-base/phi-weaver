@@ -1,0 +1,25 @@
+/* obsidian-calendar-plugin */
+/* https://github.com/liamcain/obsidian-calendar-plugin */
+/* source: for beneath code (modifed): https://github.com/liamcain/obsidian-calendar-plugin/wiki/CSS-Snippet---Mini-Calendar */
+
+#calendar-container {
+  font-size: 1.0em;
+}
+
+#calendar-container th {
+  padding: 1.8px;
+}
+
+#calendar-container .day,
+#calendar-container .week-num {
+  padding: 10px;
+}
+#calendar-container .year {
+  color: var(--text-normal);
+}
+#calendar-container {
+  --color-background-weekend: rgba(0, 0, 0, 0.1);
+}
+
+
+

@@ -1,0 +1,231 @@
+{
+  "main": {
+    "id": "6b3f73d11526417e",
+    "type": "split",
+    "children": [
+      {
+        "id": "81f726eaa994fb39",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "50874a375d56fd35",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "OBS-PHI-Canto/01-Notes/Biological curator ads.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Biological curator ads"
+            }
+          },
+          {
+            "id": "933a712f77a5cbf4",
+            "type": "leaf",
+            "state": {
+              "type": "empty",
+              "state": {},
+              "icon": "lucide-file",
+              "title": "New tab"
+            }
+          }
+        ],
+        "currentTab": 1
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "a395b181df95eb88",
+    "type": "split",
+    "children": [
+      {
+        "id": "e6974c544240d7c6",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "dfb7d7e7b9eda90e",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "c09e8a636d4ae49e",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "75fd739de4ef219e",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "cb869f37f08a447e",
+    "type": "split",
+    "children": [
+      {
+        "id": "eae782915f5495ad",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "e631d23b1c43028f",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Youtube tutorials.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for Youtube tutorials"
+            }
+          },
+          {
+            "id": "4022fec41ac58735",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "Youtube tutorials.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from Youtube tutorials"
+            }
+          },
+          {
+            "id": "1294a6ebaba07b2a",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "47027dc5b6cfd009",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "Youtube tutorials.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of Youtube tutorials"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "dfb7d7e7b9eda90e",
+  "lastOpenFiles": [
+    "Welcome.md",
+    "Genetic Nomenclature.md",
+    "CLAUDE.md",
+    "SystemSculpt/Extractions",
+    "SystemSculpt/Recordings",
+    "SystemSculpt/Chats",
+    "SystemSculpt/System Prompts",
+    "SystemSculpt/Saved Chats",
+    "SystemSculpt/Attachments",
+    "SystemSculpt",
+    "11-CLAUDE-AI/SESSION-LOGS/INDEX.md",
+    "11-CLAUDE-AI/SESSION-LOGS/2026-04-11-vault-setup.md",
+    "11-CLAUDE-AI/SESSION-LOGS/2026-04-11-claude-md-updates-2.md",
+    "11-CLAUDE-AI/SESSION-LOGS",
+    "11-CLAUDE-AI/reorganise-config-OBS-PHI-Canto.yaml",
+    "11-CLAUDE-AI/obsidian_reorganise.py",
+    "03-Media/Pasted image 20250723121328.png",
+    "03-Media/Pasted image 20250723113504.png",
+    "03-Media/Pasted image 20250723115028.png",
+    "03-Media/Pasted image 20250723114403.png",
+    "03-Media/Pasted image 20250723113931.png",
+    "03-Media/Pasted image 20250723111603.png",
+    "01-Notes/How to do a pathogen COMPLEMENTATION.md",
+    "01-Notes/Untitled.md",
+    "01-Notes/cross-domain-comparisons.md",
+    "01-Notes/Biological curator ads.md",
+    "_Templates/Other/Tufte - Add support to document for sidenotes.md",
+    "_Templates/Other/ZoteroPaperImport.md",
+    "_Templates/Other/Template, Cornell, Summary Top.md",
+    "_Templates/Other/Template, Cornell, Cue.md",
+    "_Templates/Other/TE-hoven.svg",
+    "_Templates/Other/SunRayTranformationMap-PhiBase.svg",
+    "_Templates/Other/saving objective.md",
+    "_Templates/Other/notice.md",
+    "_Templates/Other/helloWorld.md",
+    "_Templates/Other/meetings.md",
+    "_Templates/Other/learning_idease.md",
+    "_Templates/Other/Meeting.md",
+    "_Templates/Other/Financial strategy.md",
+    "_Templates/Other/Cornell Note -- Add cue to document.md",
+    "_Templates/Other/Cornell Note -- Add summary to document.md",
+    "_Templates/Other/Excercise Dashboard.canvas",
+    "_Templates/Other/Cornell Note -- Add Banner Image.md",
+    "_Templates/Other/Cornell Note - Make a Cornell Note.md",
+    "_Templates/CORE-PLUGIN-TEMPLATES/C-MeetingNotes.md"
+  ]
+}

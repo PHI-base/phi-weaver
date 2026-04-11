@@ -1,0 +1,13 @@
+ /*
+ Expand tables to full width when class added as property
+ In the note properties, add a property and scroll down to cssclas for the type.
+ add the property to the list and then as a property add max-width and enter
+ */
+
+ .max-width table {
+	 max-width: 100 % !important;
+	 width: 100% !important;
+ }
+
+
+

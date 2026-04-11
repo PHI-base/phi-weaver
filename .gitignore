@@ -1,0 +1,66 @@
+# Obsidian Vault .gitignore
+
+# Obsidian configuration and cache files
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/cache
+.obsidian/plugins/*/
+.obsidian/themes/*/
+
+# Keep core Obsidian settings but ignore user-specific ones
+!.obsidian/app.json
+!.obsidian/appearance.json
+!.obsidian/core-plugins.json
+!.obsidian/core-plugins-migration.json
+!.obsidian/community-plugins.json
+!.obsidian/hotkeys.json
+!.obsidian/snippets/
+
+# Temporary files
+.tmp/
+*.tmp
+*~
+.DS_Store
+Thumbs.db
+
+# OS generated files
+.DS_Store?
+ehthumbs.db
+Icon?
+Desktop.ini
+
+# Editor backup files
+*~
+*.bak
+*.swp
+*.swo
+
+# Node modules (if using any plugins with dependencies)
+node_modules/
+
+# Python cache (for your reorganizer scripts)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Log files
+*.log
+
+# Personal/sensitive files (customize as needed)
+# Uncomment these if you have such files:
+# /Private/
+# /Personal/
+# *.private.md
+
+# Large binary files that don't need versioning
+# (uncomment if you have such files)
+# *.pdf
+# *.docx
+# *.xlsx
+# *.pptx
+# *.zip
+# *.tar.gz
+
+# Claude Code specific (optional - keep session logs for continuity)
+# 11-CLAUDE-AI/SESSION-LOGS/*.md
