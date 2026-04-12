@@ -21,6 +21,8 @@ Project focused on curating *Fusarium graminearum* effector proteins and their p
 ## Known Effectors
 
 ### FgTPP1 (Trypsin Precursor Protein 1)
+- **Gene ID**: FGSG_11164
+- **UniProt**: *To be determined*
 - **Function**: Endopeptidase that suppresses host immune responses
 - **Localization**: Chloroplasts
 - **Mechanism**: Attenuates chitin-mediated MAPK signaling, ROS production, and cell death
@@ -29,34 +31,56 @@ Project focused on curating *Fusarium graminearum* effector proteins and their p
 - **Conservation**: Conserved across Ascomycota phylum
 
 ### FgSCP (Serine Carboxypeptidase)
+- **Gene ID**: FGSG_08454
+- **UniProt**: *To be determined*
 - **Function**: Suppresses cell death and modulates plant immunity
 - **Roles**: Pathogenicity in wheat/maize, DON biosynthesis regulation
 - **Expression**: Upregulated 3 days post-infection during host invasion
 - **Phenotype**: Deletion reduces pathogenicity and DON production
 
 ### Fg62 Cell Death Effector
+- **Gene ID**: *To be determined*
+- **UniProt**: *To be determined*
 - **Function**: Induces plant cell death
 - **Expression**: Highly upregulated during early infection stages
 - **Host Response**: Triggers cell death in *Nicotiana benthamiana*
 
 ### OSP24 (Orphan Protein)
+- **Gene ID**: *To be determined*
+- **UniProt**: *To be determined*
 - **Function**: Immune suppression via protein degradation
 - **Mechanism**: Targets TaSnRK1α kinase for proteasomal degradation
 - **Expression**: Specifically expressed during pathogenesis
 - **Effect**: Suppresses BAX- and INF1-induced cell death
 
 ### Fg12 Ribonuclease
+- **Gene ID**: *To be determined*
+- **UniProt**: *To be determined*
 - **Function**: Secreted ribonuclease that promotes pathogenicity
 - **Effect**: Induces cell death and enhances virulence
 
+### FgNls1 Nuclear Localization Effector
+- **Gene ID**: *To be determined*
+- **UniProt**: *To be determined*
+- **Function**: Targets plant nuclei to induce wheat head blight
+- **Localization**: Plant nuclei
+- **Effect**: Nuclear targeting for disease induction
+
 ### Protease Family (FgSLPs)
 - **Members**: Five subtilisin-like proteases
+- **Gene IDs**: *To be determined*
+- **UniProt**: *To be determined*
 - **Function**: Trigger cell death and contribute to virulence
 - **Target**: *Nicotiana benthamiana* cell death assays
 
 ### Additional Characterized Effectors
-- **ARB93B**: Suppresses cell surface-triggered immune responses
-- **FGSG_01831**: Suppresses PAMP-triggered ROS production
+- **ARB93B**: 
+  - **Gene ID**: *To be determined*
+  - **UniProt**: *To be determined*
+  - **Function**: Suppresses cell surface-triggered immune responses
+- **FGSG_01831**: 
+  - **UniProt**: *To be determined*
+  - **Function**: Suppresses PAMP-triggered ROS production
 
 ## Effector Mechanisms
 
@@ -87,6 +111,11 @@ Project focused on curating *Fusarium graminearum* effector proteins and their p
 
 ## Resources
 
+### Protein Database Information
+- **UniProt Proteome**: [UP000070720](https://www.uniprot.org/proteomes/UP000070720) (*Gibberella zeae* strain ATCC MYA-4620)
+- **Gene Nomenclature**: FGSG system for *F. graminearum* genome annotations
+- **Cross-references**: Ensembl Fungi, STRING interaction networks, FPPI database
+
 ### Key Literature Database Entries
 - PHI-base entries for characterized F. graminearum effectors
 - Functional genomics studies on virulence factors
@@ -101,10 +130,19 @@ Project focused on curating *Fusarium graminearum* effector proteins and their p
 ## Notes
 
 ### Curation Priorities
-1. Update existing FgTPP1, FgSCP, Fg62 PHI-base entries with recent functional data
-2. Create new entries for OSP24, Fg12, ARB93B, FGSG_01831
-3. Curate effector family classifications and conserved domains
-4. Document host target proteins and interaction mechanisms
+1. **UniProt Identifier Mapping**: Obtain specific UniProt accession numbers for all characterized effectors
+   - Search [UniProt proteome UP000070720](https://www.uniprot.org/proteomes/UP000070720) using FGSG gene IDs
+   - Cross-reference with Ensembl Fungi and other databases
+2. Update existing FgTPP1, FgSCP, Fg62 PHI-base entries with recent functional data
+3. Create new entries for OSP24, Fg12, FgNls1, ARB93B, FGSG_01831
+4. Curate effector family classifications and conserved domains
+5. Document host target proteins and interaction mechanisms
+
+### Database Search Notes
+- UniProt proteome UP000070720 covers *Gibberella zeae* (F. graminearum)
+- Gene IDs confirmed: FGSG_11164 (FgTPP1), FGSG_08454 (FgSCP), FGSG_01831
+- Manual UniProt searches needed for specific accession numbers
+- Consider STRING database for protein interaction networks
 
 ### Literature Updates Needed
 - 2024-2026 publications on effector characterization
