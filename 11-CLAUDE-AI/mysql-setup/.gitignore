@@ -1,0 +1,10 @@
+# Ignore local configuration files with sensitive data
+config_local.py
+*.local.py
+
+# Ignore database dumps with potentially sensitive data
+*.sql.backup
+*.dump
+
+# Ignore log files
+*.log
