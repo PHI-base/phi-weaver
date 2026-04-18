@@ -15,6 +15,7 @@ Index of all Claude Code session logs for OBS-PHI-Canto vault.
 | 2026-04-11 | [[2026-04-11-git-setup-3]] | Vault setup | Git repository initialization, .gitignore configuration, template file exclusion |
 | 2026-04-12 | [[2026-04-12-misc-1]] | Vault maintenance | test.md created, tmux session setup for PHI-Canto vault |
 | 2026-04-12 | [[2026-04-12-fusarium-effectors-2]] | Fusarium effectors | Created project folder, comprehensive literature review, gene ID mapping, UniProt database research |
+| 2026-04-18 | [[2026-04-18-mysql-hybrid-setup]] | MySQL integration | Hybrid tracking system setup with database schema, Python integration, progress analytics |
 
 ## Tags / Topics
 - **Vault setup**: 2026-04-11
