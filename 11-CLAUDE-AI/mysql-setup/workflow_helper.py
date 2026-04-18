@@ -28,8 +28,9 @@ def show_help():
 
 def start_session(project_name):
     """Start a new curation session"""
+    from datetime import date
     print(f"🚀 Starting curation session: {project_name}")
-    print(f"📅 Date: {datetime.date.today()}")
+    print(f"📅 Date: {date.today()}")
     print()
     print("📋 Workflow reminders:")
     print("- Take notes in Obsidian as usual")

@@ -58,6 +58,24 @@ pip install mysql-connector-python
 python phi_canto_db.py
 ```
 
+## Timestamp Tracking
+
+All curation activities are tracked with **precise timestamps** in format `YYYY-MM-DD HH:MM:SS`.
+
+### Automatic Timestamp Fields
+- **Session Logging**: `created_date` when work was logged
+- **Articles**: `created_date` when added, `updated_date` when modified
+- **Proteins**: `created_date` when documented, `updated_date` when information changes
+- **Relationships**: `created_date` when protein-article connections identified
+
+### View Full Timestamps
+```bash
+python3 show_recent.py      # Recent activity with timestamps
+python3 check_timestamps.py # Detailed timestamp analysis
+```
+
+See `TIMESTAMPS.md` for complete timestamp documentation and SQL queries.
+
 ## Database Structure
 
 ### Core Tables
@@ -84,10 +102,12 @@ curation_sessions (id, session_date, curator, proteins_curated, interactions_add
 
 ### Key Features
 
+- **Precise Timestamps**: Full date-time tracking (YYYY-MM-DD HH:MM:SS) for all curation activities
 - **Links to Obsidian**: `obsidian_note_path` fields connect database records to your markdown notes
-- **Progress tracking**: Automated views show curation progress over time
-- **Relationships**: Track which proteins appear in which articles
-- **Status management**: Article workflow from queued → curated → published
+- **Progress tracking**: Automated views show curation progress over time with exact timing
+- **Relationships**: Track which proteins appear in which articles with timestamps
+- **Status management**: Article workflow from queued → curated → published with update tracking
+- **Audit Trail**: Complete chronological history of all changes and additions
 
 ## Daily Workflow
 
