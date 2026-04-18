@@ -76,6 +76,23 @@ python3 daily_curation.py help              # Show all commands
 - Literature and protein research connects to vault structure
 - Maintains vault flexibility while adding queryable structure
 
+### Automated Session Logging
+**IMPORTANT**: Use the integrated session logger to ensure database consistency:
+```bash
+# Replaces manual session log creation - updates BOTH markdown AND database
+python3 session_logger.py quick 'Project Name' 'Summary' [proteins] [interactions] [hours]
+
+# Example:
+python3 session_logger.py quick 'Fusarium effectors' 'Added FgTPP1 analysis' 3 5 2.0
+```
+
+**Benefits**:
+- ✅ Automatic database updates with every session
+- ✅ Consistent markdown formatting with database metadata
+- ✅ Session logs index automatically updated
+- ✅ No risk of forgetting to update database or markdown
+- ✅ Tracks session ID for linking database records to notes
+
 ## Repository Overview
 
 This is an Obsidian knowledge management vault dedicated to **PHI-Canto** — the curation interface and workflow for the PHI-base (Pathogen-Host Interactions) database. The vault contains curation notes, training materials, annotation protocols, literature references, and project documentation related to PHI-base community curation.
