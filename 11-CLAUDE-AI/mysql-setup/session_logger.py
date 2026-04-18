@@ -119,10 +119,14 @@ class SessionLogger:
 
             print("✅ Session logs index updated")
 
+            # 4. AUTO-REGENERATE WIKI ARTICLE REGISTRY
+            self._update_wiki_registry()
+
             return {
                 'log_file': relative_log_path,
                 'session_id': session_id,
-                'database_updated': True
+                'database_updated': True,
+                'wiki_updated': True
             }
 
         except Exception as e:
@@ -332,6 +336,29 @@ session_id: {session_id}
 
         except Exception as e:
             print(f"   ⚠️  Warning: Could not update session index: {e}")
+
+    def _update_wiki_registry(self):
+        """Auto-regenerate the wiki article registry"""
+        try:
+            # Import and run the registry generator
+            import sys
+            import os
+
+            # Add the current directory to Python path for import
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            if current_dir not in sys.path:
+                sys.path.insert(0, current_dir)
+
+            from generate_article_registry import ArticleRegistryGenerator
+
+            generator = ArticleRegistryGenerator()
+            if generator.generate_registry():
+                print("✅ Wiki article registry auto-updated")
+            else:
+                print("⚠️  Warning: Could not update wiki registry")
+
+        except Exception as e:
+            print(f"⚠️  Warning: Could not update wiki registry: {e}")
 
 def quick_session(project, summary, proteins=0, interactions=0, hours=None):
     """Quick session logger for simple updates"""

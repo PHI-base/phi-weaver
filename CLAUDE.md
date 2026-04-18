@@ -66,9 +66,18 @@ python3 daily_curation.py help              # Show all commands
 
 ### What It Tracks
 - **Articles**: Literature pipeline with status (queued → curated → published)
-- **Proteins**: Gene IDs, functions, UniProt links, species relationships
+- **Proteins**: Gene IDs, functions, UniProt links, species relationships  
 - **Sessions**: Daily curation work with metrics over time
 - **Progress**: Analytics on productivity and gaps in curation data
+- **Timestamps**: Precise date-time tracking (YYYY-MM-DD HH:MM:SS) for all activities
+
+### Timestamp Tracking
+All curation activities automatically capture precise timestamps:
+```bash
+python3 show_recent.py          # View recent work with full timestamps
+python3 check_timestamps.py     # Detailed timestamp analysis
+```
+Full documentation: `11-CLAUDE-AI/mysql-setup/TIMESTAMPS.md`
 
 ### Integration with Obsidian
 - Database records link to Obsidian notes via file paths

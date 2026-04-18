@@ -4,7 +4,7 @@
 # IMPORTANT: OBS-PHI-Canto must be the active vault in Obsidian for --execute to work.
 # Verify with: /mnt/c/Windows/System32/cmd.exe /c 'D:\ObsidianProgram\Obsidian.com vault list'
 
-vault_path: /mnt/z/OBS-PHI-Canto/OBS-PHI-Canto
+vault_path: /mnt/z/OBS-PHI-Canto
 target_folder: 00-Inbox
 obsidian_cli: 'D:\ObsidianProgram\Obsidian.com'
 extensions: [".md", ".canvas"]
@@ -17,17 +17,27 @@ scratch_patterns:
 scratch_exact:
   - "#.md"
 
-# Rules — expand as vault grows
+# Rules — organized by workflow-specific folders
 rules:
 
-  - folder: To-curate/
+  - folder: 00-Inbox/To-curate/
     keywords:
       - curation
       - curate
       - PHI-Canto
       - annotation
+      - to curate
 
-  - folder: Protocols/
+  - folder: 04-Literature/
+    keywords:
+      - review
+      - paper
+      - publication
+      - journal
+      - literature
+      - reference
+
+  - folder: 05-Protocols/
     keywords:
       - protocol
       - SOP
@@ -35,17 +45,32 @@ rules:
       - How to
       - complementation
       - transformation
+      - method
+      - procedure
 
-  - folder: Literature/
-    keywords:
-      - review
-      - paper
-      - publication
-      - journal
-
-  - folder: Training/
+  - folder: 06-Training/
     keywords:
       - training
       - tutorial
       - course
       - guide
+      - onboarding
+      - education
+
+  - folder: 07-Standards/
+    keywords:
+      - nomenclature
+      - ontology
+      - standard
+      - vocabulary
+      - genetic
+      - GO term
+
+  - folder: 08-QA/
+    keywords:
+      - quality
+      - validation
+      - check
+      - error
+      - QA
+      - QC

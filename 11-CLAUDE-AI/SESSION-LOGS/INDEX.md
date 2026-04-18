@@ -17,6 +17,8 @@ Index of all Claude Code session logs for OBS-PHI-Canto vault.
 | 2026-04-12 | [[2026-04-12-fusarium-effectors-2]] | Fusarium effectors | Created project folder, comprehensive literature review, gene ID mapping, UniProt database research |
 | 2026-04-18 | [[2026-04-18-mysql-hybrid-setup]] | MySQL integration | Hybrid tracking system setup with database schema, Python integration, progress analytics |
 | 2026-04-18 | [[2026-04-18-database-integration]] | Database Integration | Tested integrated session logging system |
+| 2026-04-18 | [[2026-04-18-fusarium-effectors]] | Fusarium effectors | Updated FgNls1 protein characterization |
+| 2026-04-18 | [[2026-04-18-wiki-testing]] | Wiki Testing | Testing auto-wiki updates |
 
 ## Tags / Topics
 - **Vault setup**: 2026-04-11
