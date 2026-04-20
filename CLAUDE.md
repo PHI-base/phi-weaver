@@ -237,11 +237,54 @@ project: PHI-Canto
 ---
 ```
 
+## PHI-Canto Curation Workflow
+
+This vault supports the complete PHI-Canto curation pipeline for pathogen-host interaction data:
+
+### Core Curation Process
+1. **Literature Discovery** → Find publications via PubMed ID
+2. **Gene Identification** → UniProtKB accession lookup and validation
+3. **Organism/Strain Management** → Pathogen and host strain specification
+4. **Genotype Creation** → Single-allele and multi-locus genotype construction
+5. **Metagenotype Assembly** → Pathogen-host interaction combinations
+6. **Annotation** → Phenotype, disease, and interaction curation
+7. **Quality Assurance** → Validation and submission
+
+### Key Ontologies and Standards
+- **PHIPO** (Pathogen-Host Interaction Phenotype Ontology): Phenotype terms for single-species and interaction phenotypes
+- **PHIDO** (PHI-base Disease Ontology): Infectious disease terminology
+- **Gene Ontology (GO)**: Molecular function, biological process, cellular component
+- **BRENDA Tissue Ontology**: Host tissue type specification
+- **UniProtKB**: Canonical gene/protein identifiers
+
+### Annotation Types Supported
+#### Gene Annotations
+- GO molecular function, biological process, cellular component
+- Protein modifications
+- Physical interactions (with directionality support)
+- RNA and protein level data
+
+#### Genotype Annotations  
+- Pathogen phenotypes (growth, morphology, resistance)
+- Host phenotypes (defense responses, susceptibility)
+
+#### Metagenotype Annotations
+- Pathogen-host interaction phenotypes
+- Gene-for-gene interactions
+- Disease names with tissue specificity
+- Infective ability and interaction outcomes
+
+### Experimental Evidence Integration
+- Evidence codes for all annotation types
+- Experimental conditions specification
+- Figure/table number referencing
+- Annotation extensions for specificity
+
 ## Research Domain Context
 
 This vault focuses on:
 - **PHI-Canto**: Community curation platform for pathogen-host interaction data
-- **PHI-base**: The Pathogen-Host Interactions database
+- **PHI-base**: The Pathogen-Host Interactions database  
 - **Curation workflows**: Annotation protocols, evidence codes, gene ontology terms
 - **Curator training**: Onboarding materials for new curators (MC-canto-training project)
 - **Literature curation**: Extracting interaction data from published papers

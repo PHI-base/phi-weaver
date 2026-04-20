@@ -19,7 +19,14 @@ Index of all Claude Code session logs for OBS-PHI-Canto vault.
 | 2026-04-18 | [[2026-04-18-database-integration]] | Database Integration | Tested integrated session logging system |
 | 2026-04-18 | [[2026-04-18-fusarium-effectors]] | Fusarium effectors | Updated FgNls1 protein characterization |
 | 2026-04-18 | [[2026-04-18-wiki-testing]] | Wiki Testing | Testing auto-wiki updates |
+| 2026-04-19 | [[2026-04-19-literature-management]] | Literature Management | Converted Tretiakova-2022 PDF to Obsidian markdown with 17 images |
+| 2026-04-19 | [[2026-04-19-pdf-convert-skill-2]] | PDF-Convert Skill | Professional skill creation: advanced caption extraction, quality validation, complete documentation, codebase organization |
+| 2026-04-20 | [[2026-04-20-phi-canto-docs-integration]] | PHI-Canto Documentation | Integrated comprehensive PHI-Canto curation documentation into vault protocols, training, and standards |
 
 ## Tags / Topics
 - **Vault setup**: 2026-04-11
-- **Vault maintenance**: 2026-04-11
+- **Vault maintenance**: 2026-04-11, 2026-04-12
+- **Fusarium effectors**: 2026-04-12, 2026-04-18
+- **Database Integration**: 2026-04-18  
+- **Literature Management**: 2026-04-19
+- **PDF-Convert Skill**: 2026-04-19
