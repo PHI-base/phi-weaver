@@ -1,0 +1,26 @@
+{
+  "source_file": "/mnt/z/OBS-PHI-Canto/00-Inbox/To-curate/Chen-2020-EnvironMicrobiol-32537857.pdf",
+  "output_file": "../../00-Inbox/To-curate/Chen-2020-EnvironMicrobiol-32537857_converted.md",
+  "conversion_date": "2026-04-23",
+  "statistics": {
+    "total_pages": 0,
+    "figures_found": 10,
+    "tables_found": 0,
+    "sections_detected": 5
+  },
+  "quality_metrics": {
+    "high_confidence_captions": 10,
+    "sections_with_content": 5
+  },
+  "config_used": {
+    "output_directory": "../../00-Inbox/To-curate/",
+    "images_directory": "03-Media",
+    "figure_prefix": "Fig",
+    "table_prefix": "Table",
+    "confidence_threshold": 0.5,
+    "quality_validation": true,
+    "create_index": true,
+    "debug": false,
+    "preserve_structure": true
+  }
+}
