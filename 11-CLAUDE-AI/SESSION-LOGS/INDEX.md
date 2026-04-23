@@ -22,11 +22,16 @@ Index of all Claude Code session logs for OBS-PHI-Canto vault.
 | 2026-04-19 | [[2026-04-19-literature-management]] | Literature Management | Converted Tretiakova-2022 PDF to Obsidian markdown with 17 images |
 | 2026-04-19 | [[2026-04-19-pdf-convert-skill-2]] | PDF-Convert Skill | Professional skill creation: advanced caption extraction, quality validation, complete documentation, codebase organization |
 | 2026-04-20 | [[2026-04-20-phi-canto-docs-integration]] | PHI-Canto Documentation | Integrated comprehensive PHI-Canto curation documentation into vault protocols, training, and standards |
+| 2026-04-22 | [[2026-04-22-curation-automation]] | Curation Automation | Complete workflow automation system: PDF processing, database integration, session management, documentation |
+| 2026-04-22 | [[2026-04-22-he-2018-nlr1-curation]] | He-2018-NLR1 Curation | Completed automated curation: 3 key proteins, 3 interactions, comprehensive GO terms |
+| 2026-04-23 | [[2026-04-23-chen-2020-curation-file-organization]] | Chen-2020 Curation & File Organization | Completed Chen 2020 F. graminearum curation, fixed file organization automation, created wrapper scripts |
 
 ## Tags / Topics
 - **Vault setup**: 2026-04-11
 - **Vault maintenance**: 2026-04-11, 2026-04-12
-- **Fusarium effectors**: 2026-04-12, 2026-04-18
+- **Fusarium effectors**: 2026-04-12, 2026-04-18, 2026-04-23
 - **Database Integration**: 2026-04-18  
 - **Literature Management**: 2026-04-19
 - **PDF-Convert Skill**: 2026-04-19
+- **Curation Automation**: 2026-04-22, 2026-04-23
+- **File Organization**: 2026-04-23
