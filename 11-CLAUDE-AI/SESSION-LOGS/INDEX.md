@@ -25,6 +25,7 @@ Index of all Claude Code session logs for OBS-PHI-Canto vault.
 | 2026-04-22 | [[2026-04-22-curation-automation]] | Curation Automation | Complete workflow automation system: PDF processing, database integration, session management, documentation |
 | 2026-04-22 | [[2026-04-22-he-2018-nlr1-curation]] | He-2018-NLR1 Curation | Completed automated curation: 3 key proteins, 3 interactions, comprehensive GO terms |
 | 2026-04-23 | [[2026-04-23-chen-2020-curation-file-organization]] | Chen-2020 Curation & File Organization | Completed Chen 2020 F. graminearum curation, fixed file organization automation, created wrapper scripts |
+| 2026-04-24 | [[2026-04-24-system-architecture-funding-assessment]] | System Architecture & Funding Strategy | Added system architecture documentation, created implementation assessment, developed funding framework |
 
 ## Tags / Topics
 - **Vault setup**: 2026-04-11
@@ -35,3 +36,5 @@ Index of all Claude Code session logs for OBS-PHI-Canto vault.
 - **PDF-Convert Skill**: 2026-04-19
 - **Curation Automation**: 2026-04-22, 2026-04-23
 - **File Organization**: 2026-04-23
+- **System Architecture**: 2026-04-24
+- **Funding Strategy**: 2026-04-24
