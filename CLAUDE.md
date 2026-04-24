@@ -102,6 +102,198 @@ python3 session_logger.py quick 'Fusarium effectors' 'Added FgTPP1 analysis' 3 5
 - ✅ No risk of forgetting to update database or markdown
 - ✅ Tracks session ID for linking database records to notes
 
+## Workflow Automation
+
+**COMPLETE AUTOMATION AVAILABLE**: The vault includes a comprehensive automation system for the entire curation pipeline from PDF intake to completion.
+
+### Master Automation Script
+**Path**: `11-CLAUDE-AI/curation_pipeline.py`
+**Purpose**: Complete workflow automation handling PDF processing, file organization, database tracking, and session logging.
+
+### Quick Automation Commands
+```bash
+# Full automation: new PDF → converted → ready for curation
+python3 curation_pipeline.py auto-process ~/Downloads/paper.pdf
+
+# Process existing PDF in To-curate folder
+python3 curation_pipeline.py process-pdf filename.pdf
+
+# Complete curation and move to Literature folder
+python3 curation_pipeline.py complete-paper filename.pdf "summary"
+
+# Integrated session tracking
+python3 workflow_helper.py start-session "Project Name"
+python3 workflow_helper.py end-session "Project" "Summary" proteins interactions hours
+```
+
+### What Gets Automated
+- ✅ **PDF placement**: Auto-copy to `00-Inbox/To-curate/`
+- ✅ **PDF conversion**: Professional markdown with image extraction
+- ✅ **File organization**: Proper folder placement with WikiLink updates
+- ✅ **Database tracking**: Articles, proteins, sessions logged automatically
+- ✅ **Session management**: Integrated progress tracking with timestamps
+- ✅ **Completion workflow**: Auto-move to `04-Literature/` when done
+
+### Automation Components
+1. **PDF Conversion** (`pdf-convert-skill/`) - Academic formatting with caption extraction
+2. **Session Management** (`mysql-setup/workflow_helper.py`) - Database-integrated logging
+3. **File Organization** (`obsidian_reorganise.py`) - Auto-placement with WikiLink updates
+4. **Progress Analytics** (`mysql-setup/daily_curation.py`) - Productivity tracking
+5. **Master Pipeline** (`curation_pipeline.py`) - Complete workflow orchestration
+
+**Documentation**: See `11-CLAUDE-AI/AUTOMATION-GUIDE.md` for complete automation usage guide and examples.
+
+## System Architecture
+
+**PURPOSE**: Modular framework for inspection, improvement, and future development of the curation system.
+
+### Architectural Overview
+
+```
+Literature → Document Processing → Entity Recognition → Ontology Mapping → 
+Relationship Analysis → Validation & Learning → Database Output → PHI-base
+```
+
+### Module 1: Document Processing
+**Purpose**: Convert research papers into structured, analyzable format
+**Current Implementation**:
+- `pdf-convert-skill/pdf-convert.py` - Core PDF to markdown conversion
+- `convert-for-curation.py` - Wrapper with proper file organization
+- `pdf-convert-config.json` - Configuration for different conversion types
+
+**Inputs**: PDF files, conversion parameters
+**Outputs**: Structured markdown, extracted images, conversion metadata
+**Interfaces**: File system, 03-Media/ folder, 04-Literature/ folder
+**Status**: ✅ Fully implemented, automated
+**Improvement Opportunities**: OCR enhancement, table parsing, multi-column layouts
+
+### Module 2: Entity Recognition
+**Purpose**: Extract biological entities (genes, organisms, phenotypes, diseases) from literature
+**Current Implementation**:
+- Claude reasoning applied to converted papers
+- Agent spawning for complex entity research
+- Manual verification and validation
+
+**Inputs**: Converted markdown papers, domain knowledge
+**Outputs**: Gene lists, organism identifications, experimental method classifications
+**Interfaces**: Claude analysis, UniProtKB lookup, agent system
+**Status**: ✅ Implemented via Claude reasoning
+**Improvement Opportunities**: Named entity recognition automation, confidence scoring
+
+### Module 3: Ontology Mapping
+**Purpose**: Map extracted entities to standardized ontology terms and database identifiers
+**Current Implementation**:
+- Manual UniProtKB accession lookup
+- Claude-assisted PHIPO/GO term suggestion
+- Quick reference cards for common terms
+- Web search agents for gene identification
+
+**Inputs**: Entity lists, ontology requirements, curator preferences
+**Outputs**: UniProtKB IDs, PHIPO terms, GO annotations, evidence codes
+**Interfaces**: UniProtKB API, ontology browsers, quick reference system
+**Status**: 🔶 Partially automated (suggestions), requires manual validation
+**Improvement Opportunities**: API integration, automated mapping, confidence scoring
+
+### Module 4: Relationship Analysis
+**Purpose**: Identify and model biological relationships between entities
+**Current Implementation**:
+- Claude reasoning for interaction detection
+- Pattern recognition from experimental descriptions
+- Cross-pathway analysis capabilities
+
+**Inputs**: Entity data, experimental descriptions, literature context
+**Outputs**: Protein interactions, genotype-phenotype associations, pathway connections
+**Interfaces**: Curation workflow, knowledge integration
+**Status**: ✅ Implemented via Claude analysis
+**Improvement Opportunities**: Relationship confidence scoring, automated network analysis
+
+### Module 5: Validation & Learning
+**Purpose**: Quality assurance and system improvement through experience
+**Current Implementation**:
+- Memory system (`/home/urbanm/.claude/projects/-mnt-z-OBS-PHI-Canto/memory/`)
+- Feedback integration (user corrections saved to memory)
+- Session logging with progress tracking
+- Quick reference cards based on curation patterns
+
+**Inputs**: Curator feedback, annotation quality metrics, session data
+**Outputs**: Improved suggestions, updated templates, quality scores
+**Interfaces**: Memory system, session logs, database tracking
+**Status**: 🔶 Basic implementation (memory), learning capabilities conceptual
+**Improvement Opportunities**: Automated quality scoring, pattern recognition algorithms, adaptive templates
+
+### Module 6: Database Output
+**Purpose**: Generate PHI-base compatible curation records
+**Current Implementation**:
+- Structured markdown curation records
+- Comprehensive annotation capture
+- Quality control checklists
+
+**Inputs**: Processed entities, relationships, validation status
+**Outputs**: PHI-Canto ready annotation records
+**Interfaces**: 04-Literature/ folder, manual PHI-Canto submission
+**Status**: ✅ Structured output, manual submission
+**Improvement Opportunities**: Direct PHI-Canto API integration, automated submission
+
+### Cross-Module Interfaces
+
+**Data Flow**:
+```
+PDFs → [Module 1] → Structured Text → [Module 2] → Entities → 
+[Module 3] → Annotated Entities → [Module 4] → Relationships → 
+[Module 5] → Validated Annotations → [Module 6] → Curation Records
+```
+
+**Shared Resources**:
+- **Database**: SQLite tracking system (`11-CLAUDE-AI/mysql-setup/phi_canto_tracking.db`)
+- **Memory**: Learning and feedback system
+- **Session Management**: Progress tracking and logging
+- **File Organization**: Standardized vault structure
+
+### Modularization Roadmap
+
+**Phase 1 - Inspection (Current)**:
+- Document existing implementations
+- Identify module boundaries and interfaces
+- Map data flow and dependencies
+
+**Phase 2 - Interface Standardization**:
+- Define APIs between modules
+- Create standardized data formats
+- Implement module testing frameworks
+
+**Phase 3 - Component Isolation**:
+- Extract modules into separate, testable components
+- Implement module-specific configuration
+- Create module deployment system
+
+**Phase 4 - Enhancement**:
+- Add missing automated capabilities
+- Implement learning algorithms
+- Integrate external APIs and services
+
+### Development Guidelines
+
+**Module Independence**: Each module should be:
+- Testable in isolation
+- Configurable via parameters
+- Replaceable without affecting other modules
+
+**Data Standards**: All inter-module communication should use:
+- Defined schemas for entity data
+- Standardized confidence scores
+- Consistent error handling
+
+**Quality Metrics**: Each module should provide:
+- Processing time statistics
+- Accuracy/confidence measures
+- Error rates and failure modes
+
+**Documentation Requirements**: Each module requires:
+- Input/output specifications
+- Configuration parameters
+- Performance characteristics
+- Integration guidelines
+
 ## Repository Overview
 
 This is an Obsidian knowledge management vault dedicated to **PHI-Canto** — the curation interface and workflow for the PHI-base (Pathogen-Host Interactions) database. The vault contains curation notes, training materials, annotation protocols, literature references, and project documentation related to PHI-base community curation.
@@ -122,8 +314,13 @@ This is an Obsidian knowledge management vault dedicated to **PHI-Canto** — th
 07-Standards/      Nomenclature, ontologies, and reference standards
 08-QA/            Quality assurance procedures and validation
 _Templates/        Note templates
-11-CLAUDE-AI/      Claude Code session logs and tools
-  └─ SESSION-LOGS/ Interaction history and session records
+11-CLAUDE-AI/      Claude Code session logs and automation tools
+  ├─ SESSION-LOGS/ Interaction history and session records
+  ├─ mysql-setup/  Database integration and session management
+  ├─ pdf-convert-skill/ Professional PDF to markdown conversion
+  ├─ curation_pipeline.py Master automation script
+  ├─ AUTOMATION-GUIDE.md Complete automation documentation
+  └─ obsidian_reorganise.py File organization with WikiLink updates
 SystemSculpt/      AI tool integration (empty directory structure)
   └─ .systemsculpt/ Configuration and cache files (if SystemSculpt is used)
 ```
@@ -189,6 +386,8 @@ python 11-CLAUDE-AI/obsidian_reorganise.py --config 11-CLAUDE-AI/reorganise-conf
 # Execute moves (Obsidian must be open on this vault)
 python 11-CLAUDE-AI/obsidian_reorganise.py --config 11-CLAUDE-AI/reorganise-config-OBS-PHI-Canto.yaml --execute
 ```
+
+**NOTE**: File organization is now automated through the curation pipeline. Manual reorganization is typically only needed for vault-wide maintenance.
 
 ## Session Logs
 
