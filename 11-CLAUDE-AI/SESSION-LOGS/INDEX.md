@@ -26,6 +26,7 @@ Index of all Claude Code session logs for OBS-PHI-Canto vault.
 | 2026-04-22 | [[2026-04-22-he-2018-nlr1-curation]] | He-2018-NLR1 Curation | Completed automated curation: 3 key proteins, 3 interactions, comprehensive GO terms |
 | 2026-04-23 | [[2026-04-23-chen-2020-curation-file-organization]] | Chen-2020 Curation & File Organization | Completed Chen 2020 F. graminearum curation, fixed file organization automation, created wrapper scripts |
 | 2026-04-24 | [[2026-04-24-system-architecture-funding-assessment]] | System Architecture & Funding Strategy | Added system architecture documentation, created implementation assessment, developed funding framework |
+| 2026-04-29 | [[2026-04-29-sophie-eisele-phd-project]] | Sophie Eisele - PhD Project Development | Evaluated PhD potential, addressed academic concerns, developed design space exploration approach. **Earmarked for Sophie Eisele - 2026** |
 
 ## Tags / Topics
 - **Vault setup**: 2026-04-11
@@ -38,3 +39,5 @@ Index of all Claude Code session logs for OBS-PHI-Canto vault.
 - **File Organization**: 2026-04-23
 - **System Architecture**: 2026-04-24
 - **Funding Strategy**: 2026-04-24
+- **PhD Project Development**: 2026-04-29
+- **Sophie Eisele**: 2026-04-29
