@@ -2,7 +2,7 @@
 
 🧬 **AI-Powered Pathogen-Host Interaction Curation System**
 
-A comprehensive framework for automating [PHI-base](https://phi-base.org/) and [PHI-Canto](https://curation.phi-base.org/) curation workflows using Large Language Models and intelligent automation tools.
+A comprehensive framework for automating [PHI-base](http://phi-base.org/) and [PHI-Canto](https://curation.phi-base.org/) curation workflows using Large Language Models and intelligent automation tools.
 
 ## 🎯 **Overview**
 
@@ -254,7 +254,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🏆 **Acknowledgments**
 
-- **[PHI-base Team](https://phi-base.org/)** - Database infrastructure and curation standards
+- **[PHI-base Team](http://phi-base.org/)** - Database infrastructure and curation standards
 - **[PHI-Canto Platform](https://curation.phi-base.org/)** - Community curation system
 - **[Claude AI/Anthropic](https://claude.ai/)** - LLM integration and automation capabilities
 - **Research Community** - Domain expertise and collaborative curation efforts
