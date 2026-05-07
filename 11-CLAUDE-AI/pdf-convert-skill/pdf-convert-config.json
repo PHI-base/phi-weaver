@@ -1,0 +1,48 @@
+{
+  "default_config": {
+    "output_directory": ".",
+    "images_directory": "03-Media",
+    "figure_prefix": "Fig",
+    "table_prefix": "Table",
+    "image_formats": ["png", "jpeg", "jpg"],
+    "min_caption_length": 10,
+    "confidence_threshold": 0.5,
+    "max_figures_per_page": 10,
+    "quality_validation": true,
+    "create_index": true,
+    "preserve_structure": true
+  },
+
+  "academic_config": {
+    "output_directory": "04-Literature",
+    "images_directory": "03-Media",
+    "figure_prefix": "Figure",
+    "table_prefix": "Table",
+    "confidence_threshold": 0.8,
+    "quality_validation": true,
+    "create_index": true,
+    "preserve_structure": true
+  },
+
+  "phi_canto_config": {
+    "output_directory": "04-Literature",
+    "images_directory": "03-Media",
+    "figure_prefix": "Fig",
+    "table_prefix": "Tab",
+    "confidence_threshold": 0.7,
+    "quality_validation": true,
+    "create_index": true,
+    "preserve_structure": true
+  },
+
+  "quick_config": {
+    "output_directory": ".",
+    "images_directory": "images",
+    "figure_prefix": "Fig",
+    "table_prefix": "Table",
+    "confidence_threshold": 0.3,
+    "quality_validation": false,
+    "create_index": false,
+    "preserve_structure": true
+  }
+}

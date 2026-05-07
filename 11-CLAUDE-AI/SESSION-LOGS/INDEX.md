@@ -8,27 +8,25 @@ tags: [status/active]
 
 Index of all Claude Code session logs for OBS-PHI-Canto vault.
 
-| Date | File | Project | Summary |
-|------|------|---------|---------|
-| 2026-04-11 | [[2026-04-11-vault-setup]] | Vault setup | Initial Claude Code setup, Obsidian CLI config, session log infrastructure |
-| 2026-04-11 | [[2026-04-11-claude-md-updates-2]] | Vault maintenance | Enhanced CLAUDE.md session protocol, attempted git setup |
-| 2026-04-11 | [[2026-04-11-git-setup-3]] | Vault setup | Git repository initialization, .gitignore configuration, template file exclusion |
-| 2026-04-12 | [[2026-04-12-misc-1]] | Vault maintenance | test.md created, tmux session setup for PHI-Canto vault |
-| 2026-04-12 | [[2026-04-12-fusarium-effectors-2]] | Fusarium effectors | Created project folder, comprehensive literature review, gene ID mapping, UniProt database research |
-| 2026-04-18 | [[2026-04-18-mysql-hybrid-setup]] | MySQL integration | Hybrid tracking system setup with database schema, Python integration, progress analytics |
-| 2026-04-18 | [[2026-04-18-database-integration]] | Database Integration | Tested integrated session logging system |
-| 2026-04-18 | [[2026-04-18-fusarium-effectors]] | Fusarium effectors | Updated FgNls1 protein characterization |
-| 2026-04-18 | [[2026-04-18-wiki-testing]] | Wiki Testing | Testing auto-wiki updates |
-| 2026-04-19 | [[2026-04-19-literature-management]] | Literature Management | Converted Tretiakova-2022 PDF to Obsidian markdown with 17 images |
-| 2026-04-19 | [[2026-04-19-pdf-convert-skill-2]] | PDF-Convert Skill | Professional skill creation: advanced caption extraction, quality validation, complete documentation, codebase organization |
-| 2026-04-20 | [[2026-04-20-phi-canto-docs-integration]] | PHI-Canto Documentation | Integrated comprehensive PHI-Canto curation documentation into vault protocols, training, and standards |
-| 2026-04-22 | [[2026-04-22-curation-automation]] | Curation Automation | Complete workflow automation system: PDF processing, database integration, session management, documentation |
-| 2026-04-22 | [[2026-04-22-he-2018-nlr1-curation]] | He-2018-NLR1 Curation | Completed automated curation: 3 key proteins, 3 interactions, comprehensive GO terms |
-| 2026-04-23 | [[2026-04-23-chen-2020-curation-file-organization]] | Chen-2020 Curation & File Organization | Completed Chen 2020 F. graminearum curation, fixed file organization automation, created wrapper scripts |
-| 2026-04-24 | [[2026-04-24-system-architecture-funding-assessment]] | System Architecture & Funding Strategy | Added system architecture documentation, created implementation assessment, developed funding framework |
-| 2026-04-29 | [[2026-04-29-sophie-eisele-phd-project]] | Sophie Eisele - PhD Project Development | Evaluated PhD potential, addressed academic concerns, developed design space exploration approach. **Earmarked for Sophie Eisele - 2026** |
-| 2026-05-06 | [[2026-05-06-chen-2026-curation]] | Chen-2026 PHI-Canto Curation | Complete MBOA-CWI pathway curation: 8 proteins, 4 interactions, chromatin-based counter-defense mechanism. Exceptional experimental rigor. |
-| 2026-05-07 | [[2026-05-07-external-storage-migration]] | External Storage Migration | Infrastructure improvement: separated development vault from content storage, updated automation, improved performance. |
+| Date       | File                                                  | Project                                 | Summary                                                                                                                                    |
+| ---------- | ----------------------------------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026-04-11 | [[2026-04-11-vault-setup]]                            | Vault setup                             | Initial Claude Code setup, Obsidian CLI config, session log infrastructure                                                                 |
+| 2026-04-11 | [[2026-04-11-claude-md-updates-2]]                    | Vault maintenance                       | Enhanced CLAUDE.md session protocol, attempted git setup                                                                                   |
+| 2026-04-11 | [[2026-04-11-git-setup-3]]                            | Vault setup                             | Git repository initialization, .gitignore configuration, template file exclusion                                                           |
+| 2026-04-12 | [[2026-04-12-misc-1]]                                 | Vault maintenance                       | test.md created, tmux session setup for PHI-Canto vault                                                                                    |
+| 2026-04-12 | [[2026-04-12-fusarium-effectors-2]]                   | Fusarium effectors                      | Created project folder, comprehensive literature review, gene ID mapping, UniProt database research                                        |
+| 2026-04-18 | [[2026-04-18-mysql-hybrid-setup]]                     | MySQL integration                       | Hybrid tracking system setup with database schema, Python integration, progress analytics                                                  |
+| 2026-04-18 | [[2026-04-18-database-integration]]                   | Database Integration                    | Tested integrated session logging system                                                                                                   |
+| 2026-04-18 | [[2026-04-18-fusarium-effectors]]                     | Fusarium effectors                      | Updated FgNls1 protein characterization                                                                                                    |
+| 2026-04-18 | [[2026-04-18-wiki-testing]]                           | Wiki Testing                            | Testing auto-wiki updates                                                                                                                  |
+| 2026-04-19 | [[2026-04-19-literature-management]]                  | Literature Management                   | Converted Tretiakova-2022 PDF to Obsidian markdown with 17 images                                                                          |
+| 2026-04-19 | [[2026-04-19-pdf-convert-skill-2]]                    | PDF-Convert Skill                       | Professional skill creation: advanced caption extraction, quality validation, complete documentation, codebase organization                |
+| 2026-04-20 | [[2026-04-20-phi-canto-docs-integration]]             | PHI-Canto Documentation                 | Integrated comprehensive PHI-Canto curation documentation into vault protocols, training, and standards                                    |
+| 2026-04-22 | [[2026-04-22-curation-automation]]                    | Curation Automation                     | Complete workflow automation system: PDF processing, database integration, session management, documentation                               |
+| 2026-04-22 | [[2026-04-22-he-2018-nlr1-curation]]                  | He-2018-NLR1 Curation                   | Completed automated curation: 3 key proteins, 3 interactions, comprehensive GO terms                                                       |
+| 2026-04-23 | [[2026-04-23-chen-2020-curation-file-organization]]   | Chen-2020 Curation & File Organization  | Completed Chen 2020 F. graminearum curation, fixed file organization automation, created wrapper scripts                                   |
+| 2026-04-24 | [[2026-04-24-system-architecture-funding-assessment]] | System Architecture & Funding Strategy  | Added system architecture documentation, created implementation assessment, developed funding framework                                    |
+| 2026-05-07 | [[2026-05-07-external-storage-migration]]             | External Storage Migration              | Infrastructure improvement: separated development vault from content storage, updated automation, improved performance.                    |
 
 ## Tags / Topics
 - **Vault setup**: 2026-04-11
@@ -40,8 +38,4 @@ Index of all Claude Code session logs for OBS-PHI-Canto vault.
 - **Curation Automation**: 2026-04-22, 2026-04-23
 - **File Organization**: 2026-04-23
 - **System Architecture**: 2026-04-24
-- **Funding Strategy**: 2026-04-24
-- **PhD Project Development**: 2026-04-29
-- **Sophie Eisele**: 2026-04-29
-- **Chen-2026 Curation**: 2026-05-06
 - **External Storage Migration**: 2026-05-07
