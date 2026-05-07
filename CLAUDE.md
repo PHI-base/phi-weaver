@@ -108,17 +108,17 @@ python3 session_logger.py quick 'Fusarium effectors' 'Added FgTPP1 analysis' 3 5
 
 ### Master Automation Script
 **Path**: `11-CLAUDE-AI/curation_pipeline.py`
-**Purpose**: Complete workflow automation handling PDF processing, file organization, database tracking, and session logging.
+**Purpose**: Complete workflow automation handling PDF processing, file organization, database tracking, and session logging. **Updated for external storage**.
 
 ### Quick Automation Commands
 ```bash
-# Full automation: new PDF → converted → ready for curation
+# Full automation: new PDF → converted → ready for curation (outputs to external storage)
 python3 curation_pipeline.py auto-process ~/Downloads/paper.pdf
 
-# Process existing PDF in To-curate folder
+# Process existing PDF in active work folder
 python3 curation_pipeline.py process-pdf filename.pdf
 
-# Complete curation and move to Literature folder
+# Complete curation and move to completed literature folder
 python3 curation_pipeline.py complete-paper filename.pdf "summary"
 
 # Integrated session tracking
@@ -127,12 +127,19 @@ python3 workflow_helper.py end-session "Project" "Summary" proteins interactions
 ```
 
 ### What Gets Automated
-- ✅ **PDF placement**: Auto-copy to `00-Inbox/To-curate/`
+- ✅ **PDF placement**: Auto-copy to `../PHI-Canto-Literature/active/`
 - ✅ **PDF conversion**: Professional markdown with image extraction
-- ✅ **File organization**: Proper folder placement with WikiLink updates
+- ✅ **File organization**: Proper placement in external storage with references
 - ✅ **Database tracking**: Articles, proteins, sessions logged automatically
 - ✅ **Session management**: Integrated progress tracking with timestamps
-- ✅ **Completion workflow**: Auto-move to `04-Literature/` when done
+- ✅ **Completion workflow**: Auto-move to `../PHI-Canto-Literature/completed/` when done
+
+### External Storage Integration
+All automation tools have been updated to work with the external literature storage:
+- **Input**: `../PHI-Canto-Literature/active/` (work in progress)
+- **Output**: `../PHI-Canto-Literature/completed/` (finished curations)  
+- **Media**: `../PHI-Canto-Literature/media/` (images and figures)
+- **References**: `content-links/` (access from development vault)
 
 ### Automation Components
 1. **PDF Conversion** (`pdf-convert-skill/`) - Academic formatting with caption extraction
@@ -296,34 +303,46 @@ PDFs → [Module 1] → Structured Text → [Module 2] → Entities →
 
 ## Repository Overview
 
-This is an Obsidian knowledge management vault dedicated to **PHI-Canto** — the curation interface and workflow for the PHI-base (Pathogen-Host Interactions) database. The vault contains curation notes, training materials, annotation protocols, literature references, and project documentation related to PHI-base community curation.
+This is an Obsidian knowledge management vault dedicated to **PHI-Canto system development** — tools, protocols, and automation for the PHI-base (Pathogen-Host Interactions) database curation workflow. The vault focuses on developing the curation system, while actual literature content is stored externally for better organization and performance.
 
 ## Directory Structure
 
+### Development Vault (OBS-PHI-Canto)
 ```
-00-Inbox/          Temporary holding area for new notes before processing
-  └─ To-curate/    Files queued for PHI-Canto annotation
-01-Notes/          General working notes and reference materials
-02-Projects/       Active curation projects and campaigns
-  └─ MC-canto-training/   Molecular Connections curation training
-  └─ Fusarium-effectors/  Research project on Fusarium effectors
-03-Media/          Images, attachments, and media files
-04-Literature/     Literature references for curation evidence
 05-Protocols/      Standard operating procedures and experimental methods
-06-Training/       Curator onboarding and educational materials
+06-Training/       Curator onboarding and educational materials  
 07-Standards/      Nomenclature, ontologies, and reference standards
 08-QA/            Quality assurance procedures and validation
-_Templates/        Note templates
 11-CLAUDE-AI/      Claude Code session logs and automation tools
   ├─ SESSION-LOGS/ Interaction history and session records
   ├─ mysql-setup/  Database integration and session management
   ├─ pdf-convert-skill/ Professional PDF to markdown conversion
-  ├─ curation_pipeline.py Master automation script
+  ├─ curation_pipeline.py Master automation script (updated for external storage)
   ├─ AUTOMATION-GUIDE.md Complete automation documentation
   └─ obsidian_reorganise.py File organization with WikiLink updates
-SystemSculpt/      AI tool integration (empty directory structure)
-  └─ .systemsculpt/ Configuration and cache files (if SystemSculpt is used)
+content-links/     References to external literature storage
+  ├─ literature-index.md  Complete index of external content
+  └─ quick-access.md     Fast navigation guide
+_Templates/        Note templates
+CLAUDE.md         This system documentation
 ```
+
+### External Literature Storage (PHI-Canto-Literature)
+```
+../PHI-Canto-Literature/
+├── completed/     Finished curations (formerly 04-Literature/)
+├── active/        Work in progress (formerly 00-Inbox/To-curate/)
+├── media/         Images, attachments, and media files (formerly 03-Media/)  
+├── archive/       Historical materials
+└── work-queue/    Queued for future curation
+```
+
+### Benefits of External Storage
+- **Focused Development**: Vault stays lean and tool-focused
+- **Scalable Content**: Literature can grow without affecting vault performance  
+- **Clear Separation**: System development vs content storage distinction
+- **Faster Operations**: Reduced vault size improves Obsidian performance
+- **Flexible Deployment**: Curation system can work with different content collections
 
 ### Workflow-Specific Folders
 
@@ -396,6 +415,46 @@ python 11-CLAUDE-AI/obsidian_reorganise.py --config 11-CLAUDE-AI/reorganise-conf
 **Index**: `11-CLAUDE-AI/SESSION-LOGS/INDEX.md` — read this at session start
 
 Session logs document Claude Code interactions for continuity across sessions.
+
+## Development Timeline System
+
+### Purpose and Location
+**Primary Timeline**: `11-CLAUDE-AI/DEVELOPMENT-TIMELINE.md`
+**Quick Reference**: `content-links/dev-timeline-daily.md`
+**Generator Scripts**: `11-CLAUDE-AI/generate_dev_timeline.py`, `11-CLAUDE-AI/update_timeline_incremental.py`
+
+### Usage Commands
+
+#### Incremental Updates (Recommended)
+```bash
+# Check what would be added (dry run)
+python3 11-CLAUDE-AI/update_timeline_incremental.py --check-only
+
+# Add only new development sessions to existing timeline
+python3 11-CLAUDE-AI/update_timeline_incremental.py
+```
+
+#### Full Regeneration (When Needed)
+```bash
+# Regenerate entire timeline from session logs
+python3 11-CLAUDE-AI/generate_dev_timeline.py
+
+# Generate bullet-point format
+python3 11-CLAUDE-AI/generate_dev_timeline.py --format bullet
+```
+
+### Timeline Features
+- **Development Focus**: Filters system development from content curation work
+- **Incremental Updates**: Preserves manual edits while adding new sessions
+- **Categorization**: Infrastructure, Automation, Architecture, Analytics, Knowledge Management
+- **Timestamps**: Tracks exact timing of development milestones
+- **Auto-filtering**: Distinguishes development vs content work using keyword analysis
+
+### When to Update
+- After major development sessions (infrastructure, tools, automation)
+- Weekly for development velocity tracking
+- Before project reviews or status meetings
+- When manual timeline edits need to be preserved
 
 ### File Naming Convention
 **Format**: `YYYY-MM-DD-[project-slug].md`

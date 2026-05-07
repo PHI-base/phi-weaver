@@ -1,14 +1,14 @@
 ---
-created: 2026-04-18
+created: 2026-04-22
 type: registry
 tags: [status/active, registry]
 auto_generated: true
-last_updated: 2026-04-18 14:42:58
+last_updated: 2026-04-22 10:18:09
 ---
 
 # 📚 Article Registry Dashboard
 
-*Auto-generated from database on 2026-04-18 at 14:42:58*
+*Auto-generated from database on 2026-04-22 at 10:18:09*
 
 ## 📊 Pipeline Overview
 
@@ -26,9 +26,9 @@ last_updated: 2026-04-18 14:42:58
 
 ## 📈 Recent Activity (Last 7 Days)
 
-- **7** curation sessions
-- **13** proteins curated
-- **21** interactions added
+- **9** curation sessions
+- **16** proteins curated
+- **25** interactions added
 
 ## 📄 Article Pipeline
 
@@ -40,16 +40,16 @@ last_updated: 2026-04-18 14:42:58
 
 ## 🕒 Recent Curation Activity
 
+- **2026-04-22 09:18:09** | martin.urban | 3 proteins, 3 interactions
+  *Quick session update: Completed automated curation: 3 key proteins, 3 interactio...*
+- **2026-04-19 15:41:11** | martin.urban | 0 proteins, 1 interactions
+  *Quick session update: Converted Tretiakova-2022 PDF to Obsidian markdown with 17...*
 - **2026-04-18 13:42:58** | martin.urban | 1 proteins, 1 interactions
   *Quick session update: Testing auto-wiki updates...*
 - **2026-04-18 13:08:49** | martin.urban | 1 proteins, 3 interactions
   *Quick session update: Updated FgNls1 protein characterization...*
 - **2026-04-18 13:06:59** | martin.urban | 1 proteins, 2 interactions
   *Quick session update: Tested integrated session logging system...*
-- **2026-04-18 13:01:53** | martin.urban | 2 proteins, 3 interactions
-  *Testing database integration...*
-- **2026-04-18 13:00:58** | martin.urban | 3 proteins, 5 interactions
-  *Literature review and initial protein characterization for FgTPP1...*
 
 ## 🚀 Quick Actions
 
@@ -84,4 +84,4 @@ python3 generate_article_registry.py
 
 *This registry is auto-generated from the SQLite database.*  
 *Regenerate with: `python3 generate_article_registry.py`*  
-*Last updated: 2026-04-18 14:42:58*
+*Last updated: 2026-04-22 10:18:09*

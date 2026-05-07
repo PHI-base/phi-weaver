@@ -27,6 +27,8 @@ Index of all Claude Code session logs for OBS-PHI-Canto vault.
 | 2026-04-23 | [[2026-04-23-chen-2020-curation-file-organization]] | Chen-2020 Curation & File Organization | Completed Chen 2020 F. graminearum curation, fixed file organization automation, created wrapper scripts |
 | 2026-04-24 | [[2026-04-24-system-architecture-funding-assessment]] | System Architecture & Funding Strategy | Added system architecture documentation, created implementation assessment, developed funding framework |
 | 2026-04-29 | [[2026-04-29-sophie-eisele-phd-project]] | Sophie Eisele - PhD Project Development | Evaluated PhD potential, addressed academic concerns, developed design space exploration approach. **Earmarked for Sophie Eisele - 2026** |
+| 2026-05-06 | [[2026-05-06-chen-2026-curation]] | Chen-2026 PHI-Canto Curation | Complete MBOA-CWI pathway curation: 8 proteins, 4 interactions, chromatin-based counter-defense mechanism. Exceptional experimental rigor. |
+| 2026-05-07 | [[2026-05-07-external-storage-migration]] | External Storage Migration | Infrastructure improvement: separated development vault from content storage, updated automation, improved performance. |
 
 ## Tags / Topics
 - **Vault setup**: 2026-04-11
@@ -41,3 +43,5 @@ Index of all Claude Code session logs for OBS-PHI-Canto vault.
 - **Funding Strategy**: 2026-04-24
 - **PhD Project Development**: 2026-04-29
 - **Sophie Eisele**: 2026-04-29
+- **Chen-2026 Curation**: 2026-05-06
+- **External Storage Migration**: 2026-05-07

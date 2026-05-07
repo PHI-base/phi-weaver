@@ -1,27 +1,32 @@
-# Obsidian Vault .gitignore
+# PHI-Canto Vault .gitignore - Colleague Sharing Configuration
+# =============================================================
 
-# Obsidian configuration and cache files
+# OBSIDIAN PERSONAL CONFIGURATIONS
+# Exclude all personal workspace and plugin data
 .obsidian/workspace.json
 .obsidian/workspace-mobile.json
 .obsidian/cache
-.obsidian/plugins/*/
-.obsidian/themes/*/
+.obsidian/graph.json
+.obsidian/starred.json
+.obsidian/bookmarks.json
 
-# Keep core Obsidian settings but ignore user-specific ones
+# Plugin directories and data files - EXCLUDE ALL for colleague sharing
+.obsidian/plugins/
+.obsidian/themes/
+
+# Keep only essential Obsidian settings (community can configure their own)
 !.obsidian/app.json
-!.obsidian/appearance.json
 !.obsidian/core-plugins.json
 !.obsidian/core-plugins-migration.json
 !.obsidian/community-plugins.json
-!.obsidian/hotkeys.json
-!.obsidian/snippets/
 
-# Temporary files
+# Temporary files and trash
 .tmp/
 *.tmp
 *~
 .DS_Store
 Thumbs.db
+.trash/
 
 # OS generated files
 .DS_Store?
@@ -47,23 +52,38 @@ __pycache__/
 # Log files
 *.log
 
-# Personal/sensitive files (customize as needed)
-# Uncomment these if you have such files:
-# /Private/
-# /Personal/
-# *.private.md
+# AI TOOL CONFIGURATIONS - Personal settings
+# SystemSculpt AI plugin and cache files
+.systemsculpt/
+SystemSculpt/
 
-# Templates folder (exclude template files)
+# Claude memory and cache (contains personal interaction history)
+.claude/
+
+# PERSONAL CURATION DATA
+# Exclude databases with personal curation progress
+11-CLAUDE-AI/mysql-setup/phi_canto_tracking.db
+11-CLAUDE-AI/mysql-setup/*.db
+
+# Backup files with personal timestamps
+.systemsculpt/settings-backups/
+11-CLAUDE-AI/SESSION-LOGS/INDEX-backup*.md
+
+# TEMPLATES AND BINARY FILES
+# Keep template structure but exclude personal modifications
 _Templates/
 
-# Large binary files that don't need versioning
-# (uncomment if you have such files)
-# *.pdf
-# *.docx
-# *.xlsx
-# *.pptx
-# *.zip
-# *.tar.gz
+# Binary files that colleagues should obtain from original sources
+*.pdf
+*.docx
+*.xlsx
+*.pptx
 
-# Claude Code specific (optional - keep session logs for continuity)
-# 11-CLAUDE-AI/SESSION-LOGS/*.md
+# Media files (colleagues can regenerate via automation)
+03-Media/
+
+# COLLEAGUE SHARING - Include these for collaboration
+# Session logs provide context (but review for sensitive content)
+# 11-CLAUDE-AI/SESSION-LOGS/ - KEEP for continuity
+# Automation tools - KEEP for functionality
+# Protocol documentation - KEEP for workflows
