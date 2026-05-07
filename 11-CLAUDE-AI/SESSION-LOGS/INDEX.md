@@ -27,6 +27,7 @@ Index of all Claude Code session logs for OBS-PHI-Canto vault.
 | 2026-04-23 | [[2026-04-23-chen-2020-curation-file-organization]]   | Chen-2020 Curation & File Organization  | Completed Chen 2020 F. graminearum curation, fixed file organization automation, created wrapper scripts                                   |
 | 2026-04-24 | [[2026-04-24-system-architecture-funding-assessment]] | System Architecture & Funding Strategy  | Added system architecture documentation, created implementation assessment, developed funding framework                                    |
 | 2026-05-07 | [[2026-05-07-external-storage-migration]]             | External Storage Migration              | Infrastructure improvement: separated development vault from content storage, updated automation, improved performance.                    |
+| 2026-05-07 | [[2026-05-07-phi-curation-framework-github-prep]]     | PHI-Curation-Framework Repository Prep  | Prepared complete vault for GitHub sharing: sanitized personal configs, created comprehensive README, established collaborative workflow. |
 
 ## Tags / Topics
 - **Vault setup**: 2026-04-11
