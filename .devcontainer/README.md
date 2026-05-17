@@ -1,110 +1,133 @@
-# PHI-Curation-Framework Codespace Configuration
+# Fixed Codespace Configuration for Claude Code
 
-This directory contains the development environment configuration for GitHub Codespaces, providing a clean, isolated environment for public framework development.
+This is the **improved devcontainer configuration** that resolves Claude Code extension permission issues in GitHub Codespaces.
 
-## 🎯 Purpose
+## 🔧 What Was Fixed
 
-- **Public framework development only**
-- **No private data access** - completely separated from personal research
-- **Standardized development environment** for contributors
-- **Pre-configured with Claude Code** for AI-assisted development
+### **Permission Issues Resolved**
+- ✅ **Pre-creates Claude directories** before extension loads
+- ✅ **Sets proper ownership** (vscode user) for all Claude files
+- ✅ **Initializes directory structure** with correct permissions (755)
+- ✅ **Handles lock file creation** permissions proactively
+- ✅ **Tests write permissions** during setup with verification
 
-## 🚀 Quick Start
+### **Configuration Improvements**
+- ✅ **Updated extension configuration** using `customizations.vscode`
+- ✅ **Proper user mapping** with explicit remoteUser/containerUser
+- ✅ **Staged setup process** using onCreateCommand → postCreateCommand → postAttachCommand
+- ✅ **Volume mounting** for persistent Claude configuration
+- ✅ **Environment variables** for Claude configuration
 
-1. **In GitHub**: Navigate to https://github.com/PHI-base/PHI-Curation-Framework
-2. **Click "Code"** → **"Codespaces"** → **"Create codespace on main"**
-3. **Wait for setup** - Environment automatically configures with Claude Code
-4. **Start developing** - Framework tools and Claude assistance ready!
+## 🚀 Key Technical Fixes
 
-## 🛠️ Included Tools
+### **1. Directory Pre-Creation**
+```bash
+# Creates complete directory structure before extension needs it
+mkdir -p /home/vscode/.claude/{ide,config,logs,cache,temp}
+chown -R vscode:vscode /home/vscode/.claude
+chmod -R 755 /home/vscode/.claude
+```
 
-### Development Stack
-- **Python 3.11** with pip, pytest, black, pylint
-- **Node.js 18** for web tools and documentation
-- **Jupyter** for example notebooks and documentation
-- **Git & GitHub CLI** for repository management
+### **2. Proper Extension Configuration**
+```json
+"customizations": {
+  "vscode": {
+    "extensions": ["anthropic.claude-dev"],
+    "settings": { ... }
+  }
+}
+```
 
-### Claude Code Integration
-- **Claude VS Code extension** pre-installed
-- **Public-safe configuration** - no private data access
-- **Framework-focused prompts** and assistance
-- **Isolated Claude memory** specific to public development
+### **3. Environment Setup Script**
+- **Comprehensive permission setup**
+- **Write permission testing**
+- **Public-safe Claude configuration**
+- **Workspace-specific settings**
 
-### Documentation & Collaboration
-- **Markdown tools** with Mermaid diagram support
-- **YAML editing** for configuration files
-- **JSON tools** for data structure development
+## 📦 Deployment Instructions
+
+### **Step 1: Replace Current Configuration**
+```bash
+cd /mnt/d/github-projects/PHI-Curation-Framework
+
+# Backup current configuration
+cp -r .devcontainer .devcontainer-backup
+
+# Replace with fixed version
+cp -r /mnt/z/.devcontainer-fixed/* .devcontainer/
+```
+
+### **Step 2: Make Setup Script Executable**
+```bash
+chmod +x .devcontainer/setup-claude-environment.sh
+```
+
+### **Step 3: Commit and Push**
+```bash
+git add .devcontainer/
+git commit -m "Fix Claude Code extension permissions in Codespaces
+
+- Pre-create Claude directories with proper permissions
+- Add comprehensive setup script for containerized environment
+- Configure proper user ownership and write permissions
+- Test and verify Claude extension functionality during setup
+- Add public-safe Claude configuration for framework development"
+
+git push origin main
+```
+
+### **Step 4: Test New Codespace**
+1. **Delete existing Codespace** (if any) from GitHub
+2. **Create new Codespace** with updated configuration
+3. **Wait for complete setup** (~3-4 minutes with new scripts)
+4. **Test Claude commands** (Ctrl+Shift+P → "Claude")
+
+## 🧪 Setup Verification
+
+The new configuration includes automatic verification:
+
+### **During Setup**
+- ✅ **Directory creation** with permission verification
+- ✅ **Write permission testing** with actual file creation
+- ✅ **Configuration validation** 
+- ✅ **Setup completion confirmation**
+
+### **After Setup**
+Look for these success messages:
+```
+✅ Write permissions working correctly
+🚀 Claude environment setup complete!
+🎯 You can now use Claude Code extension without permission errors!
+```
 
 ## 🔒 Security Features
 
-### Complete Separation from Private Work
-- **Different environment** (cloud vs local)
-- **Separate Claude configuration** (public-only)
-- **No access to private repositories** or data
-- **Isolated development context**
+### **Public-Safe Configuration**
+- **Environment isolation** from private work
+- **Public-only data policy** enforced
+- **No private automation** access
+- **Clean collaboration environment**
 
-### Public-Safe Defaults
-- **Framework examples only** - no personal data
-- **Generic configurations** - no private settings
-- **Collaborative environment** - designed for open source
+### **Proper Permission Boundaries**
+- **vscode user ownership** throughout
+- **Appropriate file permissions** (755 for directories, 644 for files)
+- **No root access required** during normal operation
 
-## 📁 Environment Structure
+## 🎯 Expected Results
 
-```
-/workspace/
-├── .devcontainer/           # This configuration
-├── docs/                    # Framework documentation
-├── examples/                # Usage examples and tutorials
-├── tests/                   # Test suite
-├── tools/                   # Development utilities
-└── ~/.claude/               # Public-only Claude configuration
-```
+After deployment, you should be able to:
+- ✅ **Install Claude Code extension** without permission errors
+- ✅ **Use Ctrl+Shift+P → Claude commands** successfully  
+- ✅ **Right-click context menus** with Claude options
+- ✅ **Direct file editing** by Claude Code
+- ✅ **Integrated development workflow** with AI assistance
 
-## 🎮 Usage Examples
+## 🚨 Troubleshooting
 
-### Starting Claude Code
-```bash
-# Claude extension automatically available in VS Code
-# Or use CLI if installed
-claude --help
-```
+If issues persist:
+1. **Check setup logs** in Codespace terminal
+2. **Verify directory permissions**: `ls -la /home/vscode/.claude/`
+3. **Test manual creation**: `touch /home/vscode/.claude/ide/test.txt`
+4. **Restart Codespace** if needed
 
-### Development Workflow
-```bash
-# Framework development
-python -m pytest tests/
-black framework/
-pylint framework/
-
-# Documentation
-jupyter notebook examples/
-```
-
-### Adding Dependencies
-```bash
-# Add to requirements.txt for persistence
-pip install new-package
-pip freeze > requirements.txt
-```
-
-## 🤝 Contributing
-
-This Codespace configuration is designed for:
-- **Framework contributors** - standardized development environment
-- **Documentation writers** - tools for examples and tutorials  
-- **Researchers** - public examples and integration guides
-- **Community members** - easy environment setup
-
-## 🔄 Updates
-
-To update the Codespace configuration:
-1. **Modify files** in `.devcontainer/`
-2. **Commit changes** to the repository
-3. **Rebuild Codespace** - settings apply to new Codespaces automatically
-
-## 📞 Support
-
-For issues with the Codespace environment:
-- **GitHub Issues**: Report environment problems
-- **Discussions**: Questions about framework development  
-- **Documentation**: Check framework docs for usage guidance
+The comprehensive setup script should handle all known permission scenarios!
