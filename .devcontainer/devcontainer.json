@@ -1,0 +1,59 @@
+{
+  "name": "PHI-Curation-Framework Development",
+  "image": "mcr.microsoft.com/devcontainers/python:3.11",
+
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "18"
+    }
+  },
+
+  "extensions": [
+    "anthropic.claude-dev",
+    "ms-python.python",
+    "ms-python.pylint",
+    "ms-python.black-formatter",
+    "ms-toolsai.jupyter",
+    "redhat.vscode-yaml",
+    "yzhang.markdown-all-in-one",
+    "bierner.markdown-mermaid",
+    "ms-vscode.vscode-json"
+  ],
+
+  "settings": {
+    "python.defaultInterpreterPath": "/usr/local/bin/python",
+    "python.formatting.provider": "black",
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": true,
+    "files.exclude": {
+      "**/__pycache__": true,
+      "**/.pytest_cache": true,
+      "**/node_modules": true
+    },
+    "git.autofetch": true,
+    "terminal.integrated.defaultProfile.linux": "bash"
+  },
+
+  "postCreateCommand": "pip install -r requirements.txt || echo 'No requirements.txt found' && echo 'PHI-Curation-Framework Codespace ready!'",
+
+  "remoteUser": "vscode",
+
+  "mounts": [
+    "source=codespace-claude-config,target=/home/vscode/.claude,type=volume"
+  ],
+
+  "containerEnv": {
+    "WORKSPACE_TYPE": "public-framework-dev",
+    "PHI_CURATION_ENV": "codespace"
+  },
+
+  "forwardPorts": [8000, 3000, 5000],
+  "portsAttributes": {
+    "8000": {
+      "label": "Development Server",
+      "onAutoForward": "notify"
+    }
+  }
+}
