@@ -2,6 +2,8 @@
 
 This is the **improved devcontainer configuration** that resolves Claude Code extension permission issues in GitHub Codespaces.
 
+## README file needs to be updated
+
 ## 🔧 What Was Fixed
 
 ### **Permission Issues Resolved**
@@ -21,12 +23,7 @@ This is the **improved devcontainer configuration** that resolves Claude Code ex
 ## 🚀 Key Technical Fixes
 
 ### **1. Directory Pre-Creation**
-```bash
-# Creates complete directory structure before extension needs it
-mkdir -p /home/vscode/.claude/{ide,config,logs,cache,temp}
-chown -R vscode:vscode /home/vscode/.claude
-chmod -R 755 /home/vscode/.claude
-```
+
 
 ### **2. Proper Extension Configuration**
 ```json
@@ -47,15 +44,7 @@ chmod -R 755 /home/vscode/.claude
 ## 📦 Deployment Instructions
 
 ### **Step 1: Replace Current Configuration**
-```bash
-cd /mnt/d/github-projects/PHI-Curation-Framework
 
-# Backup current configuration
-cp -r .devcontainer .devcontainer-backup
-
-# Replace with fixed version
-cp -r /mnt/z/.devcontainer-fixed/* .devcontainer/
-```
 
 ### **Step 2: Make Setup Script Executable**
 ```bash
