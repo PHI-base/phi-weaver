@@ -14,7 +14,7 @@ tags: [migration, external-storage]
 All literature content previously stored in this directory has been moved to external storage for better organization and performance.
 
 ### New Location
-**External Storage**: `/mnt/z/PHI-Canto-Literature/completed/`
+**External Storage**: need to identify location
 
 ### Access from Development Vault
 - **Complete index**: [[content-links/literature-index]]
