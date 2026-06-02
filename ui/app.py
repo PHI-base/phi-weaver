@@ -18,27 +18,27 @@ PROTEIN_TYPES = ["effector", "resistance", "virulence", "other"]
 EXP_EVIDENCE = ["complementation", "knockout", "overexpression", "biochemical", "other"]
 
 _STATUS_COLOR = {
-    "queued":      ("#E2E8F0", "#475569"),
+    "queued":      ("#E8EAF6", "#3949AB"),
     "in_progress": ("#FEF3C7", "#92400E"),
-    "curated":     ("#D1FAE5", "#065F46"),
-    "reviewed":    ("#DBEAFE", "#1E40AF"),
-    "published":   ("#EDE9FE", "#5B21B6"),
+    "curated":     ("#DBEAFE", "#1E40AF"),
+    "reviewed":    ("#EDE9FE", "#5B21B6"),
+    "published":   ("#1F3478", "#FFFFFF"),
 }
 
 CSS = """
 <style>
-/* Sidebar */
+/* Sidebar — PHI-base navy gradient */
 [data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #1B2B22 0%, #243B2E 100%);
+    background: linear-gradient(180deg, #1F3478 0%, #2B3A8C 100%);
 }
-[data-testid="stSidebar"] * { color: #C8E6C9 !important; }
+[data-testid="stSidebar"] * { color: #D6DCEF !important; }
 [data-testid="stSidebar"] .stRadio > div > label {
     border-radius: 6px;
     padding: 0.4rem 0.6rem;
     transition: background 0.15s;
 }
 [data-testid="stSidebar"] .stRadio > div > label:hover {
-    background: rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.1);
 }
 
 /* Page headings */
@@ -48,22 +48,22 @@ h3 { font-weight: 600; }
 
 /* Metric cards */
 [data-testid="stMetric"] {
-    background: #F0F7F4;
+    background: #EEF0F8;
     border-radius: 10px;
     padding: 1rem 1.2rem;
-    border: 1px solid #D4EDDA;
+    border: 1px solid #C7CDE8;
 }
-[data-testid="stMetricValue"] { color: #2D6A4F; font-weight: 700; }
+[data-testid="stMetricValue"] { color: #1F3478; font-weight: 700; }
 
 /* Pipeline stage cards */
 .stage-card {
-    background: #F0F7F4;
-    border: 1px solid #D4EDDA;
+    background: #EEF0F8;
+    border: 1px solid #C7CDE8;
     border-radius: 10px;
     padding: 1.1rem 0.8rem;
     text-align: center;
 }
-.stage-count { font-size: 2rem; font-weight: 700; color: #2D6A4F; line-height: 1; }
+.stage-count { font-size: 2rem; font-weight: 700; color: #1F3478; line-height: 1; }
 .stage-label {
     font-size: 0.72rem;
     color: #6B7280;
@@ -88,23 +88,23 @@ h3 { font-weight: 600; }
     align-items: center;
     gap: 0.6rem;
     padding: 0.45rem 0;
-    border-bottom: 1px solid #E5EDE9;
+    border-bottom: 1px solid #D6DCEF;
     font-size: 0.88rem;
 }
 .attention-row:last-child { border-bottom: none; }
 
 /* Divider */
-hr { border-color: #E5EDE9; margin: 1.2rem 0; }
+hr { border-color: #D6DCEF; margin: 1.2rem 0; }
 
 /* Expander */
 [data-testid="stExpander"] {
-    border: 1px solid #D4EDDA !important;
+    border: 1px solid #C7CDE8 !important;
     border-radius: 8px !important;
 }
 
 /* Form */
 [data-testid="stForm"] {
-    border: 1px solid #D4EDDA;
+    border: 1px solid #C7CDE8;
     border-radius: 10px;
     padding: 1.2rem 1.2rem 0.5rem;
 }
