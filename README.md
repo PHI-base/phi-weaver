@@ -43,10 +43,9 @@ PHI-Curation-Framework/
 
 ### **Prerequisites**
 
-- **Python 3.8+** with pip
+- **Python 3.10+** with pip
 - **Claude Code CLI** ([installation guide](https://claude.ai/code))
 - **Git** for version control
-- **WSL/Linux environment** recommended for full functionality
 
 ### **Installation**
 
@@ -58,32 +57,43 @@ cd PHI-Curation-Framework
 
 2. **Install Python dependencies:**
 ```bash
-pip install -r requirements.txt  # If available
-# Or manually install: pandas, sqlite3, requests, pypdf2
+pip install -r requirements.txt
 ```
 
-3. **Set up Claude Code:**
+3. **Initialize the database:**
 ```bash
-# WSL users may need permission bypass
-claude --dangerously-skip-permissions
-```
-
-4. **Initialize the system:**
-```bash
-# Set up database and external storage
 python3 11-CLAUDE-AI/mysql-setup/phi_canto_sqlite.py --init
 ```
+
+4. **Launch the web UI:**
+```bash
+streamlit run ui/app.py
+# Opens at http://localhost:8501
+```
+
+### **Web UI**
+
+The framework includes a browser-based dashboard built with Streamlit. It covers the full curation workflow without requiring any Claude API access.
+
+| Page | What it does |
+|---|---|
+| **Dashboard** | Overview metrics, article pipeline status, pending work |
+| **Articles** | Browse and manage the curation queue; edit status inline |
+| **Proteins** | Search and filter the protein registry |
+| **Sessions** | Log curation sessions; view productivity history |
+| **PDF Converter** | Upload a PDF and download the converted Obsidian markdown |
+
+The AI-analysis parts of the workflow (entity extraction, ontology mapping) continue to run through Claude Code in the terminal. The UI handles everything else.
 
 ### **First Curation Session**
 
 ```bash
-# Process a new PDF through the complete pipeline
+# Open the web dashboard
+streamlit run ui/app.py
+
+# Or use the CLI tools directly
+python3 11-CLAUDE-AI/mysql-setup/daily_curation.py progress
 python3 11-CLAUDE-AI/curation_pipeline.py auto-process ~/Downloads/paper.pdf
-
-# Start an interactive curation session
-python3 11-CLAUDE-AI/mysql-setup/session_logger.py quick "Project Name" "Summary"
-
-# Generate development timeline
 python3 11-CLAUDE-AI/update_timeline_incremental.py
 ```
 
