@@ -144,6 +144,8 @@ def badge_html(status):
 
 def page_dashboard():
     st.title("Dashboard")
+    st.caption("PDF Converter → Articles → curate in PHI-Canto → Sessions → mark article done")
+    st.markdown("&nbsp;")
 
     total_articles = q("SELECT COUNT(*) n FROM articles").iloc[0]["n"]
     total_proteins = q("SELECT COUNT(*) n FROM proteins").iloc[0]["n"]
@@ -441,10 +443,10 @@ def page_converter():
 
 PAGES = {
     "🏠  Dashboard":     page_dashboard,
+    "📄  PDF Converter": page_converter,
     "📚  Articles":      page_articles,
     "🧬  Proteins":      page_proteins,
     "📋  Sessions":      page_sessions,
-    "📄  PDF Converter": page_converter,
 }
 
 
