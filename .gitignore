@@ -67,6 +67,7 @@ SystemSculpt/
 
 # PERSONAL CURATION DATA
 # Exclude databases with personal curation progress
+phi_canto_tracking.db
 11-CLAUDE-AI/mysql-setup/phi_canto_tracking.db
 11-CLAUDE-AI/mysql-setup/*.db
 
