@@ -49,6 +49,11 @@ __pycache__/
 *.pyo
 *.pyd
 
+# Python virtual environment
+.venv/
+venv/
+env/
+
 # Log files
 *.log
 

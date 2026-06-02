@@ -36,8 +36,7 @@ sys.path.append(os.path.dirname(__file__))
 sys.path.append(os.path.join(os.path.dirname(__file__), 'mysql-setup'))
 
 try:
-    from mysql_setup.session_logger import quick_session
-    from mysql_setup.daily_curation import PHICantoDB
+    from session_logger import quick_session
     HAS_DB = True
 except ImportError:
     print("⚠️  Database integration not available - continuing without DB logging")
