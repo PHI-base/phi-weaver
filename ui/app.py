@@ -190,7 +190,7 @@ def page_dashboard():
         if recent.empty:
             st.caption("No sessions recorded yet.")
         else:
-            st.dataframe(recent, use_container_width=True, hide_index=True)
+            st.dataframe(recent, width="stretch", hide_index=True)
 
     with right:
         st.subheader("Needs attention")
@@ -273,7 +273,7 @@ def page_articles():
         },
         disabled=["title", "pmid", "journal", "year", "authors"],
         hide_index=True,
-        use_container_width=True,
+        width="stretch",
     )
 
     changed = articles[
@@ -326,7 +326,7 @@ def page_proteins():
 
     st.dataframe(
         proteins,
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
         column_config={
             "gene_id":  st.column_config.TextColumn("Gene ID"),
@@ -375,7 +375,7 @@ def page_sessions():
         st.caption("No sessions yet.")
         return
 
-    st.dataframe(sessions, use_container_width=True, hide_index=True)
+    st.dataframe(sessions, width="stretch", hide_index=True)
 
     st.markdown("&nbsp;")
     totals = q("""
