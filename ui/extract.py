@@ -1,0 +1,86 @@
+import os
+import json
+from pathlib import Path
+
+import fitz
+from dotenv import load_dotenv
+from openai import OpenAI, OpenAIError
+
+load_dotenv(Path(__file__).parent.parent / ".env")
+
+SYSTEM_PROMPT = """You are a PHI-base curation assistant. Extract structured data from scientific papers about pathogen-host interactions for entry into the PHI-base database.
+
+Return ONLY valid JSON with this exact structure:
+{
+  "article": {
+    "title": "string",
+    "authors": "Author et al. style string",
+    "journal": "string",
+    "pub_year": integer or null,
+    "pmid": "string or null",
+    "doi": "string or null"
+  },
+  "pathogens": [
+    {"name": "full binomial species name", "common_name": "string or null"}
+  ],
+  "hosts": [
+    {"name": "full binomial species name", "common_name": "string or null"}
+  ],
+  "proteins": [
+    {
+      "gene_name": "short gene name e.g. FgTPP1",
+      "gene_id": "locus tag e.g. FGSG_11164 or null",
+      "species": "binomial species name this protein belongs to",
+      "protein_type": "effector | resistance | virulence | other",
+      "function_summary": "1-2 sentence mechanistic summary",
+      "uniprot_id": "UniProt accession or null"
+    }
+  ],
+  "curation_notes": "2-3 sentence summary of the key pathogen-host interaction findings relevant to PHI-Canto annotation"
+}
+
+Classification guide:
+- effector: pathogen-secreted proteins that manipulate host immunity or physiology
+- resistance: host resistance proteins (NLRs, PRRs, R genes)
+- virulence: other pathogen virulence/pathogenicity factors
+- other: any protein with a relevant role not fitting above
+
+Rules:
+- Extract ALL proteins/genes studied experimentally, not just the main one
+- Use null for unknown fields, never empty strings
+- gene_id should be the systematic locus tag if mentioned (e.g. FGSG_xxxxx, MGG_xxxxx)
+- If PMID appears in the text (e.g. "PMID: 12345678"), include it"""
+
+
+def get_client() -> OpenAI:
+    return OpenAI(
+        base_url=os.getenv("OPENAI_BASE_URL", "http://127.0.0.1:8080/api/v1"),
+        api_key=os.getenv("OPENAI_API_KEY", ""),
+    )
+
+
+def pdf_to_text(pdf_bytes: bytes) -> str:
+    doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+    return "\n\n".join(page.get_text() for page in doc)
+
+
+def extract(text: str, model: str | None = None) -> dict:
+    model = model or os.getenv("OPENAI_MODEL", "DeepSeek-V4")
+    client = get_client()
+
+    # Send abstract + intro + results; truncate to avoid context limits
+    chunk = text[:18000]
+
+    try:
+        resp = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": f"Extract curation data from this paper:\n\n{chunk}"},
+            ],
+            response_format={"type": "json_object"},
+            temperature=0.1,
+        )
+        return json.loads(resp.choices[0].message.content)
+    except (OpenAIError, json.JSONDecodeError) as e:
+        raise RuntimeError(f"Extraction failed: {e}") from e

@@ -57,6 +57,9 @@ env/
 # Log files
 *.log
 
+# Environment / secrets
+.env
+
 # AI TOOL CONFIGURATIONS - Personal settings
 # SystemSculpt AI plugin and cache files
 .systemsculpt/
