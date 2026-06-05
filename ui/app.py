@@ -11,9 +11,13 @@ import pandas as pd
 
 from db import get_db, q, run, save_extraction
 from extract import extract as ai_extract, list_models as _list_models, pdf_to_text
+from export import to_json_str
 
 STATUS_OPTS   = ["queued", "in_progress", "curated", "reviewed", "published"]
 PROTEIN_TYPES = ["effector", "resistance", "virulence", "other"]
+ALLELE_TYPES  = ["deletion", "substitution", "insertion", "wild type", "unknown", "other"]
+EXPRESSION    = ["null", "decreased", "wild type product level", "increased", "not assayed"]
+EV_CODES      = ["IMP", "IDA", "IGI", "IPI", "IEP", "IBA", "IC", "ND"]
 CONVERTER     = Path(__file__).parent.parent / "11-CLAUDE-AI" / "pdf-convert-skill" / "pdf-convert.py"
 
 _STATUS_COLOR = {
@@ -26,53 +30,26 @@ _STATUS_COLOR = {
 
 CSS = """
 <style>
-/* ── Sidebar ── */
 [data-testid="stSidebar"] {
     background: linear-gradient(180deg, #1F3478 0%, #2B3A8C 100%);
-    min-width: 200px !important;
-    max-width: 200px !important;
+    min-width: 200px !important; max-width: 200px !important;
 }
 [data-testid="stSidebar"] * { color: #D6DCEF !important; }
-[data-testid="stSidebar"] .stSelectbox > div { background: rgba(255,255,255,0.1) !important; }
-
-/* ── Tab bar ── */
 .stTabs [data-baseweb="tab-list"] {
-    gap: 4px;
-    background: #EEF0F8;
-    border-radius: 12px;
-    padding: 4px 6px;
-    margin-bottom: 1.8rem;
-    border: 1px solid #C7CDE8;
+    gap: 4px; background: #EEF0F8; border-radius: 12px;
+    padding: 4px 6px; margin-bottom: 1.8rem; border: 1px solid #C7CDE8;
 }
 .stTabs [data-baseweb="tab"] {
-    border-radius: 8px;
-    padding: 0.45rem 1.1rem;
-    font-size: 0.84rem;
-    font-weight: 500;
-    color: #6B7280;
-    border: none;
-    background: transparent;
+    border-radius: 8px; padding: 0.45rem 1.1rem;
+    font-size: 0.84rem; font-weight: 500; color: #6B7280; background: transparent;
 }
-.stTabs [aria-selected="true"] {
-    background: #1F3478 !important;
-    color: #FFFFFF !important;
-    font-weight: 600;
-}
-.stTabs [data-baseweb="tab-highlight"] { display: none; }
-.stTabs [data-baseweb="tab-border"]    { display: none; }
-
-/* ── Process stepper ── */
-.proc-stepper {
-    display: flex; align-items: center;
-    padding: 1rem 1.5rem; margin-bottom: 1.8rem;
-    background: #EEF0F8; border-radius: 12px; border: 1px solid #C7CDE8;
-}
+.stTabs [aria-selected="true"] { background: #1F3478 !important; color: #FFF !important; font-weight: 600; }
+.stTabs [data-baseweb="tab-highlight"], .stTabs [data-baseweb="tab-border"] { display: none; }
+.proc-stepper { display: flex; align-items: center; padding: 1rem 1.5rem; margin-bottom: 1.8rem;
+    background: #EEF0F8; border-radius: 12px; border: 1px solid #C7CDE8; }
 .proc-step { display: flex; align-items: center; gap: 0.45rem; white-space: nowrap; }
-.step-num {
-    width: 26px; height: 26px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.72rem; font-weight: 700; flex-shrink: 0;
-}
+.step-num { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; font-size: 0.72rem; font-weight: 700; flex-shrink: 0; }
 .step-pending .step-num { background: #E5E7EB; color: #9CA3AF; }
 .step-active  .step-num { background: #1F3478; color: #FFF; }
 .step-done    .step-num { background: #3949AB; color: #FFF; }
@@ -82,26 +59,20 @@ CSS = """
 .step-done    .step-label { color: #3949AB; }
 .proc-conn { flex: 1; height: 2px; background: #E5E7EB; margin: 0 0.8rem; }
 .proc-conn.done { background: #3949AB; }
-
-/* ── Misc ── */
 h1 { font-weight: 700; letter-spacing: -0.02em; }
 h2, h3 { font-weight: 600; }
-[data-testid="stMetric"] {
-    background: #EEF0F8; border-radius: 10px;
-    padding: 1rem 1.2rem; border: 1px solid #C7CDE8;
-}
+[data-testid="stMetric"] { background: #EEF0F8; border-radius: 10px;
+    padding: 1rem 1.2rem; border: 1px solid #C7CDE8; }
 [data-testid="stMetricValue"] { color: #1F3478; font-weight: 700; }
-.stage-card {
-    background: #EEF0F8; border: 1px solid #C7CDE8;
-    border-radius: 10px; padding: 1.1rem 0.8rem; text-align: center;
-}
+.stage-card { background: #EEF0F8; border: 1px solid #C7CDE8; border-radius: 10px;
+    padding: 1.1rem 0.8rem; text-align: center; }
 .stage-count { font-size: 2rem; font-weight: 700; color: #1F3478; line-height: 1; }
 .stage-label { font-size: 0.72rem; color: #6B7280; text-transform: uppercase;
-               letter-spacing: 0.07em; margin-top: 0.35rem; }
+    letter-spacing: 0.07em; margin-top: 0.35rem; }
 .badge { display: inline-block; padding: 0.18rem 0.65rem; border-radius: 9999px;
-         font-size: 0.72rem; font-weight: 600; letter-spacing: 0.03em; }
+    font-size: 0.72rem; font-weight: 600; letter-spacing: 0.03em; }
 .attention-row { display: flex; align-items: center; gap: 0.6rem; padding: 0.45rem 0;
-                 border-bottom: 1px solid #D6DCEF; font-size: 0.88rem; }
+    border-bottom: 1px solid #D6DCEF; font-size: 0.88rem; }
 .attention-row:last-child { border-bottom: none; }
 hr { border-color: #D6DCEF; margin: 1.2rem 0; }
 [data-testid="stExpander"]  { border: 1px solid #C7CDE8 !important; border-radius: 8px !important; }
@@ -125,7 +96,6 @@ def badge_html(status):
 
 
 def convert_pdf(pdf_bytes: bytes, filename: str) -> str:
-    """Run pdf-convert.py on uploaded bytes; return markdown text."""
     with tempfile.TemporaryDirectory() as tmp:
         pdf_path = Path(tmp) / filename
         out_dir  = Path(tmp) / "out"
@@ -143,7 +113,8 @@ def convert_pdf(pdf_bytes: bytes, filename: str) -> str:
 
 
 def proc_reset():
-    for k in ("proc_stage", "proc_markdown", "proc_extracted", "proc_filename"):
+    for k in ("proc_stage", "proc_markdown", "proc_extracted",
+              "proc_filename", "proc_saved_id", "proc_model", "proc_pipeline"):
         st.session_state.pop(k, None)
 
 
@@ -162,11 +133,232 @@ def stepper_html(stage: str) -> str:
     return "".join(parts)
 
 
+def _df_editor(df: pd.DataFrame, key: str, column_config: dict,
+               editable_cols: list | None = None) -> pd.DataFrame:
+    disabled = [c for c in df.columns if editable_cols is not None and c not in editable_cols]
+    return st.data_editor(df, column_config=column_config, disabled=disabled,
+                          hide_index=True, width="stretch", num_rows="dynamic", key=key)
+
+
+# ── Review sub-sections ────────────────────────────────────────────────────────
+
+def _review_article(data: dict):
+    art = data.setdefault("article", {})
+    c1, c2 = st.columns([3, 1])
+    art["title"]    = c1.text_input("Title",   value=art.get("title") or "")
+    art["pub_year"] = c2.number_input("Year",  value=int(art.get("pub_year") or date.today().year),
+                                      min_value=1990, max_value=2030, step=1)
+    c3, c4, c5, c6 = st.columns(4)
+    art["authors"]  = c3.text_input("Authors", value=art.get("authors") or "")
+    art["journal"]  = c4.text_input("Journal", value=art.get("journal") or "")
+    art["pmid"]     = c5.text_input("PMID",    value=art.get("pmid") or "")
+    art["doi"]      = c6.text_input("DOI",     value=art.get("doi") or "")
+
+
+def _review_organisms(data: dict):
+    orgs = data.setdefault("organisms", {"pathogens": [], "hosts": []})
+    c_left, c_right = st.columns(2)
+
+    with c_left:
+        st.markdown("**Pathogens**")
+        for i, p in enumerate(orgs.get("pathogens", [])):
+            cc1, cc2 = st.columns([2, 1])
+            p["name"]     = cc1.text_input("Name",     value=p.get("name") or "",     key=f"path_name_{i}")
+            p["taxon_id"] = cc2.number_input("Taxon ID", value=int(p.get("taxon_id") or 0),
+                                              min_value=0, step=1, key=f"path_taxon_{i}")
+            strains = ", ".join(p.get("strains") or [])
+            updated = st.text_input("Strains (comma-separated)", value=strains, key=f"path_strain_{i}")
+            p["strains"] = [s.strip() for s in updated.split(",") if s.strip()]
+
+    with c_right:
+        st.markdown("**Hosts**")
+        for i, h in enumerate(orgs.get("hosts", [])):
+            cc1, cc2 = st.columns([2, 1])
+            h["name"]     = cc1.text_input("Name",     value=h.get("name") or "",     key=f"host_name_{i}")
+            h["taxon_id"] = cc2.number_input("Taxon ID", value=int(h.get("taxon_id") or 0),
+                                              min_value=0, step=1, key=f"host_taxon_{i}")
+            strains = ", ".join(h.get("strains") or [])
+            updated = st.text_input("Strains (comma-separated)", value=strains, key=f"host_strain_{i}")
+            h["strains"] = [s.strip() for s in updated.split(",") if s.strip()]
+
+
+def _review_genes(data: dict):
+    genes = data.get("genes", [])
+    if not genes:
+        st.caption("No genes extracted.")
+        return
+
+    df = pd.DataFrame([{
+        "gene_name":        g.get("gene_name"),
+        "systematic_id":    g.get("systematic_id"),
+        "uniprot_accession":g.get("uniprot_accession"),
+        "organism_name":    g.get("organism_name"),
+        "taxon_id":         g.get("taxon_id"),
+        "product":          g.get("product"),
+        "is_effector":      g.get("is_effector", False),
+    } for g in genes])
+
+    edited = _df_editor(df, "genes_editor", {
+        "gene_name":         st.column_config.TextColumn("Gene"),
+        "systematic_id":     st.column_config.TextColumn("Systematic ID"),
+        "uniprot_accession": st.column_config.TextColumn("UniProt"),
+        "organism_name":     st.column_config.TextColumn("Organism"),
+        "taxon_id":          st.column_config.NumberColumn("Taxon ID", width="small"),
+        "product":           st.column_config.TextColumn("Product", width="large"),
+        "is_effector":       st.column_config.CheckboxColumn("Effector?"),
+    }, editable_cols=list(df.columns))
+
+    for i, row in edited.iterrows():
+        if i < len(data["genes"]):
+            data["genes"][i].update(row.to_dict())
+
+    # GO annotations
+    st.markdown("**GO annotations**")
+    all_go = []
+    for g in genes:
+        for ann in g.get("go_annotations", []):
+            all_go.append({"gene": g.get("gene_name"), **ann})
+    if all_go:
+        go_df = pd.DataFrame(all_go)
+        st.dataframe(go_df, width="stretch", hide_index=True,
+                     column_config={
+                         "gene":          st.column_config.TextColumn("Gene"),
+                         "go_id":         st.column_config.TextColumn("GO ID"),
+                         "go_term":       st.column_config.TextColumn("Term", width="large"),
+                         "go_aspect":     st.column_config.TextColumn("Aspect"),
+                         "evidence_code": st.column_config.TextColumn("Evidence"),
+                         "figure":        st.column_config.TextColumn("Figure"),
+                     })
+    else:
+        st.caption("No GO annotations extracted.")
+
+
+def _review_alleles(data: dict):
+    alleles = data.get("alleles", [])
+    if not alleles:
+        st.caption("No alleles extracted.")
+        return
+
+    df = pd.DataFrame([{
+        "id":              a.get("id"),
+        "gene_name":       a.get("gene_name"),
+        "systematic_id":   a.get("gene_systematic_id"),
+        "name":            a.get("name"),
+        "type":            a.get("type", "unknown"),
+        "description":     a.get("description"),
+        "expression":      a.get("expression"),
+    } for a in alleles])
+
+    edited = _df_editor(df, "alleles_editor", {
+        "id":            None,
+        "gene_name":     st.column_config.TextColumn("Gene"),
+        "systematic_id": st.column_config.TextColumn("Systematic ID"),
+        "name":          st.column_config.TextColumn("Allele name"),
+        "type":          st.column_config.SelectboxColumn("Type", options=ALLELE_TYPES),
+        "description":   st.column_config.TextColumn("Description", width="medium"),
+        "expression":    st.column_config.SelectboxColumn("Expression", options=EXPRESSION),
+    }, editable_cols=["gene_name", "systematic_id", "name", "type", "description", "expression"])
+
+    for i, row in edited.iterrows():
+        if i < len(data["alleles"]):
+            data["alleles"][i].update({
+                "gene_name":          row["gene_name"],
+                "gene_systematic_id": row["systematic_id"],
+                "name":               row["name"],
+                "type":               row["type"],
+                "description":        row["description"],
+                "expression":         row["expression"],
+            })
+
+
+def _review_genotypes(data: dict):
+    for section, label in [("pathogen_genotypes", "Pathogen genotypes"),
+                            ("host_genotypes", "Host genotypes")]:
+        genos = data.get(section, [])
+        st.markdown(f"**{label}** ({len(genos)})")
+        if not genos:
+            st.caption("None extracted.")
+            continue
+
+        df = pd.DataFrame([{
+            "id":          g.get("id"),
+            "label":       g.get("label"),
+            "organism":    g.get("organism_name"),
+            "strain":      g.get("strain"),
+            "alleles":     ", ".join(g.get("allele_ids", [])),
+            "background":  g.get("background", ""),
+            "is_wild_type":g.get("is_wild_type", False),
+        } for g in genos])
+
+        _df_editor(df, f"{section}_editor", {
+            "id":          None,
+            "label":       st.column_config.TextColumn("Label"),
+            "organism":    st.column_config.TextColumn("Organism"),
+            "strain":      st.column_config.TextColumn("Strain"),
+            "alleles":     st.column_config.TextColumn("Allele IDs"),
+            "background":  st.column_config.TextColumn("Background"),
+            "is_wild_type":st.column_config.CheckboxColumn("Wild type?"),
+        }, editable_cols=["label", "organism", "strain", "background", "is_wild_type"])
+
+        # Phenotype annotations inline
+        for g in genos:
+            anns = g.get("phenotype_annotations", [])
+            if anns:
+                with st.expander(f"Phenotypes for {g.get('label', g['id'])} ({len(anns)})"):
+                    ann_df = pd.DataFrame(anns)
+                    st.dataframe(ann_df, width="stretch", hide_index=True)
+
+        st.markdown("&nbsp;")
+
+
+def _review_metagenotypes(data: dict):
+    mgs = data.get("metagenotypes", [])
+    if not mgs:
+        st.caption("No metagenotypes extracted.")
+        return
+
+    for mg in mgs:
+        label = f"{'[CONTROL] ' if mg.get('is_control') else ''}{mg['id']} — " \
+                f"pathogen: {mg.get('pathogen_genotype_id')} × host: {mg.get('host_genotype_id')}"
+        with st.expander(label, expanded=not mg.get("is_control")):
+            ia = mg.get("interaction_annotations", [])
+            da = mg.get("disease_annotations", [])
+
+            if ia:
+                st.markdown("*Interaction phenotypes*")
+                ia_df = pd.DataFrame(ia)
+                _df_editor(ia_df, f"ia_{mg['id']}", {
+                    "phipo_term":      st.column_config.TextColumn("PHIPO term", width="large"),
+                    "evidence_code":   st.column_config.SelectboxColumn("Evidence", options=EV_CODES),
+                    "host_tissue":     st.column_config.TextColumn("Tissue"),
+                    "host_tissue_bto": st.column_config.TextColumn("BTO ID"),
+                    "infective_ability":st.column_config.TextColumn("Infective ability"),
+                    "conditions":      st.column_config.ListColumn("Conditions"),
+                    "figure":          st.column_config.TextColumn("Figure"),
+                    "comment":         st.column_config.TextColumn("Comment"),
+                    "compared_to_control_id": None,
+                }, editable_cols=["phipo_term", "evidence_code", "host_tissue",
+                                   "host_tissue_bto", "infective_ability", "figure", "comment"])
+
+            if da:
+                st.markdown("*Disease annotations*")
+                da_df = pd.DataFrame(da)
+                _df_editor(da_df, f"da_{mg['id']}", {
+                    "disease_name":    st.column_config.TextColumn("Disease (PHIDO)", width="large"),
+                    "host_tissue":     st.column_config.TextColumn("Tissue"),
+                    "host_tissue_bto": st.column_config.TextColumn("BTO ID"),
+                    "figure":          st.column_config.TextColumn("Figure"),
+                }, editable_cols=["disease_name", "host_tissue", "host_tissue_bto", "figure"])
+
+            if not ia and not da:
+                st.caption("No annotations.")
+
+
 # ── Pages ──────────────────────────────────────────────────────────────────────
 
 def page_dashboard():
     st.title("Dashboard")
-    st.caption("Upload a paper → extract & review → mark article done in Articles → log in Sessions.")
+    st.caption("Upload a paper → extract & review → export for PHI-Canto → curate → log session.")
     st.markdown("&nbsp;")
 
     c1, c2, c3, c4 = st.columns(4)
@@ -212,10 +404,9 @@ def page_dashboard():
 def page_process():
     stage = st.session_state.get("proc_stage", "upload")
     st.markdown(stepper_html(stage), unsafe_allow_html=True)
-
     model = st.session_state.get("selected_model")
 
-    # ── Step 1: Upload ──────────────────────────────────────────────────────────
+    # ── Upload ──────────────────────────────────────────────────────────────
     if stage == "upload":
         st.subheader("Upload paper")
         uploaded = st.file_uploader("PDF", type="pdf", label_visibility="collapsed")
@@ -223,16 +414,13 @@ def page_process():
         if uploaded:
             st.markdown(f"**{uploaded.name}** — {uploaded.size / 1024:.0f} KB")
             st.markdown("&nbsp;")
-
             pipeline = st.radio(
-                "Extraction pipeline",
-                ["PDF → Markdown → AI", "PDF → Direct text → AI"],
+                "Extraction pipeline", ["PDF → Markdown → AI", "PDF → Direct text → AI"],
                 horizontal=True,
-                help="Markdown pipeline handles complex layouts better. Direct is faster and may work better with some models.",
+                help="Markdown pipeline handles multi-column layouts better. Direct is faster.",
             )
-
             if not model:
-                st.warning("Select a model in the sidebar before processing.")
+                st.warning("Select a model in the sidebar first.")
                 return
 
             if st.button("Process paper", type="primary"):
@@ -242,109 +430,93 @@ def page_process():
                         if pipeline.startswith("PDF → Markdown"):
                             st.write("Converting PDF to markdown…")
                             text = convert_pdf(pdf_bytes, uploaded.name)
-                            st.session_state.proc_markdown = text
                         else:
-                            st.write("Extracting text directly from PDF…")
+                            st.write("Extracting text from PDF…")
                             text = pdf_to_text(pdf_bytes)
-                            st.session_state.proc_markdown = None
 
-                        st.write(f"Extracting curation data with {model}…")
+                        st.write(f"Extracting PHI-Canto data with {model}…")
                         extracted = ai_extract(text, model=model)
-
                         status.update(label="Done — review below.", state="complete", expanded=False)
 
-                    st.session_state.proc_markdown  = st.session_state.get("proc_markdown") or text
+                    st.session_state.proc_markdown  = text
                     st.session_state.proc_extracted = extracted
                     st.session_state.proc_filename  = uploaded.name
+                    st.session_state.proc_model     = model
+                    st.session_state.proc_pipeline  = pipeline
                     st.session_state.proc_stage     = "review"
                     st.rerun()
-
                 except RuntimeError as e:
                     st.error(str(e))
 
-    # ── Step 2: Review ──────────────────────────────────────────────────────────
+    # ── Review ──────────────────────────────────────────────────────────────
     elif stage == "review":
-        data = st.session_state.proc_extracted
+        data  = st.session_state.proc_extracted
         fname = st.session_state.get("proc_filename", "paper.pdf")
+        n_genes   = len(data.get("genes", []))
+        n_alleles = len(data.get("alleles", []))
+        n_pg      = len(data.get("pathogen_genotypes", []))
+        n_mg      = len(data.get("metagenotypes", []))
+
         st.subheader("Review extracted data")
-        st.caption("Edit any field before saving. The data below was extracted from the converted markdown.")
+        st.caption(f"Extracted: {n_genes} gene(s) · {n_alleles} allele(s) · "
+                   f"{n_pg} pathogen genotype(s) · {n_mg} metagenotype(s) — edit before saving.")
 
-        # Article
-        with st.expander("Article metadata", expanded=True):
-            art = data.get("article", {})
-            c1, c2 = st.columns([3, 1])
-            art["title"]    = c1.text_input("Title",   value=art.get("title") or "")
-            art["pub_year"] = c2.number_input("Year",  value=int(art.get("pub_year") or date.today().year),
-                                              min_value=1990, max_value=2030, step=1)
-            c3, c4, c5 = st.columns(3)
-            art["authors"]  = c3.text_input("Authors", value=art.get("authors") or "")
-            art["journal"]  = c4.text_input("Journal", value=art.get("journal") or "")
-            art["pmid"]     = c5.text_input("PMID",    value=art.get("pmid") or "")
+        rev_tabs = st.tabs(["Article", "Organisms", "Genes", "Alleles", "Genotypes", "Metagenotypes", "Notes"])
 
-        # Species
-        with st.expander("Species", expanded=True):
-            sp_l, sp_r = st.columns(2)
-            with sp_l:
-                st.markdown("**Pathogens**")
-                for i, p in enumerate(data.get("pathogens", [])):
-                    p["name"] = st.text_input(f"Pathogen {i+1}", value=p["name"], key=f"path_{i}")
-            with sp_r:
-                st.markdown("**Hosts**")
-                for i, h in enumerate(data.get("hosts", [])):
-                    h["name"] = st.text_input(f"Host {i+1}", value=h["name"], key=f"host_{i}")
-
-        # Proteins
-        with st.expander(f"Proteins ({len(data.get('proteins', []))} found)", expanded=True):
-            proteins = data.get("proteins", [])
-            if proteins:
-                df = pd.DataFrame(proteins).reindex(
-                    columns=["gene_name", "gene_id", "species", "protein_type", "function_summary", "uniprot_id"]
-                )
-                edited = st.data_editor(
-                    df,
-                    column_config={
-                        "gene_name":       st.column_config.TextColumn("Gene"),
-                        "gene_id":         st.column_config.TextColumn("Locus tag"),
-                        "species":         st.column_config.TextColumn("Species"),
-                        "protein_type":    st.column_config.SelectboxColumn("Type", options=PROTEIN_TYPES),
-                        "function_summary":st.column_config.TextColumn("Function", width="large"),
-                        "uniprot_id":      st.column_config.TextColumn("UniProt"),
-                    },
-                    width="stretch", hide_index=True, num_rows="dynamic",
-                )
-                data["proteins"] = edited.to_dict("records")
-            else:
-                st.caption("No proteins detected.")
-
-        # Curation notes
-        data["curation_notes"] = st.text_area("Curation notes",
-                                               value=data.get("curation_notes") or "", height=80)
+        with rev_tabs[0]: _review_article(data)
+        with rev_tabs[1]: _review_organisms(data)
+        with rev_tabs[2]: _review_genes(data)
+        with rev_tabs[3]: _review_alleles(data)
+        with rev_tabs[4]: _review_genotypes(data)
+        with rev_tabs[5]: _review_metagenotypes(data)
+        with rev_tabs[6]:
+            data["curation_notes"] = st.text_area(
+                "Curation notes", value=data.get("curation_notes") or "", height=120,
+            )
 
         st.markdown("&nbsp;")
-        col_save, col_md, col_back = st.columns([2, 2, 1])
+        c_save, c_export, c_md, c_back = st.columns([2, 2, 2, 1])
 
-        if col_save.button("Save to database", type="primary", use_container_width=True):
+        if c_save.button("Save to database", type="primary", use_container_width=True):
             try:
-                article_id = save_extraction(data)
+                article_id = save_extraction(
+                    data, fname,
+                    st.session_state.get("proc_model", ""),
+                    st.session_state.get("proc_pipeline", ""),
+                )
                 st.session_state.proc_saved_id = article_id
                 st.session_state.proc_stage    = "done"
                 st.rerun()
             except Exception as e:
                 st.error(f"Save failed: {e}")
 
-        md_text = st.session_state.get("proc_markdown", "")
-        col_md.download_button("⬇ Download markdown", md_text,
-                               file_name=Path(fname).stem + ".md",
-                               mime="text/markdown", use_container_width=True)
+        export_json = to_json_str(data)
+        c_export.download_button(
+            "⬇ Export for PHI-Canto",
+            export_json,
+            file_name=Path(fname).stem + "_phi_canto.json",
+            mime="application/json",
+            use_container_width=True,
+            help="Download the Canto-compatible JSON to upload to your PHI-Canto instance.",
+        )
 
-        if col_back.button("← Back", use_container_width=True):
+        md_text = st.session_state.get("proc_markdown", "")
+        c_md.download_button(
+            "⬇ Download markdown",
+            md_text, file_name=Path(fname).stem + ".md",
+            mime="text/markdown", use_container_width=True,
+        )
+
+        if c_back.button("← Back", use_container_width=True):
             proc_reset()
             st.rerun()
 
-    # ── Step 3: Done ────────────────────────────────────────────────────────────
+    # ── Done ────────────────────────────────────────────────────────────────
     elif stage == "done":
         article_id = st.session_state.get("proc_saved_id")
-        st.success(f"Saved — article ID {article_id}. Head to **Articles** to update its status as you curate.")
+        st.success(f"Saved (article ID {article_id}). "
+                   "Use **Export for PHI-Canto** in the Review step (go back to re-export), "
+                   "then upload the JSON to your PHI-Canto instance.")
         st.markdown("&nbsp;")
         if st.button("Process another paper", type="primary"):
             proc_reset()
@@ -422,8 +594,8 @@ def page_proteins():
     st.title("Proteins")
 
     c1, c2, c3 = st.columns([3, 2, 1])
-    search = c1.text_input("Search", placeholder="gene name, function, ID…", label_visibility="collapsed")
-    species_opts = q("SELECT DISTINCT name FROM species ORDER BY name")["name"].tolist()
+    search         = c1.text_input("Search", placeholder="gene name, function, ID…", label_visibility="collapsed")
+    species_opts   = q("SELECT DISTINCT name FROM species ORDER BY name")["name"].tolist()
     species_filter = c2.selectbox("Species", ["All species"] + species_opts, label_visibility="collapsed")
     type_filter    = c3.selectbox("Type", ["All"] + PROTEIN_TYPES, label_visibility="collapsed")
 

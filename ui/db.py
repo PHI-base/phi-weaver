@@ -1,16 +1,32 @@
-from pathlib import Path
+import json
 import sqlite3
+from pathlib import Path
+
 import pandas as pd
 import streamlit as st
 
-ROOT = Path(__file__).parent.parent
+ROOT    = Path(__file__).parent.parent
 DB_PATH = ROOT / "11-CLAUDE-AI" / "mysql-setup" / "phi_canto_tracking.db"
+
+_EXTRA_SCHEMA = """
+CREATE TABLE IF NOT EXISTS extractions (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    article_id   INTEGER REFERENCES articles(id),
+    filename     TEXT,
+    model        TEXT,
+    pipeline     TEXT,
+    raw_json     TEXT NOT NULL,
+    created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+"""
 
 
 def get_db() -> sqlite3.Connection:
     if "conn" not in st.session_state:
         conn = sqlite3.connect(str(DB_PATH), check_same_thread=False)
         conn.row_factory = sqlite3.Row
+        conn.executescript(_EXTRA_SCHEMA)
+        conn.commit()
         st.session_state.conn = conn
     return st.session_state.conn
 
@@ -35,8 +51,8 @@ def get_or_create_species(name: str, species_type: str) -> int:
     return conn.execute("SELECT last_insert_rowid()").fetchone()[0]
 
 
-def save_extraction(data: dict) -> int:
-    """Persist AI-extracted article + proteins. Returns article_id."""
+def save_extraction(data: dict, filename: str = "", model: str = "", pipeline: str = "") -> int:
+    """Persist article + proteins + full extraction JSON. Returns article_id."""
     conn = get_db()
     art = data.get("article", {})
 
@@ -63,23 +79,40 @@ def save_extraction(data: dict) -> int:
         conn.commit()
         article_id = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
 
-    for pathogen in data.get("pathogens", []):
-        get_or_create_species(pathogen["name"], "pathogen")
+    # Persist organisms
+    for p in data.get("organisms", {}).get("pathogens", []):
+        get_or_create_species(p["name"], "pathogen")
+    for h in data.get("organisms", {}).get("hosts", []):
+        get_or_create_species(h["name"], "host")
 
-    for host in data.get("hosts", []):
-        get_or_create_species(host["name"], "host")
-
-    for p in data.get("proteins", []):
-        species_name = p.get("species", "")
-        species_id = get_or_create_species(species_name, "pathogen") if species_name else None
+    # Persist genes as proteins
+    for g in data.get("genes", []):
+        species_name = g.get("organism_name", "")
+        species_id   = get_or_create_species(species_name, "pathogen") if species_name else None
         conn.execute(
             """INSERT INTO proteins
                (gene_id, gene_name, species_id, name, function_summary, protein_type, uniprot_id)
                VALUES (?, ?, ?, ?, ?, ?, ?)""",
-            (p.get("gene_id"), p.get("gene_name"), species_id,
-             p.get("gene_name"), p.get("function_summary"),
-             p.get("protein_type", "other"), p.get("uniprot_id")),
+            (g.get("systematic_id"), g.get("gene_name"), species_id,
+             g.get("gene_name"), g.get("product"),
+             "effector" if g.get("is_effector") else "other",
+             g.get("uniprot_accession")),
         )
 
+    # Store full extraction JSON for later export
+    conn.execute(
+        """INSERT INTO extractions (article_id, filename, model, pipeline, raw_json)
+           VALUES (?, ?, ?, ?, ?)""",
+        (article_id, filename, model, pipeline, json.dumps(data)),
+    )
     conn.commit()
     return article_id
+
+
+def get_latest_extraction(article_id: int) -> dict | None:
+    conn = get_db()
+    row = conn.execute(
+        "SELECT raw_json FROM extractions WHERE article_id = ? ORDER BY created_date DESC LIMIT 1",
+        (article_id,),
+    ).fetchone()
+    return json.loads(row[0]) if row else None
