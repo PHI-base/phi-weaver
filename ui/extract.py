@@ -93,7 +93,17 @@ def extract(text: str, model: str | None = None) -> dict:
         raw = resp.choices[0].message.content
         return _parse_json(raw)
     except OpenAIError as e:
-        raise RuntimeError(f"Extraction failed: {e}") from e
+        raise RuntimeError(_clean_api_error(str(e))) from e
+
+
+def _clean_api_error(message: str) -> str:
+    if "<html" in message.lower() or "<!doctype" in message.lower():
+        if "502" in message:
+            return "Model unavailable (502 Bad Gateway) — the model is not loaded or the server is starting up."
+        if "503" in message:
+            return "Model unavailable (503) — the server is overloaded or starting up."
+        return "API returned an HTML error page — the model may be down or the base URL is wrong."
+    return message
 
 
 def _parse_json(text: str) -> dict:
