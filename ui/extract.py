@@ -92,7 +92,7 @@ def extract(text: str, model: str) -> dict:
         raw = resp.choices[0].message.content
         return _parse_json(raw)
     except OpenAIError as e:
-        raise RuntimeError(_clean_api_error(str(e))) from e
+        raise RuntimeError(f"[{model}] {_clean_api_error(str(e))}") from e
 
 
 def _clean_api_error(message: str) -> str:
