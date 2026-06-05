@@ -720,7 +720,7 @@ def page_process():
         st.title("Process paper")
         st.caption("Upload a PDF to convert and extract PHI-Canto curation data.")
 
-        uploaded = st.file_uploader("", type="pdf", label_visibility="collapsed")
+        uploaded = st.file_uploader("Upload PDF", type="pdf", label_visibility="collapsed")
 
         if not uploaded:
             return
@@ -970,10 +970,10 @@ def page_proteins():
     )
 
     c1, c2, c3 = st.columns([3, 2, 1])
-    search         = c1.text_input("", placeholder="Search gene name, function, ID…", label_visibility="collapsed")
+    search         = c1.text_input("Search", placeholder="Search gene name, function, ID…", label_visibility="collapsed")
     species_opts   = q("SELECT DISTINCT name FROM species ORDER BY name")["name"].tolist()
-    species_filter = c2.selectbox("", ["All species"] + species_opts, label_visibility="collapsed")
-    type_filter    = c3.selectbox("", ["All"] + PROTEIN_TYPES, label_visibility="collapsed")
+    species_filter = c2.selectbox("Species", ["All species"] + species_opts, label_visibility="collapsed")
+    type_filter    = c3.selectbox("Type", ["All"] + PROTEIN_TYPES, label_visibility="collapsed")
 
     sql = """SELECT p.gene_id, p.gene_name, s.name as species,
                     p.protein_type as type, p.uniprot_id,
