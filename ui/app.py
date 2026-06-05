@@ -36,13 +36,19 @@ CSS = """
 [data-testid="stToolbar"],
 #MainMenu,
 footer { display: none !important; }
-header[data-testid="stHeader"] { height: 0 !important; min-height: 0 !important; }
+header[data-testid="stHeader"] {
+    height: 0 !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+}
 
 /* ── Layout ── */
-.main .block-container {
-    padding-top: 0.75rem;
-    padding-left: 2.5rem;
-    padding-right: 2.5rem;
+.main .block-container,
+section[data-testid="stMain"] .block-container {
+    padding-top: 0.75rem !important;
+    padding-left: 2.5rem !important;
+    padding-right: 2.5rem !important;
     max-width: 1300px;
 }
 
