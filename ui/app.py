@@ -859,8 +859,7 @@ def page_process():
         st.title("Saved")
         st.success(
             f"Article saved (ID {st.session_state.get('proc_saved_id')}). "
-            "Go to **Articles** to track its curation status, or export the JSON "
-            "and upload it to PHI-Canto."
+            "Go to **Articles** to update its status or re-export the JSON for PHI-Canto."
         )
         st.markdown("&nbsp;")
         if st.button("Process another paper", type="primary"):
@@ -951,6 +950,39 @@ def page_articles():
                 (edited.at[i, "status"], edited.at[i, "priority"], row["id"]))
         st.toast(f"Saved {len(changed)} change(s).", icon="✅")
         st.rerun()
+
+    # ── Export ──────────────────────────────────────────────────────────────
+    extractions = q("""
+        SELECT e.id, a.title, a.pmid, e.created_date, e.model, e.pipeline
+        FROM extractions e JOIN articles a ON e.article_id = a.id
+        ORDER BY e.created_date DESC
+    """)
+
+    if not extractions.empty:
+        st.markdown("<hr>", unsafe_allow_html=True)
+        st.markdown('<span class="section-title">Export for PHI-Canto</span>',
+                    unsafe_allow_html=True)
+        opts = {
+            f"{row['title'][:60]}{'…' if len(row['title'])>60 else ''} ({row['created_date'][:10]})": row['id']
+            for _, row in extractions.iterrows()
+        }
+        selected_label = st.selectbox("Select extraction to export", list(opts.keys()),
+                                      label_visibility="collapsed")
+        ext_id = opts[selected_label]
+
+        ext_row = q("SELECT raw_json FROM extractions WHERE id = ?", (ext_id,))
+        if not ext_row.empty:
+            import json as _json
+            raw = _json.loads(ext_row.iloc[0]["raw_json"])
+            pmid = (raw.get("article") or {}).get("pmid") or f"extraction_{ext_id}"
+            st.download_button(
+                "Export for PHI-Canto",
+                to_json_str(raw),
+                file_name=f"PMID{pmid}_phi_canto.json",
+                mime="application/json",
+                type="primary",
+                help="Upload this at /phi_weaver/import in your Canto instance.",
+            )
 
 
 def page_proteins():
