@@ -60,18 +60,25 @@ def to_canto_json(data: dict) -> dict:
         if a.get("expression"):  entry["expression"]  = a["expression"]
         canto_alleles[uid] = entry
 
-    # ── 2. genes ─────────────────────────────────────────────────────────────
+    # ── 2. genes — include full metadata for TrackDB loading ─────────────────
     canto_genes: dict[str, dict] = {}
     for g in genes:
         sid = g.get("systematic_id") or g.get("gene_name")
-        if sid:
-            canto_genes[sid] = {}   # LoadUtil looks them up from the gene DB
+        if not sid:
+            continue
+        canto_genes[sid] = {k: v for k, v in {
+            "gene_name":         g.get("gene_name"),
+            "systematic_id":     g.get("systematic_id"),
+            "uniprot_accession": g.get("uniprot_accession"),
+            "taxon_id":          g.get("taxon_id"),
+            "organism_name":     g.get("organism_name"),
+            "product":           g.get("product"),
+        }.items() if v}
 
-    # also ensure every allele's gene is listed
     for a in alleles:
         sid = a.get("gene_systematic_id") or a.get("gene_name")
         if sid and sid not in canto_genes:
-            canto_genes[sid] = {}
+            canto_genes[sid] = {"gene_name": a.get("gene_name"), "systematic_id": a.get("gene_systematic_id")}
 
     # ── 3. genotypes ─────────────────────────────────────────────────────────
     genotype_uid: dict[str, str] = {}        # our id → canto uniquename
