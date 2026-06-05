@@ -1,5 +1,5 @@
-import os
 import json
+import os
 import re
 from pathlib import Path
 
@@ -74,8 +74,7 @@ def pdf_to_text(pdf_bytes: bytes) -> str:
     return "\n\n".join(page.get_text() for page in doc)
 
 
-def extract(text: str, model: str | None = None) -> dict:
-    model = model or os.getenv("OPENAI_MODEL", "DeepSeek-V4")
+def extract(text: str, model: str) -> dict:
     client = get_client()
 
     # Send abstract + intro + results; truncate to avoid context limits

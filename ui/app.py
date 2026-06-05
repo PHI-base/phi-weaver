@@ -173,9 +173,14 @@ def page_process():
                     st.error(f"Could not read PDF: {e}")
                     return
 
-            with st.spinner("Extracting curation data…"):
+            model = st.session_state.get("selected_model")
+            if not model:
+                st.error("No model selected — check the sidebar.")
+                return
+
+            with st.spinner(f"Extracting with {model}…"):
                 try:
-                    result = ai_extract(text, model=st.session_state.get("model"))
+                    result = ai_extract(text, model=model)
                     st.session_state.extracted = result
                     st.session_state.extract_source = uploaded.name
                 except RuntimeError as e:
@@ -480,17 +485,9 @@ def main():
             st.rerun()
 
         available = list_models()
-        default_model = os.getenv("OPENAI_MODEL", "DeepSeek-V4")
         if available:
-            default_idx = available.index(default_model) if default_model in available else 0
-            st.session_state.model = st.selectbox(
-                "model", available, index=default_idx, label_visibility="collapsed"
-            )
+            st.selectbox("model", available, key="selected_model", label_visibility="collapsed")
         else:
-            st.session_state.model = st.text_input(
-                "model", value=default_model, label_visibility="collapsed",
-                help="Could not reach API — enter model name manually"
-            )
             st.markdown('<div style="font-size:0.72rem;color:#F59E0B">⚠ API unreachable</div>',
                         unsafe_allow_html=True)
 
