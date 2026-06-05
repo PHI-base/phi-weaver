@@ -26,9 +26,16 @@ def _allele_uniquename(allele: dict, session_key: str, index: int) -> str:
 
 def to_canto_json(data: dict) -> dict:
     """Return the full export bundle with both sections."""
-    pmid = (data.get("article") or {}).get("pmid")
-    pub_key = f"PMID:{pmid}" if pmid else "PMID:UNKNOWN"
     session_key = _session_key()
+    art     = data.get("article") or {}
+    pmid    = art.get("pmid")
+    doi     = art.get("doi")
+    if pmid:
+        pub_key = f"PMID:{pmid}"
+    elif doi:
+        pub_key = f"DOI:{doi}"
+    else:
+        pub_key = f"PHIWEAVER:{session_key}"
     today = str(date.today())
 
     alleles    = data.get("alleles", [])
