@@ -10,7 +10,7 @@ import streamlit as st
 import pandas as pd
 
 from db import get_db, q, run, save_extraction
-from extract import extract as ai_extract, list_models as _list_models
+from extract import extract as ai_extract, list_models as _list_models, pdf_to_text
 
 STATUS_OPTS   = ["queued", "in_progress", "curated", "reviewed", "published"]
 PROTEIN_TYPES = ["effector", "resistance", "virulence", "other"]
@@ -224,6 +224,13 @@ def page_process():
             st.markdown(f"**{uploaded.name}** — {uploaded.size / 1024:.0f} KB")
             st.markdown("&nbsp;")
 
+            pipeline = st.radio(
+                "Extraction pipeline",
+                ["PDF → Markdown → AI", "PDF → Direct text → AI"],
+                horizontal=True,
+                help="Markdown pipeline handles complex layouts better. Direct is faster and may work better with some models.",
+            )
+
             if not model:
                 st.warning("Select a model in the sidebar before processing.")
                 return
@@ -232,15 +239,21 @@ def page_process():
                 pdf_bytes = uploaded.read()
                 try:
                     with st.status("Processing…", expanded=True) as status:
-                        st.write("Converting PDF to markdown…")
-                        markdown = convert_pdf(pdf_bytes, uploaded.name)
+                        if pipeline.startswith("PDF → Markdown"):
+                            st.write("Converting PDF to markdown…")
+                            text = convert_pdf(pdf_bytes, uploaded.name)
+                            st.session_state.proc_markdown = text
+                        else:
+                            st.write("Extracting text directly from PDF…")
+                            text = pdf_to_text(pdf_bytes)
+                            st.session_state.proc_markdown = None
 
                         st.write(f"Extracting curation data with {model}…")
-                        extracted = ai_extract(markdown, model=model)
+                        extracted = ai_extract(text, model=model)
 
                         status.update(label="Done — review below.", state="complete", expanded=False)
 
-                    st.session_state.proc_markdown  = markdown
+                    st.session_state.proc_markdown  = st.session_state.get("proc_markdown") or text
                     st.session_state.proc_extracted = extracted
                     st.session_state.proc_filename  = uploaded.name
                     st.session_state.proc_stage     = "review"

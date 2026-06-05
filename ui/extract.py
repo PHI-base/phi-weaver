@@ -3,6 +3,7 @@ import os
 import re
 from pathlib import Path
 
+import fitz
 from dotenv import load_dotenv
 from openai import OpenAI, OpenAIError
 
@@ -57,6 +58,11 @@ def get_client() -> OpenAI:
         base_url=os.getenv("OPENAI_BASE_URL", "http://127.0.0.1:8080/api/v1"),
         api_key=os.getenv("OPENAI_API_KEY", ""),
     )
+
+
+def pdf_to_text(pdf_bytes: bytes) -> str:
+    doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+    return "\n\n".join(page.get_text() for page in doc)
 
 
 def list_models() -> list[str]:
