@@ -61,6 +61,7 @@ def get_client() -> OpenAI:
 
 
 def list_models() -> list[str]:
+    """Cached for 30 s — auto-refreshes as models come online."""
     try:
         models = get_client().models.list()
         return sorted(m.id for m in models.data)

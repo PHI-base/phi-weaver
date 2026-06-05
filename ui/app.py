@@ -10,7 +10,12 @@ import streamlit as st
 import pandas as pd
 
 from db import get_db, q, run, save_extraction
-from extract import pdf_to_text, extract as ai_extract, list_models
+from extract import pdf_to_text, extract as ai_extract, list_models as _list_models
+
+
+@st.cache_data(ttl=30)
+def list_models() -> list[str]:
+    return _list_models()
 
 STATUS_OPTS  = ["queued", "in_progress", "curated", "reviewed", "published"]
 PROTEIN_TYPES = ["effector", "resistance", "virulence", "other"]
@@ -467,8 +472,13 @@ def main():
 
         st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("---")
-        st.markdown('<div style="font-size:0.75rem;opacity:0.7;margin-bottom:0.4rem">AI MODEL</div>',
+        ml, mr = st.columns([3, 1])
+        ml.markdown('<div style="font-size:0.75rem;opacity:0.7;margin-bottom:0.4rem">AI MODEL</div>',
                     unsafe_allow_html=True)
+        if mr.button("↺", help="Refresh model list", use_container_width=True):
+            st.cache_data.clear()
+            st.rerun()
+
         available = list_models()
         default_model = os.getenv("OPENAI_MODEL", "DeepSeek-V4")
         if available:
