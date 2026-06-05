@@ -344,6 +344,21 @@ h3 { font-size: 0.9rem !important; font-weight: 600 !important; color: #334155 !
 [data-testid="stForm"] { border: 1px solid #E2E8F0; border-radius: 10px; padding: 1.2rem 1.2rem 0.6rem; background: #FAFBFF; }
 [data-testid="stExpander"] { border: 1px solid #E2E8F0 !important; border-radius: 8px !important; }
 
+/* ── Input borders: visible by default, navy on focus ── */
+[data-baseweb="input"],
+[data-baseweb="base-input"],
+[data-baseweb="textarea"],
+[data-baseweb="select"] > div:first-child {
+    border-color: #94A3B8 !important;
+    border-radius: 6px !important;
+}
+[data-baseweb="input"]:focus-within,
+[data-baseweb="base-input"]:focus-within,
+[data-baseweb="textarea"]:focus-within {
+    border-color: #1F3478 !important;
+    box-shadow: 0 0 0 2px rgba(31,52,120,.12) !important;
+}
+
 /* ── Divider ── */
 hr { border: none; border-top: 1px solid #F1F5F9; margin: 1.5rem 0; }
 </style>
