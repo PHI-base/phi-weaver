@@ -1,5 +1,6 @@
 import os
 import json
+import re
 from pathlib import Path
 
 import fitz
@@ -78,9 +79,23 @@ def extract(text: str, model: str | None = None) -> dict:
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": f"Extract curation data from this paper:\n\n{chunk}"},
             ],
-            response_format={"type": "json_object"},
             temperature=0.1,
         )
-        return json.loads(resp.choices[0].message.content)
-    except (OpenAIError, json.JSONDecodeError) as e:
+        raw = resp.choices[0].message.content
+        return _parse_json(raw)
+    except OpenAIError as e:
         raise RuntimeError(f"Extraction failed: {e}") from e
+
+
+def _parse_json(text: str) -> dict:
+    # Strip markdown code fences if present
+    text = re.sub(r"^```(?:json)?\s*", "", text.strip(), flags=re.IGNORECASE)
+    text = re.sub(r"\s*```$", "", text.strip())
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        # Find the first {...} block as fallback
+        match = re.search(r"\{.*\}", text, re.DOTALL)
+        if match:
+            return json.loads(match.group())
+        raise RuntimeError("Model did not return valid JSON")
