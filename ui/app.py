@@ -731,7 +731,7 @@ def page_process():
 
         pipeline = st.radio(
             "Extraction pipeline",
-            ["PDF → Markdown → AI", "PDF → Direct text → AI"],
+            ["PDF → Direct text → AI", "PDF → Markdown → AI"],
             horizontal=True,
             help="Markdown handles complex multi-column layouts. Direct is faster and may suit some models better.",
         )
