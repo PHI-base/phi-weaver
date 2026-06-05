@@ -36,11 +36,11 @@ CSS = """
 [data-testid="stToolbar"],
 #MainMenu,
 footer { display: none !important; }
-header[data-testid="stHeader"] { background: transparent !important; }
+header[data-testid="stHeader"] { height: 0 !important; min-height: 0 !important; }
 
 /* ── Layout ── */
 .main .block-container {
-    padding-top: 1.25rem;
+    padding-top: 0.75rem;
     padding-left: 2.5rem;
     padding-right: 2.5rem;
     max-width: 1300px;
