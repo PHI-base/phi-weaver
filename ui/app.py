@@ -30,9 +30,13 @@ _STATUS_COLOR = {
 
 CSS = """
 <style>
-/* ── Remove sidebar entirely ── */
+/* ── Remove sidebar + Streamlit chrome ── */
 [data-testid="stSidebar"],
-[data-testid="collapsedControl"] { display: none !important; }
+[data-testid="collapsedControl"],
+[data-testid="stToolbar"],
+#MainMenu,
+footer { display: none !important; }
+header[data-testid="stHeader"] { background: transparent !important; }
 
 /* ── Layout ── */
 .main .block-container {
@@ -654,8 +658,11 @@ def page_dashboard():
     with col_r:
         st.markdown('<span class="section-title">Recent activity</span>', unsafe_allow_html=True)
         recent = q("""
-            SELECT session_date, proteins_curated, interactions_added,
-                   ROUND(session_duration_hours, 1) as hours, notes
+            SELECT session_date,
+                   proteins_curated   as proteins,
+                   interactions_added as interactions,
+                   ROUND(session_duration_hours, 1) as hours,
+                   notes
             FROM curation_sessions ORDER BY created_date DESC LIMIT 6
         """)
         if recent.empty:
