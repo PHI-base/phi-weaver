@@ -60,6 +60,14 @@ def get_client() -> OpenAI:
     )
 
 
+def list_models() -> list[str]:
+    try:
+        models = get_client().models.list()
+        return sorted(m.id for m in models.data)
+    except Exception:
+        return []
+
+
 def pdf_to_text(pdf_bytes: bytes) -> str:
     doc = fitz.open(stream=pdf_bytes, filetype="pdf")
     return "\n\n".join(page.get_text() for page in doc)

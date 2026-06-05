@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import os
 import sys
 import subprocess
 import tempfile
@@ -9,7 +10,7 @@ import streamlit as st
 import pandas as pd
 
 from db import get_db, q, run, save_extraction
-from extract import pdf_to_text, extract as ai_extract
+from extract import pdf_to_text, extract as ai_extract, list_models
 
 STATUS_OPTS  = ["queued", "in_progress", "curated", "reviewed", "published"]
 PROTEIN_TYPES = ["effector", "resistance", "virulence", "other"]
@@ -169,7 +170,7 @@ def page_process():
 
             with st.spinner("Extracting curation data…"):
                 try:
-                    result = ai_extract(text)
+                    result = ai_extract(text, model=st.session_state.get("model"))
                     st.session_state.extracted = result
                     st.session_state.extract_source = uploaded.name
                 except RuntimeError as e:
@@ -463,6 +464,25 @@ def main():
         st.markdown('<div class="brand-sub">PHI-base curation system</div>', unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
         page = st.radio("nav", list(PAGES.keys()), label_visibility="collapsed")
+
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown("---")
+        st.markdown('<div style="font-size:0.75rem;opacity:0.7;margin-bottom:0.4rem">AI MODEL</div>',
+                    unsafe_allow_html=True)
+        available = list_models()
+        default_model = os.getenv("OPENAI_MODEL", "DeepSeek-V4")
+        if available:
+            default_idx = available.index(default_model) if default_model in available else 0
+            st.session_state.model = st.selectbox(
+                "model", available, index=default_idx, label_visibility="collapsed"
+            )
+        else:
+            st.session_state.model = st.text_input(
+                "model", value=default_model, label_visibility="collapsed",
+                help="Could not reach API — enter model name manually"
+            )
+            st.markdown('<div style="font-size:0.72rem;color:#F59E0B">⚠ API unreachable</div>',
+                        unsafe_allow_html=True)
 
     PAGES[page]()
 
