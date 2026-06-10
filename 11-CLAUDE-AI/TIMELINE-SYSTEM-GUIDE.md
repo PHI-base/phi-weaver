@@ -253,9 +253,10 @@ python3 11-CLAUDE-AI/update_timeline_incremental.py
 ### **Alias Setup**
 Add to `~/.bashrc`:
 ```bash
-alias timeline-update="python3 /mnt/z/OBS-PHI-Canto/11-CLAUDE-AI/update_timeline_incremental.py"
-alias timeline-check="python3 /mnt/z/OBS-PHI-Canto/11-CLAUDE-AI/update_timeline_incremental.py --check-only"
-alias timeline-view="cat /mnt/z/OBS-PHI-Canto/11-CLAUDE-AI/DEVELOPMENT-TIMELINE.md"
+# Replace /path/to/phi-weaver with your local clone path
+alias timeline-update="python3 /path/to/phi-weaver/11-CLAUDE-AI/update_timeline_incremental.py"
+alias timeline-check="python3 /path/to/phi-weaver/11-CLAUDE-AI/update_timeline_incremental.py --check-only"
+alias timeline-view="cat /path/to/phi-weaver/11-CLAUDE-AI/DEVELOPMENT-TIMELINE.md"
 ```
 
 ## 📋 **Best Practices**

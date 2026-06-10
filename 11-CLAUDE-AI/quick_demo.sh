@@ -9,7 +9,7 @@ echo ""
 # Check if we're in the right directory
 if [[ ! -f "curation_pipeline.py" ]]; then
     echo "❌ Please run from 11-CLAUDE-AI directory"
-    echo "   cd /mnt/z/OBS-PHI-Canto/11-CLAUDE-AI"
+    echo "   cd <your-clone>/11-CLAUDE-AI"
     exit 1
 fi
 

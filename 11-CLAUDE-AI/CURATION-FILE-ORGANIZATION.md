@@ -36,7 +36,7 @@ python3 pdf-convert.py "paper.pdf" --config phi_canto_config --output-dir "../..
 ## File Movement Commands (if files are in wrong locations)
 
 ```bash
-# From vault root (/mnt/z/OBS-PHI-Canto)
+# From the repo root
 
 # Move converted markdown to Literature
 mv "00-Inbox/To-curate/Paper_converted.md" "04-Literature/"

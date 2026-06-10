@@ -108,15 +108,17 @@ python3 11-CLAUDE-AI/curation_pipeline.py complete-paper filename.pdf "Summary"
 
 ### 📁 Vault Structure (Post-Migration)
 ```
-OBS-PHI-Canto/ (Development Vault)
-├── 11-CLAUDE-AI/          # Tools, automation, sessions  
+phi-weaver/ (Development Repo)
+├── 11-CLAUDE-AI/          # Tools, automation, sessions
 ├── 05-Protocols/          # Curation protocols
 ├── 06-Training/           # Training materials
-├── 07-Standards/          # Reference standards  
-├── 08-QA/                # Quality assurance
+├── 07-Standards/          # Reference standards
+├── 07-Wiki/               # Protocols, registries, templates
+├── skills/                # Reusable agent task workflows
 ├── content-links/         # External storage references
-├── CLAUDE.md             # System documentation
-└── [lightweight folders for testing/samples]
+├── AGENTS.md              # Source of truth for agent instructions
+├── CLAUDE.md              # Bridge → AGENTS.md
+└── docs/                  # Storage config, demo, setup notes
 
 PHI-Canto-Literature/ (External Storage)
 ├── completed/            # All finished curations

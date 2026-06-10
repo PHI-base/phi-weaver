@@ -11,7 +11,7 @@ import subprocess
 import json
 from pathlib import Path
 
-def convert_pdf_for_curation(pdf_path, vault_root="/mnt/z/OBS-PHI-Canto"):
+def convert_pdf_for_curation(pdf_path, vault_root=str(Path(__file__).resolve().parents[1])):
     """Convert PDF with proper PHI-Canto file organization"""
 
     # Ensure we're working from vault root

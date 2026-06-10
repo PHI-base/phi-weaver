@@ -13,7 +13,7 @@ from pathlib import Path
 class SessionLogger:
     def __init__(self):
         self.db = PHICantoSQLite()
-        self.vault_root = "/mnt/z/OBS-PHI-Canto"
+        self.vault_root = str(Path(__file__).resolve().parents[2])
         self.session_logs_dir = "11-CLAUDE-AI/SESSION-LOGS"
         self.curator = "martin.urban"
 

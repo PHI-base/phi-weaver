@@ -6,9 +6,8 @@ Complete automation for your curation workflow - from PDF to finished annotation
 
 ### New Paper (Full Automation)
 ```bash
-# From anywhere - automatically copy, convert, and set up new PDF
-cd /mnt/z/OBS-PHI-Canto/11-CLAUDE-AI
-python3 curation_pipeline.py auto-process ~/Downloads/paper.pdf
+# Run from the repo root - automatically copy, convert, and set up new PDF
+python3 11-CLAUDE-AI/curation_pipeline.py auto-process ~/Downloads/paper.pdf
 ```
 
 ### Process Existing PDF
@@ -39,7 +38,7 @@ python3 curation_pipeline.py complete-paper paper.pdf "Added 3 effectors, 5 inte
 **Track your daily work** with integrated database logging:
 
 ```bash
-cd /mnt/z/OBS-PHI-Canto/11-CLAUDE-AI/db
+cd 11-CLAUDE-AI/db
 
 # Start session
 python3 workflow_helper.py start-session "Fusarium effectors"
@@ -57,20 +56,20 @@ python3 workflow_helper.py gaps
 **Professional PDF to Markdown** with academic formatting:
 
 ```bash
-cd /mnt/z/OBS-PHI-Canto/00-Inbox/To-curate
-python3 ../../11-CLAUDE-AI/pdf-convert-skill/pdf-convert.py paper.pdf
+# Run from wherever the PDF is (the pipeline normally handles this for you)
+python3 11-CLAUDE-AI/pdf-convert-skill/pdf-convert.py paper.pdf
 
 # Creates:
 # - paper_converted.md (full markdown)
 # - paper_converted_report.json (quality report)
-# - 03-Media/ folder (extracted images)
+# - media/ folder (extracted images)
 ```
 
 ### 4. Database Integration (`daily_curation.py`)
 **Track progress and analytics**:
 
 ```bash
-cd /mnt/z/OBS-PHI-Canto/11-CLAUDE-AI/db
+cd 11-CLAUDE-AI/db
 
 # Log session manually
 python3 daily_curation.py log 3 5 2.0  # proteins, interactions, hours
@@ -85,7 +84,7 @@ python3 daily_curation.py help
 **Auto-organize files** with WikiLink updates:
 
 ```bash
-cd /mnt/z/OBS-PHI-Canto/11-CLAUDE-AI
+cd 11-CLAUDE-AI
 
 # Preview changes (always run first!)
 python3 obsidian_reorganise.py --config reorganise-config-OBS-PHI-Canto.yaml
@@ -100,7 +99,7 @@ python3 obsidian_reorganise.py --config reorganise-config-OBS-PHI-Canto.yaml --e
 
 ```bash
 # Step 1: Full automation
-cd /mnt/z/OBS-PHI-Canto/11-CLAUDE-AI
+cd 11-CLAUDE-AI
 python3 curation_pipeline.py auto-process ~/Downloads/new-paper.pdf
 
 # Step 2: Start session tracking
@@ -122,7 +121,7 @@ python3 curation_pipeline.py complete-paper new-paper.pdf "Added 4 proteins, 8 i
 
 ```bash
 # If PDF is already in 00-Inbox/To-curate/
-cd /mnt/z/OBS-PHI-Canto/11-CLAUDE-AI
+cd 11-CLAUDE-AI
 
 # Step 1: Process existing PDF
 python3 curation_pipeline.py process-pdf existing-paper.pdf
@@ -133,7 +132,7 @@ python3 curation_pipeline.py process-pdf existing-paper.pdf
 ### Workflow 3: Daily Progress Check
 
 ```bash
-cd /mnt/z/OBS-PHI-Canto/11-CLAUDE-AI/db
+cd 11-CLAUDE-AI/db
 
 # Check what you've accomplished
 python3 daily_curation.py progress
@@ -204,10 +203,13 @@ Configure in `pdf-convert-skill/pdf-convert-config.json`:
 3. **WSL environment**: Optimized for WSL2 filesystem permissions
 
 ### File Placement Strategy
+Literature content lives in **external storage** (outside the repo); only the tools live
+in the repo. See `docs/STORAGE-CONFIGURATION.md` (override with `PHI_LITERATURE_ROOT`).
 ```
-00-Inbox/To-curate/  ← PDFs being processed (active work)
-04-Literature/       ← Completed curations (reference archive)
-11-CLAUDE-AI/        ← All automation scripts
+../PHI-Canto-Literature/active/     ← PDFs being processed (external storage)
+../PHI-Canto-Literature/completed/  ← Completed curations (external storage)
+../PHI-Canto-Literature/media/      ← Extracted images
+11-CLAUDE-AI/                       ← All automation scripts (in the repo)
 ```
 
 ### Database Integration

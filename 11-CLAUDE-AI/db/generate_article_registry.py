@@ -7,11 +7,12 @@ Creates a wiki-like article overview that pulls from the database
 from phi_canto_sqlite import PHICantoSQLite
 from datetime import datetime, date
 import os
+from pathlib import Path
 
 class ArticleRegistryGenerator:
     def __init__(self):
         self.db = PHICantoSQLite()
-        self.vault_root = "/mnt/z/OBS-PHI-Canto"
+        self.vault_root = str(Path(__file__).resolve().parents[2])
         self.registry_path = f"{self.vault_root}/07-Wiki/Article-Registry.md"
 
     def generate_registry(self):
