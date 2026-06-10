@@ -39,7 +39,7 @@ python3 curation_pipeline.py complete-paper paper.pdf "Added 3 effectors, 5 inte
 **Track your daily work** with integrated database logging:
 
 ```bash
-cd /mnt/z/OBS-PHI-Canto/11-CLAUDE-AI/mysql-setup
+cd /mnt/z/OBS-PHI-Canto/11-CLAUDE-AI/db
 
 # Start session
 python3 workflow_helper.py start-session "Fusarium effectors"
@@ -70,7 +70,7 @@ python3 ../../11-CLAUDE-AI/pdf-convert-skill/pdf-convert.py paper.pdf
 **Track progress and analytics**:
 
 ```bash
-cd /mnt/z/OBS-PHI-Canto/11-CLAUDE-AI/mysql-setup
+cd /mnt/z/OBS-PHI-Canto/11-CLAUDE-AI/db
 
 # Log session manually
 python3 daily_curation.py log 3 5 2.0  # proteins, interactions, hours
@@ -104,7 +104,7 @@ cd /mnt/z/OBS-PHI-Canto/11-CLAUDE-AI
 python3 curation_pipeline.py auto-process ~/Downloads/new-paper.pdf
 
 # Step 2: Start session tracking
-cd mysql-setup
+cd db
 python3 workflow_helper.py start-session "New Paper Analysis"
 
 # Step 3: Do your curation work in Obsidian/PHI-Canto
@@ -133,7 +133,7 @@ python3 curation_pipeline.py process-pdf existing-paper.pdf
 ### Workflow 3: Daily Progress Check
 
 ```bash
-cd /mnt/z/OBS-PHI-Canto/11-CLAUDE-AI/mysql-setup
+cd /mnt/z/OBS-PHI-Canto/11-CLAUDE-AI/db
 
 # Check what you've accomplished
 python3 daily_curation.py progress
@@ -148,7 +148,7 @@ python3 show_recent.py
 ## 🔧 Configuration
 
 ### Database Setup
-Located in `11-CLAUDE-AI/mysql-setup/`:
+Located in `11-CLAUDE-AI/db/`:
 - `phi_canto_tracking.db` - SQLite database (no server needed)
 - Tracks articles, proteins, sessions, progress over time
 - Automatic timestamp tracking (YYYY-MM-DD HH:MM:SS)

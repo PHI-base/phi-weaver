@@ -33,7 +33,7 @@ import json
 
 # Import existing automation tools
 sys.path.append(os.path.dirname(__file__))
-sys.path.append(os.path.join(os.path.dirname(__file__), 'mysql-setup'))
+sys.path.append(os.path.join(os.path.dirname(__file__), 'db'))
 
 try:
     from session_logger import quick_session

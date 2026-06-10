@@ -67,8 +67,8 @@ SystemSculpt/
 
 # PERSONAL CURATION DATA
 # Exclude databases with personal curation progress
-11-CLAUDE-AI/mysql-setup/phi_canto_tracking.db
-11-CLAUDE-AI/mysql-setup/*.db
+11-CLAUDE-AI/db/phi_canto_tracking.db
+11-CLAUDE-AI/db/*.db
 
 # Codespaces / local demo literature storage (converted PDFs, media, notes)
 demo-literature/

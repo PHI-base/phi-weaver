@@ -38,7 +38,7 @@ PHI-Curation-Framework/
 ├── 11-CLAUDE-AI/               # Automation tools and session management
 │   ├── curation_pipeline.py   # Master automation script
 │   ├── pdf-convert-skill/     # PDF processing system
-│   ├── mysql-setup/           # Database integration
+│   ├── db/           # Database integration
 │   ├── SESSION-LOGS/          # Development history and context
 │   └── *.py                   # Timeline tracking and automation tools
 ├── content-links/              # References to external literature storage
@@ -78,7 +78,7 @@ claude --dangerously-skip-permissions
 4. **Initialize the system:**
 ```bash
 # Set up database and external storage
-python3 11-CLAUDE-AI/mysql-setup/phi_canto_sqlite.py --init
+python3 11-CLAUDE-AI/db/phi_canto_sqlite.py --init
 ```
 
 ### **First Curation Session**
@@ -88,7 +88,7 @@ python3 11-CLAUDE-AI/mysql-setup/phi_canto_sqlite.py --init
 python3 11-CLAUDE-AI/curation_pipeline.py auto-process ~/Downloads/paper.pdf
 
 # Start an interactive curation session
-python3 11-CLAUDE-AI/mysql-setup/session_logger.py quick "Project Name" "Summary"
+python3 11-CLAUDE-AI/db/session_logger.py quick "Project Name" "Summary"
 
 # Generate development timeline
 python3 11-CLAUDE-AI/update_timeline_incremental.py
@@ -108,13 +108,13 @@ python3 11-CLAUDE-AI/convert-for-curation.py paper.pdf
 ### **2. Session Management**
 ```bash
 # Quick session logging
-python3 11-CLAUDE-AI/mysql-setup/session_logger.py quick 'Fusarium effectors' 'Added FgTPP1 analysis' 3 5 2.0
+python3 11-CLAUDE-AI/db/session_logger.py quick 'Fusarium effectors' 'Added FgTPP1 analysis' 3 5 2.0
 
 # View recent progress
-python3 11-CLAUDE-AI/mysql-setup/daily_curation.py progress
+python3 11-CLAUDE-AI/db/daily_curation.py progress
 
 # Check productivity analytics
-python3 11-CLAUDE-AI/mysql-setup/daily_curation.py gaps
+python3 11-CLAUDE-AI/db/daily_curation.py gaps
 ```
 
 ### **3. Timeline Tracking**
@@ -214,7 +214,7 @@ The system uses SQLite for tracking:
 
 ### **Technical Documentation**
 - **[PDF Conversion System](11-CLAUDE-AI/pdf-convert-skill/PDF-CONVERT-SKILL.md)**
-- **[Database Schema](11-CLAUDE-AI/mysql-setup/database_schema.sql)**
+- **[Database Schema](11-CLAUDE-AI/db/database_schema.sql)**
 - **[Session Logs](11-CLAUDE-AI/SESSION-LOGS/INDEX.md)** - Development history and context
 
 ## 🤝 **Contributing**

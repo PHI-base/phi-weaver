@@ -109,7 +109,7 @@ The wiki leverages your existing vault structure:
 - **Literature**: `04-Literature/` → Individual article notes
 - **Projects**: `02-Projects/` → Research project documentation  
 - **Session Logs**: `11-CLAUDE-AI/SESSION-LOGS/` → Historical activity
-- **Database**: `11-CLAUDE-AI/mysql-setup/` → Tools and scripts
+- **Database**: `11-CLAUDE-AI/db/` → Tools and scripts
 
 ### Obsidian Features Used
 - **Templates**: Standardized note creation
@@ -152,7 +152,7 @@ The wiki leverages your existing vault structure:
 ## 📞 Navigation
 
 - 🏠 **Vault Root**: [[README|PHI-Canto Vault]]
-- 📊 **Database Tools**: `11-CLAUDE-AI/mysql-setup/`
+- 📊 **Database Tools**: `11-CLAUDE-AI/db/`
 - 📝 **Session Logs**: `11-CLAUDE-AI/SESSION-LOGS/`
 - 🧬 **Projects**: [[02-Projects/]]
 - 📚 **Literature**: [[04-Literature/]]

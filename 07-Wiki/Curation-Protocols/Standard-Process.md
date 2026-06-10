@@ -213,7 +213,7 @@ python3 session_logger.py quick "Project" "Work description" [proteins] [interac
 
 - **Templates**: [[07-Wiki/Templates/Article-Template|Article Template]]
 - **Registry**: [[07-Wiki/Article-Registry|Article Registry Dashboard]]
-- **Tools**: `11-CLAUDE-AI/mysql-setup/` directory
+- **Tools**: `11-CLAUDE-AI/db/` directory
 - **Session logs**: `11-CLAUDE-AI/SESSION-LOGS/` for historical context
 
 **Questions or issues?** Document in session notes and review during next curation session.

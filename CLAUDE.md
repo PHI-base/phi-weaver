@@ -51,13 +51,13 @@ These capabilities should be used for:
 **Hybrid Tracking System**: This vault includes SQLite database integration for structured tracking alongside flexible Obsidian notes.
 
 ### Database Location
-- **Path**: `11-CLAUDE-AI/mysql-setup/phi_canto_tracking.db`
+- **Path**: `11-CLAUDE-AI/db/phi_canto_tracking.db`
 - **Type**: SQLite (portable, no server required)
 - **Purpose**: Track curation progress, articles, proteins, species, and relationships
 
 ### Quick Usage
 ```bash
-# From mysql-setup directory
+# From db directory
 python3 daily_curation.py progress           # Show recent work
 python3 daily_curation.py log 3 5 2.0       # Log session (proteins, interactions, hours)
 python3 daily_curation.py gaps              # Find data needing attention
@@ -77,7 +77,7 @@ All curation activities automatically capture precise timestamps:
 python3 show_recent.py          # View recent work with full timestamps
 python3 check_timestamps.py     # Detailed timestamp analysis
 ```
-Full documentation: `11-CLAUDE-AI/mysql-setup/TIMESTAMPS.md`
+Full documentation: `11-CLAUDE-AI/db/TIMESTAMPS.md`
 
 ### Integration with Obsidian
 - Database records link to Obsidian notes via file paths
@@ -143,9 +143,9 @@ All automation tools have been updated to work with the external literature stor
 
 ### Automation Components
 1. **PDF Conversion** (`pdf-convert-skill/`) - Academic formatting with caption extraction
-2. **Session Management** (`mysql-setup/workflow_helper.py`) - Database-integrated logging
+2. **Session Management** (`db/workflow_helper.py`) - Database-integrated logging
 3. **File Organization** (`obsidian_reorganise.py`) - Auto-placement with WikiLink updates
-4. **Progress Analytics** (`mysql-setup/daily_curation.py`) - Productivity tracking
+4. **Progress Analytics** (`db/daily_curation.py`) - Productivity tracking
 5. **Master Pipeline** (`curation_pipeline.py`) - Complete workflow orchestration
 
 **Documentation**: See `11-CLAUDE-AI/AUTOMATION-GUIDE.md` for complete automation usage guide and examples.
@@ -251,7 +251,7 @@ PDFs → [Module 1] → Structured Text → [Module 2] → Entities →
 ```
 
 **Shared Resources**:
-- **Database**: SQLite tracking system (`11-CLAUDE-AI/mysql-setup/phi_canto_tracking.db`)
+- **Database**: SQLite tracking system (`11-CLAUDE-AI/db/phi_canto_tracking.db`)
 - **Memory**: Learning and feedback system
 - **Session Management**: Progress tracking and logging
 - **File Organization**: Standardized vault structure
@@ -315,7 +315,7 @@ This is an Obsidian knowledge management vault dedicated to **PHI-Canto system d
 07-Wiki/           Curation protocols, article/protein registries, templates
 11-CLAUDE-AI/      Claude Code session logs and automation tools
   ├─ SESSION-LOGS/ Interaction history and session records
-  ├─ mysql-setup/  Database integration and session management
+  ├─ db/  Database integration and session management
   ├─ pdf-convert-skill/ Professional PDF to markdown conversion
   ├─ curation_pipeline.py Master automation script (updated for external storage)
   ├─ AUTOMATION-GUIDE.md Complete automation documentation
