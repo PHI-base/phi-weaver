@@ -364,21 +364,25 @@ This organization aligns with the PHI-Canto curation pipeline: Literature → Pr
 
 ## Git Usage Guidelines
 
-**IMPORTANT: This repository operates with LOCAL-ONLY version control.**
+**IMPORTANT: This repository is shared on GitHub at `PHI-base/phi-weaver`. Commits may be pushed to the remote.**
 
 ### Git Policy
-- ✅ **Make local commits**: Use git for tracking changes and maintaining version history locally
-- ❌ **NEVER push to remote**: Do not push commits to GitHub, GitLab, or any remote repository
-- ❌ **NEVER set up remotes**: Avoid configuring remote repositories for this vault
+- ✅ **Make local commits**: Use git for tracking changes and maintaining version history
+- ✅ **Push to remote**: Push commits to `origin` (`PHI-base/phi-weaver`) when the user asks
+- ⚠️ **Review before pushing**: This repo may contain unpublished annotations and internal
+  workflow material — confirm with the user before pushing, and avoid committing sensitive
+  or personal data
 
 ### Rationale
-This vault contains PHI-base curation work including unpublished annotations,
-curator training materials, and internal workflow documentation.
+This repository is the collaborative PHI-Weaver curation framework hosted under the
+PHI-base GitHub organization, intended for sharing tools and protocols with colleagues.
 
 ### Commands to Use
 - `git add .` and `git commit -m "message"` ✅ (local tracking)
 - `git status`, `git log`, `git diff` ✅ (local operations)
-- `git push`, `git remote add` ❌ (avoid remote operations)
+- `git push origin main` ✅ (push when requested)
+- **Note**: On the `z:` Windows mount, `git config`/`git remote set-url` fail with a
+  `config.lock` chmod error — edit `.git/config` directly instead.
 
 ## Obsidian CLI Integration
 
