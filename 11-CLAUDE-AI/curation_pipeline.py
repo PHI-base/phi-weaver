@@ -44,13 +44,28 @@ except ImportError:
 
 class CurationPipeline:
     def __init__(self):
-        self.vault_root = Path("/mnt/z/OBS-PHI-Canto")
-        # Updated to use external storage for content
-        self.external_storage = Path("/mnt/z/PHI-Canto-Literature")
+        # Repo root is auto-detected as the parent of the 11-CLAUDE-AI/ tools
+        # folder, so the pipeline works wherever the repo is cloned (no hardcoded
+        # vault path).
+        self.vault_root = Path(__file__).resolve().parents[1]
+        # Literature content lives OUTSIDE the repo. Resolution order:
+        #   1. PHI_LITERATURE_ROOT env var, if set (explicit override).
+        #   2. Codespaces (PHI_CURATION_ENV=codespace): an in-workspace folder,
+        #      so demo files are visible in the file explorer with zero config.
+        #   3. Default: a sibling folder next to the repo
+        #      (on this machine: /mnt/z/PHI-Canto-Literature).
+        # See STORAGE-CONFIGURATION.md / DEMO-CODESPACES.md in the repo root.
+        env_root = os.environ.get("PHI_LITERATURE_ROOT")
+        if env_root:
+            self.external_storage = Path(env_root).expanduser().resolve()
+        elif os.environ.get("PHI_CURATION_ENV") == "codespace":
+            self.external_storage = self.vault_root / "demo-literature"
+        else:
+            self.external_storage = self.vault_root.parent / "PHI-Canto-Literature"
         self.inbox_path = self.external_storage / "active"
         self.literature_path = self.external_storage / "completed"
         self.media_path = self.external_storage / "media"
-        # Keep tools in development vault
+        # Tools live inside the repo itself
         self.pdf_converter = self.vault_root / "11-CLAUDE-AI" / "pdf-convert-skill" / "pdf-convert.py"
         self.reorganizer = self.vault_root / "11-CLAUDE-AI" / "obsidian_reorganise.py"
         self.reorganizer_config = self.vault_root / "11-CLAUDE-AI" / "reorganise-config-OBS-PHI-Canto.yaml"
@@ -62,6 +77,15 @@ class CurationPipeline:
         if details:
             print(f"   {details}")
 
+    def ensure_storage(self):
+        """Create the literature storage folders if they don't exist yet.
+
+        Makes the pipeline self-sufficient on a fresh checkout (e.g. a new
+        Codespace), where the active/completed/media folders won't exist.
+        """
+        for d in (self.inbox_path, self.literature_path, self.media_path):
+            d.mkdir(parents=True, exist_ok=True)
+
     def new_paper_workflow(self, pdf_path):
         """Complete workflow: new PDF → processed → ready for curation"""
         print("🚀 Starting New Paper Curation Workflow")
@@ -72,7 +96,9 @@ class CurationPipeline:
             print(f"❌ PDF not found: {pdf_path}")
             return False
 
-        # Step 1: Copy PDF to To-curate folder
+        self.ensure_storage()
+
+        # Step 1: Copy PDF to the active (input) folder
         target_path = self.inbox_path / pdf_path.name
         self.log_action("Copying PDF to To-curate folder", f"{pdf_path.name}")
         shutil.copy2(pdf_path, target_path)
@@ -85,9 +111,11 @@ class CurationPipeline:
         print(f"📄 Processing PDF: {filename}")
         print("=" * 50)
 
+        self.ensure_storage()
+
         pdf_path = self.inbox_path / filename
         if not pdf_path.exists():
-            print(f"❌ PDF not found in To-curate: {filename}")
+            print(f"❌ PDF not found in active/ folder: {filename}")
             return False
 
         # Step 1: Convert PDF to Markdown
@@ -135,7 +163,7 @@ class CurationPipeline:
         print("=" * 50)
         print(f"📄 Original PDF: {filename}")
         print(f"📝 Markdown file: {markdown_file.name}")
-        print(f"📁 Ready for curation in: 00-Inbox/To-curate/")
+        print(f"📁 Ready for curation in: {self.inbox_path}")
         print("\nNext steps:")
         print("1. Review converted markdown file")
         print("2. Begin PHI-Canto annotation")
@@ -147,6 +175,8 @@ class CurationPipeline:
         """Complete curation and move files to Literature folder"""
         print(f"🏁 Completing Curation: {filename}")
         print("=" * 50)
+
+        self.ensure_storage()
 
         pdf_path = self.inbox_path / filename
         base_name = Path(filename).stem
@@ -212,8 +242,8 @@ class CurationPipeline:
 
         print("\n🎉 Curation Completed!")
         print("=" * 50)
-        print(f"📄 PDF moved to: 04-Literature/{filename}")
-        print(f"📝 Curation notes: 04-Literature/{base_name}-Curation-Notes.md")
+        print(f"📄 PDF moved to: {self.literature_path / filename}")
+        print(f"📝 Curation notes: {self.literature_path / (base_name + '-Curation-Notes.md')}")
         print(f"📊 Summary: {summary}")
         print("\n✅ Ready for next paper!")
 
@@ -281,7 +311,7 @@ class CurationPipeline:
 
         print("\n🚀 Auto-processing completed!")
         print("📋 Paper is ready for manual curation")
-        print(f"📁 Check: 00-Inbox/To-curate/")
+        print(f"📁 Check: {self.inbox_path}")
 
         return True
 

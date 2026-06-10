@@ -70,6 +70,10 @@ SystemSculpt/
 11-CLAUDE-AI/mysql-setup/phi_canto_tracking.db
 11-CLAUDE-AI/mysql-setup/*.db
 
+# Codespaces / local demo literature storage (converted PDFs, media, notes)
+demo-literature/
+PHI-Canto-Literature/
+
 # Backup files with personal timestamps
 .systemsculpt/settings-backups/
 11-CLAUDE-AI/SESSION-LOGS/INDEX-backup*.md

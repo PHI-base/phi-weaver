@@ -4,6 +4,13 @@
 
 A comprehensive framework for automating [PHI-base](http://phi-base.org/) and [PHI-Canto](https://curation.phi-base.org/) curation workflows using Large Language Models and intelligent automation tools.
 
+> 📂 **New colleague? Start with [STORAGE-CONFIGURATION.md](STORAGE-CONFIGURATION.md)** — it explains
+> where the pipeline reads/writes literature files and how to point it at your own location
+> (via the `PHI_LITERATURE_ROOT` environment variable).
+>
+> 🚀 **Want to try it with zero local setup?** Follow **[DEMO-CODESPACES.md](DEMO-CODESPACES.md)**
+> to curate an open-access article entirely in a GitHub Codespace.
+
 ## 🎯 **Overview**
 
 The PHI-Curation-Framework streamlines the complex process of curating pathogen-host interaction data from scientific literature. It integrates Claude Code, automated PDF processing, database tracking, and quality assurance tools to accelerate high-quality curation for the PHI-base database.
