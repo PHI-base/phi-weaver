@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-PHI-Canto Database Integration - SQLite Version
-Immediate demo version that works without MySQL installation
+PHI-Canto Database Integration - SQLite
+Server-free tracking database (sqlite3 is built into Python)
 """
 
 import sqlite3
@@ -319,7 +319,7 @@ def demo_sqlite_setup():
     db.find_effector_proteins("Fusarium")
 
     print(f"\n✅ SQLite database created: {db.db_path}")
-    print("💡 This demonstrates the hybrid system - when you install MySQL, it will work the same way!")
+    print("💡 SQLite needs no server — this single .db file is the whole tracking database.")
 
     db.disconnect()
     return True
