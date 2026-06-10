@@ -14,7 +14,11 @@ tags: [migration, external-storage]
 All literature content previously stored in this directory has been moved to external storage for better organization and performance.
 
 ### New Location
-**External Storage**: need to identify location
+**External Storage**: a sibling folder next to the repo — `../PHI-Canto-Literature/`
+(default `/mnt/z/PHI-Canto-Literature/`), with `active/`, `completed/`, `media/`,
+`archive/`, and `work-queue/` subfolders. The storage root is configurable via the
+`PHI_LITERATURE_ROOT` environment variable — see
+[[STORAGE-CONFIGURATION]] in the repo root.
 
 ### Access from Development Vault
 - **Complete index**: [[content-links/literature-index]]
