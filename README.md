@@ -29,19 +29,24 @@ The PHI-Curation-Framework streamlines the complex process of curating pathogen-
 ## 📁 **Repository Structure**
 
 ```
-PHI-Curation-Framework/
-├── 00-Inbox/                    # Incoming tasks and project coordination
+phi-weaver/
+├── 00-Inbox/                   # Incoming tasks and project coordination
+├── 02-Projects/                # Project-specific curation work
+├── 04-Literature/              # Literature stubs (content lives in external storage)
 ├── 05-Protocols/               # Standard operating procedures
 ├── 06-Training/                # Curator onboarding and quick references
 ├── 07-Standards/               # Genetic nomenclature and ontology guides
-├── 08-QA/                      # Quality assurance procedures
+├── 07-Wiki/                    # Curation protocols, registries, templates
 ├── 11-CLAUDE-AI/               # Automation tools and session management
-│   ├── curation_pipeline.py   # Master automation script
-│   ├── pdf-convert-skill/     # PDF processing system
-│   ├── db/           # Database integration
-│   ├── SESSION-LOGS/          # Development history and context
-│   └── *.py                   # Timeline tracking and automation tools
+│   ├── curation_pipeline.py    # Master automation script
+│   ├── pdf-convert-skill/      # PDF processing system
+│   ├── db/                     # SQLite tracking database + helper scripts
+│   ├── SESSION-LOGS/           # Development history and context
+│   └── *.py                    # Timeline tracking and automation tools
 ├── content-links/              # References to external literature storage
+├── archive/                    # Historical / superseded documents
+├── STORAGE-CONFIGURATION.md    # Where literature files live + how to override
+├── DEMO-CODESPACES.md          # Zero-setup demo walkthrough
 ├── CLAUDE.md                   # System configuration and guidelines
 └── README.md                   # This file
 ```
@@ -59,14 +64,13 @@ PHI-Curation-Framework/
 
 1. **Clone the repository:**
 ```bash
-git clone https://github.com/martin2urban/PHI-Curation-Framework.git
-cd PHI-Curation-Framework
+git clone https://github.com/PHI-base/phi-weaver.git
+cd phi-weaver
 ```
 
 2. **Install Python dependencies:**
 ```bash
-pip install -r requirements.txt  # If available
-# Or manually install: pandas, sqlite3, requests, pypdf2
+pip install -r requirements.txt   # PyMuPDF for PDF conversion; sqlite3 is built into Python
 ```
 
 3. **Set up Claude Code:**
@@ -75,10 +79,10 @@ pip install -r requirements.txt  # If available
 claude --dangerously-skip-permissions
 ```
 
-4. **Initialize the system:**
+4. **Initialize the tracking database (optional):**
 ```bash
-# Set up database and external storage
-python3 11-CLAUDE-AI/db/phi_canto_sqlite.py --init
+# Creates 11-CLAUDE-AI/db/phi_canto_tracking.db with demo data
+python3 11-CLAUDE-AI/db/phi_canto_sqlite.py
 ```
 
 ### **First Curation Session**
@@ -214,7 +218,7 @@ The system uses SQLite for tracking:
 
 ### **Technical Documentation**
 - **[PDF Conversion System](11-CLAUDE-AI/pdf-convert-skill/PDF-CONVERT-SKILL.md)**
-- **[Database Schema](11-CLAUDE-AI/db/database_schema.sql)**
+- **[Tracking Database (SQLite)](11-CLAUDE-AI/db/README.md)** - schema, scripts, and example queries
 - **[Session Logs](11-CLAUDE-AI/SESSION-LOGS/INDEX.md)** - Development history and context
 
 ## 🤝 **Contributing**
@@ -246,7 +250,7 @@ We welcome contributions to improve the PHI-Curation-Framework!
 ## 📞 **Support**
 
 ### **Getting Help**
-- **Issues**: Report bugs or request features via [GitHub Issues](https://github.com/martin2urban/PHI-Curation-Framework/issues)
+- **Issues**: Report bugs or request features via [GitHub Issues](https://github.com/PHI-base/phi-weaver/issues)
 - **Discussions**: Join community discussions for usage questions
 - **Documentation**: Check `CLAUDE.md` and guides in `11-CLAUDE-AI/`
 
