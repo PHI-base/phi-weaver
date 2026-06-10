@@ -1,0 +1,84 @@
+{
+  "name": "PHI-Curation-Framework Development (Fixed)",
+  "image": "mcr.microsoft.com/devcontainers/python:3.11",
+
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "18"
+    }
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "anthropic.claude-dev",
+        "ms-python.python",
+        "ms-python.pylint",
+        "ms-python.black-formatter",
+        "ms-toolsai.jupyter",
+        "redhat.vscode-yaml",
+        "yzhang.markdown-all-in-one",
+        "bierner.markdown-mermaid",
+        "ms-vscode.vscode-json"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.formatting.provider": "black",
+        "python.linting.enabled": true,
+        "python.linting.pylintEnabled": true,
+        "files.exclude": {
+          "**/__pycache__": true,
+          "**/.pytest_cache": true,
+          "**/node_modules": true
+        },
+        "git.autofetch": true,
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  },
+
+  "onCreateCommand": [
+    "echo 'Container created, setting up Claude permissions...'",
+    "sudo mkdir -p /home/vscode/.claude/ide /home/vscode/.claude/config /home/vscode/.claude/logs",
+    "sudo chown -R vscode:vscode /home/vscode/.claude",
+    "sudo chmod -R 755 /home/vscode/.claude",
+    "echo 'Claude directory structure created with proper permissions'"
+  ],
+
+  "postCreateCommand": [
+    "echo 'Starting post-creation setup...'",
+    "pip install -r requirements.txt || echo 'No requirements.txt found - continuing...'",
+    "pip install --upgrade pip pytest black pylint jupyter notebook pandas",
+    "npm install -g @mermaid-js/mermaid-cli || echo 'Mermaid install failed - continuing...'",
+    "/bin/bash .devcontainer/setup-claude-environment.sh"
+  ],
+
+  "postAttachCommand": [
+    "echo 'Codespace attached - verifying Claude setup...'",
+    "ls -la /home/vscode/.claude/",
+    "echo 'Claude environment ready!'"
+  ],
+
+  "remoteUser": "vscode",
+  "containerUser": "vscode",
+
+  "mounts": [
+    "source=codespace-claude-config,target=/home/vscode/.claude,type=volume"
+  ],
+
+  "containerEnv": {
+    "WORKSPACE_TYPE": "public-framework-dev",
+    "PHI_CURATION_ENV": "codespace",
+    "CLAUDE_CONFIG_DIR": "/home/vscode/.claude"
+  },
+
+  "forwardPorts": [8000, 3000, 5000],
+  "portsAttributes": {
+    "8000": {
+      "label": "Development Server",
+      "onAutoForward": "notify"
+    }
+  }
+}
