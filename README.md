@@ -1,19 +1,19 @@
-# PHI-Curation-Framework
+# PHI-Weaver
 
 🧬 **AI-Powered Pathogen-Host Interaction Curation System**
 
 A comprehensive framework for automating [PHI-base](http://phi-base.org/) and [PHI-Canto](https://curation.phi-base.org/) curation workflows using Large Language Models and intelligent automation tools.
 
-> 📂 **New colleague? Start with [STORAGE-CONFIGURATION.md](STORAGE-CONFIGURATION.md)** — it explains
+> 📂 **New colleague? Start with [docs/STORAGE-CONFIGURATION.md](docs/STORAGE-CONFIGURATION.md)** — it explains
 > where the pipeline reads/writes literature files and how to point it at your own location
 > (via the `PHI_LITERATURE_ROOT` environment variable).
 >
-> 🚀 **Want to try it with zero local setup?** Follow **[DEMO-CODESPACES.md](DEMO-CODESPACES.md)**
+> 🚀 **Want to try it with zero local setup?** Follow **[docs/DEMO-CODESPACES.md](docs/DEMO-CODESPACES.md)**
 > to curate an open-access article entirely in a GitHub Codespace.
 
 ## 🎯 **Overview**
 
-The PHI-Curation-Framework streamlines the complex process of curating pathogen-host interaction data from scientific literature. It integrates Claude Code, automated PDF processing, database tracking, and quality assurance tools to accelerate high-quality curation for the PHI-base database.
+PHI-Weaver streamlines the complex process of curating pathogen-host interaction data from scientific literature. It integrates Claude Code, automated PDF processing, database tracking, and quality assurance tools to accelerate high-quality curation for the PHI-base database.
 
 ### **Key Features**
 
@@ -45,8 +45,7 @@ phi-weaver/
 │   └── *.py                    # Timeline tracking and automation tools
 ├── content-links/              # References to external literature storage
 ├── archive/                    # Historical / superseded documents
-├── STORAGE-CONFIGURATION.md    # Where literature files live + how to override
-├── DEMO-CODESPACES.md          # Zero-setup demo walkthrough
+├── docs/                       # Storage config, Codespaces demo, PDF-converter usage
 ├── CLAUDE.md                   # System configuration and guidelines
 └── README.md                   # This file
 ```
@@ -223,7 +222,7 @@ The system uses SQLite for tracking:
 
 ## 🤝 **Contributing**
 
-We welcome contributions to improve the PHI-Curation-Framework!
+We welcome contributions to improve PHI-Weaver!
 
 ### **Getting Started**
 1. **Read the session logs** in `11-CLAUDE-AI/SESSION-LOGS/INDEX.md` for context

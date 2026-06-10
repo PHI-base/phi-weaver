@@ -54,7 +54,7 @@ class CurationPipeline:
         #      so demo files are visible in the file explorer with zero config.
         #   3. Default: a sibling folder next to the repo
         #      (on this machine: /mnt/z/PHI-Canto-Literature).
-        # See STORAGE-CONFIGURATION.md / DEMO-CODESPACES.md in the repo root.
+        # See docs/STORAGE-CONFIGURATION.md / docs/DEMO-CODESPACES.md.
         env_root = os.environ.get("PHI_LITERATURE_ROOT")
         if env_root:
             self.external_storage = Path(env_root).expanduser().resolve()

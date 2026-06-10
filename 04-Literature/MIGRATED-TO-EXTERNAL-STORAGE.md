@@ -18,7 +18,7 @@ All literature content previously stored in this directory has been moved to ext
 (default `/mnt/z/PHI-Canto-Literature/`), with `active/`, `completed/`, `media/`,
 `archive/`, and `work-queue/` subfolders. The storage root is configurable via the
 `PHI_LITERATURE_ROOT` environment variable — see
-[[STORAGE-CONFIGURATION]] in the repo root.
+[[STORAGE-CONFIGURATION]] in `docs/`.
 
 ### Access from Development Vault
 - **Complete index**: [[content-links/literature-index]]
