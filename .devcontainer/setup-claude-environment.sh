@@ -23,7 +23,7 @@ echo "⚙️ Creating Claude configuration..."
 cat > /home/vscode/.claude/config.json << 'EOF'
 {
   "environment": "codespace-public",
-  "workspace": "PHI-Curation-Framework",
+  "workspace": "phi-weaver",
   "privacy": "public-development-only",
   "created": "auto-generated-codespace"
 }
@@ -32,10 +32,10 @@ EOF
 # Create public-safe Claude instructions
 echo "📋 Creating public-safe Claude instructions..."
 cat > /home/vscode/.claude/CLAUDE.md << 'EOF'
-# Claude Configuration - PHI-Curation-Framework (Public Codespace)
+# Claude Configuration - PHI-Weaver (Public Codespace)
 
 ## Environment Context
-- **Repository**: PHI-base/PHI-Curation-Framework (public)
+- **Repository**: PHI-base/phi-weaver (public)
 - **Purpose**: Framework development, documentation, examples
 - **Data Policy**: No private/personal data allowed
 - **Collaboration**: Public, open-source development
@@ -87,8 +87,8 @@ fi
 
 # Create workspace-specific configuration
 echo "🎯 Setting up workspace configuration..."
-mkdir -p /workspaces/PHI-Curation-Framework/.vscode
-cat > /workspaces/PHI-Curation-Framework/.vscode/settings.json << 'EOF'
+mkdir -p /workspaces/phi-weaver/.vscode
+cat > /workspaces/phi-weaver/.vscode/settings.json << 'EOF'
 {
     "claude.apiKey": "${env:CLAUDE_API_KEY}",
     "claude.environment": "public-framework-development",

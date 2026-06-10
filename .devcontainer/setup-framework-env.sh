@@ -1,8 +1,8 @@
 #!/bin/bash
-# PHI-Curation-Framework Codespace Setup Script
+# PHI-Weaver Codespace Setup Script
 # This script initializes the development environment for the public framework
 
-echo "🚀 Setting up PHI-Curation-Framework development environment..."
+echo "🚀 Setting up PHI-Weaver development environment..."
 
 # Create workspace structure
 mkdir -p /workspace/{docs,examples,tests,tools}
@@ -26,12 +26,12 @@ touch CONTRIBUTING.md
 # Set up Claude configuration for public framework work
 mkdir -p ~/.claude
 cat > ~/.claude/CLAUDE.md << 'EOF'
-# Claude Configuration - PHI-Curation-Framework (Public)
+# Claude Configuration - PHI-Weaver (Public)
 
-This is the PUBLIC development environment for the PHI-Curation-Framework.
+This is the PUBLIC development environment for the PHI-Weaver.
 
 ## Environment Context
-- **Repository**: PHI-base/PHI-Curation-Framework (public)
+- **Repository**: PHI-base/phi-weaver (public)
 - **Purpose**: Framework development, documentation, examples
 - **Data Policy**: No private/personal data allowed
 - **Collaboration**: Public, open-source development
@@ -51,6 +51,6 @@ This is the PUBLIC development environment for the PHI-Curation-Framework.
 
 EOF
 
-echo "✅ PHI-Curation-Framework Codespace setup complete!"
+echo "✅ PHI-Weaver Codespace setup complete!"
 echo "🎯 Environment configured for public framework development"
 echo "🔒 No private data access - public repository work only"

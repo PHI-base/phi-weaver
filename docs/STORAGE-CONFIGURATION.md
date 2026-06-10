@@ -25,8 +25,8 @@ By default the storage root is a **sibling folder next to this repo**:
 
 ```
 /mnt/z/
-├── PHI-Curation-Framework/   ← this repo (the tools)
-└── PHI-Canto-Literature/     ← literature content (default storage root)
+├── phi-weaver/             ← this repo (the tools)
+└── PHI-Canto-Literature/   ← literature content (default storage root)
     ├── active/
     ├── completed/
     └── media/

@@ -1,5 +1,5 @@
 {
-  "name": "PHI-Curation-Framework Development (Fixed)",
+  "name": "PHI-Weaver Development (Fixed)",
   "image": "mcr.microsoft.com/devcontainers/python:3.11",
 
   "features": {
