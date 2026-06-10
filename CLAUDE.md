@@ -312,7 +312,7 @@ This is an Obsidian knowledge management vault dedicated to **PHI-Canto system d
 05-Protocols/      Standard operating procedures and experimental methods
 06-Training/       Curator onboarding and educational materials  
 07-Standards/      Nomenclature, ontologies, and reference standards
-08-QA/            Quality assurance procedures and validation
+07-Wiki/           Curation protocols, article/protein registries, templates
 11-CLAUDE-AI/      Claude Code session logs and automation tools
   ├─ SESSION-LOGS/ Interaction history and session records
   ├─ mysql-setup/  Database integration and session management
@@ -351,9 +351,9 @@ The enhanced structure includes dedicated folders for PHI-Canto curation workflo
 - **05-Protocols/**: Standard operating procedures, experimental methods (complementation, transformation, annotation protocols)
 - **06-Training/**: Curator onboarding materials, tutorials, educational resources (houses YouTube tutorials, training guides)
 - **07-Standards/**: Genetic nomenclature, Gene Ontology terms, controlled vocabularies, reference standards
-- **08-QA/**: Quality assurance procedures, validation checklists, error tracking workflows
+- **07-Wiki/**: Curation protocols, article/protein registries, and note templates
 
-This organization aligns with the PHI-Canto curation pipeline: Literature → Protocols → Training → Active Curation → Quality Assurance.
+This organization aligns with the PHI-Canto curation pipeline: Literature → Protocols → Training → Standards → Active Curation.
 
 ## Key Configuration Files
 

@@ -1,8 +1,12 @@
 ---
 created: 2026-05-07
 type: planning
-tags: [github, open-source, collaboration]
+tags: [github, open-source, collaboration, archived]
 ---
+
+> ⚠️ **Archived / historical.** This was the pre-launch plan for publishing the repository.
+> The repo now exists as `PHI-base/phi-weaver`; this document is kept for reference only and
+> is no longer maintained.
 
 # PHI-Canto Curation System - GitHub Repository Plan
 
