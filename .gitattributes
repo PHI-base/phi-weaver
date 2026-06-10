@@ -1,0 +1,26 @@
+# Normalize all text files to LF in the repository.
+# Prevents CRLF<->LF churn from WSL/Windows checkouts.
+* text=auto eol=lf
+
+# Explicit text types (kept LF)
+*.md       text eol=lf
+*.py       text eol=lf
+*.sh       text eol=lf
+*.yaml     text eol=lf
+*.yml      text eol=lf
+*.json     text eol=lf
+*.canvas   text eol=lf
+*.csv      text eol=lf
+*.txt      text eol=lf
+
+# Binary files — never touch line endings
+*.pdf      binary
+*.png      binary
+*.jpg      binary
+*.jpeg     binary
+*.gif      binary
+*.db       binary
+*.sqlite   binary
+*.docx     binary
+*.pptx     binary
+*.xlsx     binary
