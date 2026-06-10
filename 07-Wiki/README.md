@@ -6,6 +6,9 @@ tags: [wiki, index, status/active]
 
 # 📚 PHI-Canto Wiki
 
+> ℹ️ Project rules and conventions live in **[AGENTS.md](../AGENTS.md)** (the source of
+> truth). This wiki holds curation protocols, registries, and templates.
+
 Wiki-style organization for PHI-Canto curation workflow and documentation.
 
 ## 📊 Registries (Auto-Generated)

@@ -1,5 +1,8 @@
 # PHI-Canto Automation Guide
 
+> ℹ️ Project rules and conventions live in **[AGENTS.md](../AGENTS.md)** (the source of
+> truth). This guide is the deep operational reference for the automation tools.
+
 Complete automation for your curation workflow - from PDF to finished annotation.
 
 ## 🚀 Quick Start

@@ -6,6 +6,9 @@ tags: [timeline, documentation, usage-guide]
 
 # PHI-Canto Development Timeline System - Complete Guide
 
+> ℹ️ Project rules and conventions live in **[AGENTS.md](../AGENTS.md)** (the source of
+> truth). This guide is the deep reference for the timeline tooling.
+
 ## 📋 **Overview**
 
 The timeline system automatically tracks PHI-Canto system development milestones, filtering development work from content curation to provide clear progress tracking.
