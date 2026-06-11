@@ -4,7 +4,7 @@ Generate Obsidian Article Registry Dashboard
 Creates a wiki-like article overview that pulls from the database
 """
 
-from phi_canto_sqlite import PHICantoSQLite
+from phiweaver.tracking.phi_canto_sqlite import PHICantoSQLite
 from datetime import datetime, date
 import os
 from pathlib import Path

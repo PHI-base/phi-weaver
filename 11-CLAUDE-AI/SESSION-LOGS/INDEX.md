@@ -33,6 +33,7 @@ Index of all Claude Code session logs for OBS-PHI-Canto vault.
 | 2026-06-11 | [[2026-06-11-modularity-assessment]]                  | Modularity Assessment                   | Evaluated vault modularity (parts independently updatable/testable + future specialised modules); found grab-bag `11-CLAUDE-AI/`, sys.path glue, no package, no DB migrations, prose-only skill→tool links. Wrote phased plan to `docs/MODULARITY-PLAN.md`. No code changes. |
 | 2026-06-11 | [[2026-06-11-modularity-p6-p7]]                       | Modularity P6 (+P7 start)               | P6 done: `uniprot-lookup` and `paper-triage` skills now name their backing tools (all four skills linked). P7 (content-folder `07-` collision) paused pre-rename at user request after starting the blast-radius scan. |
 | 2026-06-11 | [[2026-06-11-overview-onepager]]                      | Overview One-Pager                       | Verified vault still fully functional (31 tests, smoke 6/6, real CLIs); wrote factual one-page overview `docs/OVERVIEW.md` (capabilities, architecture, future improvements). |
+| 2026-06-11 | [[2026-06-11-modularity-p1-package]]                  | Modularity P1 — phiweaver package        | Stood up importable `phiweaver/` package (lookup/tracking/pipeline + smoke) with `pyproject.toml`; moved tools/db/pipeline/tests in, rewrote imports, added `repo_root()`, removed all engine/test sys.path glue; thin shims keep old commands working. Run-from-root (install optional, PEP 668). Also completes P3. 31 tests + smoke green. |
 
 ## Tags / Topics
 - **Vault setup**: 2026-04-11

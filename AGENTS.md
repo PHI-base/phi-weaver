@@ -11,7 +11,12 @@ pathogen–host interaction databases. It turns literature into structured,
 PHI-Canto-ready annotation **drafts** and tracks curation progress.
 
 - GitHub: `PHI-base/phi-weaver`. Pushing to `origin` is allowed (confirm first).
-- Tools live in the repo (`11-CLAUDE-AI/`); **literature content lives outside it**
+- Engine code is the importable **`phiweaver/`** package (`lookup/`, `tracking/`,
+  `pipeline/`). No install needed: run from the repo root, e.g.
+  `python3 -m phiweaver.lookup.query_uniprot …` or `python3 -m unittest discover -s tests`.
+  `pip install -e .` is optional (CI/Codespaces). Old `python3 scripts/…` /
+  `python3 11-CLAUDE-AI/…` paths still work via thin shims.
+- Tools live in the repo; **literature content lives outside it**
   (default `../PHI-Canto-Literature/`, override with `PHI_LITERATURE_ROOT`; in
   Codespaces a `demo-literature/` folder is used). See `docs/STORAGE-CONFIGURATION.md`.
 - Tracking database: SQLite at `11-CLAUDE-AI/db/phi_canto_tracking.db` (gitignored).
@@ -41,8 +46,9 @@ PHI-Canto-ready annotation **drafts** and tracks curation progress.
 ## 4. Coding Standards
 
 - Match surrounding code's style, naming, and idioms; don't reformat unrelated code.
-- Python tools live in `11-CLAUDE-AI/`; **derive paths from `__file__`**, never hardcode
-  machine-specific paths (e.g. `/mnt/z/...`).
+- Engine code lives in the `phiweaver/` package; add new tools under the right subpackage
+  with co-located tests in `tests/`. **Derive paths from `phiweaver.repo_root()`** (or
+  `__file__`), never hardcode machine-specific paths (e.g. `/mnt/z/...`).
 - Make storage/config overridable via environment variables where it crosses machines.
 - Keep changes small and reviewable; explain non-obvious choices in a brief comment.
 - Verify before claiming done: `python3 -m py_compile` for scripts, and run the smoke path.

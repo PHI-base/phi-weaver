@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 """Network-free tests for query_uniprot.py (HTTP getter is injected)."""
 
-import sys
 import tempfile
 import unittest
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # scripts/
-import query_uniprot as qu  # noqa: E402
+from phiweaver.lookup import query_uniprot as qu
 
 
 def entry(acc, gene, reviewed=True, taxon=5518, func="Dephosphorylates a substrate.",

@@ -50,6 +50,7 @@
   "postCreateCommand": [
     "echo 'Starting post-creation setup...'",
     "pip install -r requirements.txt || echo 'No requirements.txt found - continuing...'",
+    "pip install -e . || echo 'Editable install skipped - run-from-root still works, continuing...'",
     "pip install --upgrade pip pytest black pylint jupyter notebook pandas",
     "npm install -g @mermaid-js/mermaid-cli || echo 'Mermaid install failed - continuing...'",
     "/bin/bash .devcontainer/setup-claude-environment.sh",

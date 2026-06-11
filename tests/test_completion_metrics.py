@@ -7,17 +7,12 @@ Uses a temp SQLite DB and temp files — no network, no shared state.
 
 import io
 import contextlib
-import sys
 import tempfile
 import unittest
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parents[2]
-for d in (REPO / "11-CLAUDE-AI", REPO / "11-CLAUDE-AI" / "db", REPO / "scripts"):
-    sys.path.insert(0, str(d))
-
-import phi_canto_sqlite as pcs       # noqa: E402
-import curation_pipeline as cp       # noqa: E402
+from phiweaver.tracking import phi_canto_sqlite as pcs
+from phiweaver.pipeline import curation_pipeline as cp
 
 
 def fresh_db(tmp):

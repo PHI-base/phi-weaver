@@ -112,9 +112,9 @@ shippable, discoverable via the registry.
 
 | Phase | Goal | Key moves | Risk | Done when |
 |------|------|-----------|------|-----------|
-| **P1** | Package + metadata | Add `pyproject.toml`; create `phiweaver/` and move `scripts/` tools + `db/` + pipeline in as subpackages (keep import shims if needed); `pip install -e .` | Med (import paths) | `pip install -e .` works; smoke + unit suite green with **zero `sys.path` hacks** |
+| **P1** ✅ done (2026-06-11) | Package + metadata | Added `pyproject.toml`; created `phiweaver/` (`lookup/`, `tracking/`, `pipeline/`) and moved the lookup tools + db modules + pipeline + smoke test in; thin shims at old paths. **Chosen: run-from-root, install optional** (PEP 668 blocks `pip install -e .` locally). | Med (import paths) | ✅ Engine + tests have **zero `sys.path` hacks** (only shims do, by design); smoke 6/6 + 31 tests green run-from-root; `pip install -e .` works where allowed |
 | **P2** | Module contract | Standardise the envelope in `common/`; add skill frontmatter (`backing_script`, `inputs`, `outputs`, `tests`); generate `skills/REGISTRY.md` | Low | Every skill declares its wiring; registry generates; a "new module" checklist documented |
-| **P3** | Test relocation | Move tests to `tests/` mirroring the package; smoke test + CI discover from repo root | Low | One discovery root; no cross-tree `sys.path` in tests |
+| **P3** ✅ done with P1 | Test relocation | Tests moved to top-level `tests/`; smoke + discovery run from repo root (`-s tests`) | Low | ✅ One discovery root; no cross-tree `sys.path` in tests |
 | **P4** | Split `11-CLAUDE-AI/` | Engine → `phiweaver/`; agent/operational material → `agent/` or `docs/`; drop the stray converted-report JSON | Med (many refs) | No tool-agnostic engine code under a vendor-named folder; docs/refs updated |
 | **P5** | Extensible DB | Split `phi_canto_sqlite.py` into `schema` + **versioned migration runner** + repository (returns data, no printing) + CLI presentation | Med | A module can add a migration without editing core; query layer unit-tested without stdout capture |
 | **P6** | Fix skill→tool linkage | Reference `query_uniprot.py` from `uniprot-lookup`; backfill any other gaps | Low | Every backed skill names its script; covered by the registry check |

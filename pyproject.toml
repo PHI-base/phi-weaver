@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "phiweaver"
+version = "0.1.0"
+description = "AI-assisted biocuration toolkit for the PHI-base / PHI-Canto databases"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+# Core tooling, tests and the smoke test run on the standard library alone. These are only
+# needed for the optional live features noted in requirements.txt.
+dependencies = []
+
+[project.optional-dependencies]
+# pip install -e ".[live]"  — live UniProt/OLS lookups + PDF conversion
+live = ["requests>=2.28", "PyMuPDF>=1.27.0"]
+
+[project.scripts]
+# Available after `pip install -e .` (optional). Without installing, use the equivalent
+# `python3 -m phiweaver.<module>` from the repo root.
+phiweaver-uniprot = "phiweaver.lookup.query_uniprot:main"
+phiweaver-validate = "phiweaver.lookup.validate_ontology_ids:main"
+phiweaver-pipeline = "phiweaver.pipeline.curation_pipeline:main"
+phiweaver-smoke = "phiweaver.smoke:main"
+
+[tool.setuptools.packages.find]
+include = ["phiweaver*"]

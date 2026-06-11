@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 """Network-free tests for validate_ontology_ids.py (HTTP getter is injected)."""
 
-import sys
 import tempfile
 import unittest
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # scripts/
-import validate_ontology_ids as v  # noqa: E402
+from phiweaver.lookup import validate_ontology_ids as v
 
 
 def term(obo_id, label="some phenotype", obsolete=False):
