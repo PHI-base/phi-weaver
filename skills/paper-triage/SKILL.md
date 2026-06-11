@@ -24,8 +24,8 @@ content, so curator time goes to high-value papers.
 
 ## Workflow
 1. Convert/read the paper — for a PDF, run the pipeline's converter
-   (`python3 11-CLAUDE-AI/curation_pipeline.py process-pdf <file>`, or
-   `11-CLAUDE-AI/pdf-convert-skill/pdf-convert.py` directly). See `docs/PDF-CONVERTER-USAGE.md`.
+   (`python3 -m phiweaver.pipeline.curation_pipeline process-pdf <file>`, or
+   `python3 -m phiweaver.pdf.pdf_convert <file>` directly). See `docs/PDF-CONVERTER-USAGE.md`.
 2. Identify pathogen(s) and host(s), and whether an interaction phenotype is studied.
 3. Identify genes/proteins with experimental evidence (knockout, complementation,
    overexpression, biochemical, etc.).

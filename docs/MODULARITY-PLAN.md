@@ -50,8 +50,8 @@ The repo has two layers:
    so a module needing new tables/columns can't evolve the schema cleanly.
 6. **Aspirational vs actual architecture diverge**: the documented 6-module pipeline has no
    matching code seams.
-7. **Content-folder taxonomy drift**: two `07-` prefixes (`07-Standards`, `07-Wiki`), gaps
-   at 01/03/08/09/10.
+7. **Content-folder taxonomy drift**: there were two `07-` prefixes (`07-Standards` and the
+   old `07-Wiki`). **Resolved in P7** — `07-Wiki` → `08-Wiki`.
 
 ---
 
@@ -115,10 +115,10 @@ shippable, discoverable via the registry.
 | **P1** ✅ done (2026-06-11) | Package + metadata | Added `pyproject.toml`; created `phiweaver/` (`lookup/`, `tracking/`, `pipeline/`) and moved the lookup tools + db modules + pipeline + smoke test in; thin shims at old paths. **Chosen: run-from-root, install optional** (PEP 668 blocks `pip install -e .` locally). | Med (import paths) | ✅ Engine + tests have **zero `sys.path` hacks** (only shims do, by design); smoke 6/6 + 31 tests green run-from-root; `pip install -e .` works where allowed |
 | **P2** ✅ done (2026-06-11) | Module contract | `phiweaver/common/` holds the shared envelope (`utc_now`, `make_getter`, `ResponseCache`), used by both lookup tools; skill frontmatter (`backing_script`/`tests`/`inputs`/`outputs`) on all 4 skills; `phiweaver/registry.py` generates `skills/REGISTRY.md` and enforces the contract (`--check`, also a smoke check); `docs/ADDING-A-MODULE.md` checklist | Low | ✅ Every skill declares its wiring; registry generates + is enforced; new-module checklist documented; 39 tests + 7-check smoke green |
 | **P3** ✅ done with P1 | Test relocation | Tests moved to top-level `tests/`; smoke + discovery run from repo root (`-s tests`) | Low | ✅ One discovery root; no cross-tree `sys.path` in tests |
-| **P4** | Split `11-CLAUDE-AI/` | Engine → `phiweaver/`; agent/operational material → `agent/` or `docs/`; drop the stray converted-report JSON | Med (many refs) | No tool-agnostic engine code under a vendor-named folder; docs/refs updated |
+| **P4** ✅ done (2026-06-11) | Split `11-CLAUDE-AI/` | PDF-conversion engine → `phiweaver/pdf/` (shim left at old path); dropped the stray converted-report JSON; added `11-CLAUDE-AI/README.md` documenting the folder's operational role. Scoped: `obsidian_reorganise.py` + timeline generators stay as vault-operational tooling with their data (not curation engine). | Med (many refs) | ✅ The curation engine (lookup/tracking/pipeline/**pdf**) is all under `phiweaver/`; `11-CLAUDE-AI/` is documented as Claude-operational; docs/refs updated; smoke 7/7 |
 | **P5** ✅ done (2026-06-11) | Extensible DB | `phiweaver/tracking/migrations.py` (namespaced versioned runner; baseline = core v1) + `repository.py` (data-returning queries); `create_schema()` now just runs migrations; query methods delegate to the repository | Med | ✅ A module registers migrations under its own namespace without editing core; repository queries unit-tested without stdout capture; pre-existing DBs upgrade without data loss; 48 tests + smoke green |
 | **P6** | Fix skill→tool linkage | Reference `query_uniprot.py` from `uniprot-lookup`; backfill any other gaps | Low | Every backed skill names its script; covered by the registry check |
-| **P7** | Content taxonomy | Resolve the double `07-`; decide numbered-pipeline vs semantic names | Low | Folder scheme is consistent and documented |
+| **P7** ✅ done (2026-06-11) | Content taxonomy | Renamed `07-Wiki` → `08-Wiki` to break the duplicate `07-` prefix; updated all path references (code/docs/config + folder contents); session logs left as historical record. (A fuller semantic renumbering was judged low-value and deferred.) | Low | ✅ No duplicate folder prefixes; references updated; smoke 7/7 |
 
 **Recommended sequencing:** P6 (+ P7) are safe quick wins and can land first or anytime.
 P1→P3 deliver most of the "update/test parts independently" benefit. P4→P5 are what

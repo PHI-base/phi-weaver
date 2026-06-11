@@ -13,14 +13,14 @@ Wiki-style organization for PHI-Canto curation workflow and documentation.
 
 ## 📊 Registries (Auto-Generated)
 
-### [[07-Wiki/Article-Registry|📄 Article Registry Dashboard]]
+### [[08-Wiki/Article-Registry|📄 Article Registry Dashboard]]
 - Complete overview of literature curation pipeline
 - Status tracking with visual indicators  
 - Curator assignments and workload
 - Recent activity summary
 - **Auto-updates**: Run `python3 generate_article_registry.py`
 
-### [[07-Wiki/Protein-Registry|🧬 Protein Registry]]
+### [[08-Wiki/Protein-Registry|🧬 Protein Registry]]
 - Central catalog of all tracked proteins
 - Species organization and coverage
 - UniProt ID tracking
@@ -28,7 +28,7 @@ Wiki-style organization for PHI-Canto curation workflow and documentation.
 
 ## 📋 Templates
 
-### [[07-Wiki/Templates/Article-Template|📄 Article Template]]
+### [[08-Wiki/Templates/Article-Template|📄 Article Template]]
 - Standardized literature curation format
 - Complete metadata capture
 - Evidence documentation structure
@@ -41,7 +41,7 @@ Wiki-style organization for PHI-Canto curation workflow and documentation.
 
 ## 📖 Protocols
 
-### [[07-Wiki/Curation-Protocols/Standard-Process|📋 Standard Curation Process]]
+### [[08-Wiki/Curation-Protocols/Standard-Process|📋 Standard Curation Process]]
 - Complete 6-phase workflow
 - Quality standards and best practices
 - Evidence classification system
@@ -55,10 +55,10 @@ Wiki-style organization for PHI-Canto curation workflow and documentation.
 ## 🚀 Quick Start
 
 ### Daily Workflow
-1. **Check Pipeline**: [[07-Wiki/Article-Registry|Article Registry]]
+1. **Check Pipeline**: [[08-Wiki/Article-Registry|Article Registry]]
 2. **Select Article**: Priority-based assignment
-3. **Use Template**: [[07-Wiki/Templates/Article-Template|Article Template]]
-4. **Follow Protocol**: [[07-Wiki/Curation-Protocols/Standard-Process|Standard Process]]
+3. **Use Template**: [[08-Wiki/Templates/Article-Template|Article Template]]
+4. **Follow Protocol**: [[08-Wiki/Curation-Protocols/Standard-Process|Standard Process]]
 5. **Log Session**: `python3 session_logger.py quick "Project" "Summary" proteins interactions hours`
 6. **Update Registry**: Auto-generated on session completion
 
@@ -91,7 +91,7 @@ The session logger automatically:
 ## 📁 Wiki Structure
 
 ```
-07-Wiki/
+08-Wiki/
 ├── Article-Registry.md         # Auto-generated article dashboard
 ├── Protein-Registry.md         # Protein catalog (manual/auto)
 ├── README.md                   # This index page

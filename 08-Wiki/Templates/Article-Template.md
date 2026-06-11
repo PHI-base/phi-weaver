@@ -122,5 +122,5 @@ WHERE pmid = '{{pmid}}';
 **Next Steps:** {{next_steps}}
 
 **Links:**
-- [[07-Wiki/Article-Registry|Back to Article Registry]]
-- [[07-Wiki/Curation-Protocols/Standard-Process|Curation Protocol]]
+- [[08-Wiki/Article-Registry|Back to Article Registry]]
+- [[08-Wiki/Curation-Protocols/Standard-Process|Curation Protocol]]

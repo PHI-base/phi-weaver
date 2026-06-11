@@ -113,7 +113,7 @@ phi-weaver/ (Development Repo)
 ├── 05-Protocols/          # Curation protocols
 ├── 06-Training/           # Training materials
 ├── 07-Standards/          # Reference standards
-├── 07-Wiki/               # Protocols, registries, templates
+├── 08-Wiki/               # Protocols, registries, templates
 ├── skills/                # Reusable agent task workflows
 ├── content-links/         # External storage references
 ├── AGENTS.md              # Source of truth for agent instructions

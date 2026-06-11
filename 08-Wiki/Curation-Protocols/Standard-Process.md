@@ -40,7 +40,7 @@ python3 daily_curation.py add [PMID] "Article Title" "Journal" [Year]
 - [ ] **Experimental approach**: Molecular, biochemical, genetic, phenotypic
 
 ### 2.2 Create Article Note
-1. Use [[07-Wiki/Templates/Article-Template|Article Template]]
+1. Use [[08-Wiki/Templates/Article-Template|Article Template]]
 2. Fill in article metadata (PMID, DOI, journal, authors)
 3. Document pathogen-host system details
 4. Initial status: `queued` → `in_progress`
@@ -146,7 +146,7 @@ python3 daily_curation.py status [PMID] curated
 - [ ] Complete article note with all findings
 - [ ] Update database with final status: `curated` → `reviewed`
 - [ ] Generate session log with summary
-- [ ] Update [[07-Wiki/Article-Registry|Article Registry]]
+- [ ] Update [[08-Wiki/Article-Registry|Article Registry]]
 
 ## 🎯 Quality Standards
 
@@ -211,8 +211,8 @@ python3 session_logger.py quick "Project" "Work description" [proteins] [interac
 
 ## 📞 Help and Support
 
-- **Templates**: [[07-Wiki/Templates/Article-Template|Article Template]]
-- **Registry**: [[07-Wiki/Article-Registry|Article Registry Dashboard]]
+- **Templates**: [[08-Wiki/Templates/Article-Template|Article Template]]
+- **Registry**: [[08-Wiki/Article-Registry|Article Registry Dashboard]]
 - **Tools**: `11-CLAUDE-AI/db/` directory
 - **Session logs**: `11-CLAUDE-AI/SESSION-LOGS/` for historical context
 

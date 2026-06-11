@@ -27,9 +27,9 @@ python3 generate_protein_registry.py
 - More...
 
 ## Quick Actions
-- [[07-Wiki/Templates/Protein-Template|New Protein Template]]
-- [[07-Wiki/Article-Registry|Article Registry]]
-- [[07-Wiki/Curation-Protocols/Standard-Process|Curation Protocol]]
+- [[08-Wiki/Templates/Protein-Template|New Protein Template]]
+- [[08-Wiki/Article-Registry|Article Registry]]
+- [[08-Wiki/Curation-Protocols/Standard-Process|Curation Protocol]]
 
 ## Database Commands
 ```bash

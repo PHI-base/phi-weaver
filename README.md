@@ -36,7 +36,7 @@ phi-weaver/
 ├── 05-Protocols/               # Standard operating procedures
 ├── 06-Training/                # Curator onboarding and quick references
 ├── 07-Standards/               # Genetic nomenclature and ontology guides
-├── 07-Wiki/                    # Curation protocols, registries, templates
+├── 08-Wiki/                    # Curation protocols, registries, templates
 ├── 11-CLAUDE-AI/               # Automation tools and session management
 │   ├── curation_pipeline.py    # Master automation script
 │   ├── pdf-convert-skill/      # PDF processing system

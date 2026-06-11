@@ -13,7 +13,7 @@ class ArticleRegistryGenerator:
     def __init__(self):
         self.db = PHICantoSQLite()
         self.vault_root = str(Path(__file__).resolve().parents[2])
-        self.registry_path = f"{self.vault_root}/07-Wiki/Article-Registry.md"
+        self.registry_path = f"{self.vault_root}/08-Wiki/Article-Registry.md"
 
     def generate_registry(self):
         """Generate the complete article registry dashboard"""
@@ -22,7 +22,7 @@ class ArticleRegistryGenerator:
             return False
 
         # Ensure wiki directory exists
-        wiki_dir = f"{self.vault_root}/07-Wiki"
+        wiki_dir = f"{self.vault_root}/08-Wiki"
         os.makedirs(wiki_dir, exist_ok=True)
 
         try:
@@ -38,7 +38,7 @@ class ArticleRegistryGenerator:
             with open(self.registry_path, 'w', encoding='utf-8') as f:
                 f.write(content)
 
-            print(f"✅ Article Registry generated: 07-Wiki/Article-Registry.md")
+            print(f"✅ Article Registry generated: 08-Wiki/Article-Registry.md")
             return True
 
         except Exception as e:
@@ -233,8 +233,8 @@ last_updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
         # Quick actions section
         content += f"\n## 🚀 Quick Actions\n\n"
         content += "### Curation Workflow\n"
-        content += "1. [[07-Wiki/Templates/Article-Template|Use Article Template]] for new literature\n"
-        content += "2. [[07-Wiki/Curation-Protocols/Standard-Process|Follow Curation Protocol]]\n"
+        content += "1. [[08-Wiki/Templates/Article-Template|Use Article Template]] for new literature\n"
+        content += "2. [[08-Wiki/Curation-Protocols/Standard-Process|Follow Curation Protocol]]\n"
         content += "3. Use session logger: `python3 session_logger.py quick 'Project' 'Summary' proteins interactions hours`\n\n"
 
         content += "### Database Commands\n"
@@ -271,7 +271,7 @@ def main():
 
     if success:
         print("\n🎯 Article Registry Dashboard created!")
-        print("📄 Open: 07-Wiki/Article-Registry.md")
+        print("📄 Open: 08-Wiki/Article-Registry.md")
         print("🔄 To update: python3 generate_article_registry.py")
     else:
         print("❌ Failed to generate registry")

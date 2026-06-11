@@ -22,15 +22,11 @@ Simple, clean access to the advanced PDF converter without complex frameworks.
 ./convert-pdf.sh paper.pdf [options]
 ```
 
-### Method 2: **Direct Python**
+### Method 2: **Direct Python** (run from the repo root)
 ```bash
-python3 11-CLAUDE-AI/pdf-convert-skill/pdf-convert.py paper.pdf [options]
-```
-
-### Method 3: **From Any Directory**
-```bash
-# Add to your PATH or use full path
-python3 /path/to/vault/11-CLAUDE-AI/pdf-convert-skill/pdf-convert.py paper.pdf
+python3 -m phiweaver.pdf.pdf_convert paper.pdf [options]
+# the old path still works via a shim:
+# python3 11-CLAUDE-AI/pdf-convert-skill/pdf-convert.py paper.pdf [options]
 ```
 
 ## ⚙️ **Available Options**
@@ -74,8 +70,8 @@ paper_converted_report.json     # Conversion quality report
 
 ## 📚 **Documentation**
 
-- **Complete guide**: `11-CLAUDE-AI/pdf-convert-skill/PDF-CONVERT-SKILL.md`
-- **Configuration**: `11-CLAUDE-AI/pdf-convert-skill/pdf-convert-config.json`
+- **Complete guide**: `phiweaver/pdf/PDF-CONVERT-SKILL.md`
+- **Configuration**: `phiweaver/pdf/pdf-convert-config.json`
 - **Session log**: `11-CLAUDE-AI/SESSION-LOGS/2026-04-19-pdf-convert-skill-2.md`
 
 ---

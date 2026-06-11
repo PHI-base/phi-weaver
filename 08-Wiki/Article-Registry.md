@@ -54,8 +54,8 @@ last_updated: 2026-04-22 10:18:09
 ## 🚀 Quick Actions
 
 ### Curation Workflow
-1. [[07-Wiki/Templates/Article-Template|Use Article Template]] for new literature
-2. [[07-Wiki/Curation-Protocols/Standard-Process|Follow Curation Protocol]]
+1. [[08-Wiki/Templates/Article-Template|Use Article Template]] for new literature
+2. [[08-Wiki/Curation-Protocols/Standard-Process|Follow Curation Protocol]]
 3. Use session logger: `python3 session_logger.py quick 'Project' 'Summary' proteins interactions hours`
 
 ### Database Commands
