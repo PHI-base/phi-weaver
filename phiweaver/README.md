@@ -33,13 +33,20 @@ work via thin compatibility shims.
   `show_*` / `check_timestamps` reporters.
 - **`pipeline/`** — `curation_pipeline.py`, the PDF→curation orchestration (convert, place,
   track, record real completion metrics).
-- **`smoke.py`** — the fresh-checkout sanity check.
+- **`common/`** — the shared *module envelope*: `utc_now`, `make_getter` (lazy `requests`),
+  `ResponseCache`. Both lookup tools build on it instead of re-implementing.
+- **`registry.py`** — generates `skills/REGISTRY.md` from each skill's frontmatter and
+  enforces the contract (`python3 -m phiweaver.registry [--check]`).
+- **`smoke.py`** — the fresh-checkout sanity check (includes the contract check).
 
 ## Design contract (shared by every tool)
 - A structured result with a `status`, the payload, and **provenance** (source, cache
   hit/miss, UTC timestamp); `--json` for machine output; exit `0`/`1`.
 - **Injectable I/O** (HTTP getter / DB handle) so tests are deterministic and offline.
 - **Never guess** — ambiguity and "not found" are explicit statuses, never invented data.
+
+To add a specialised module, follow `../docs/ADDING-A-MODULE.md` (skill + tool + tests +
+`registry`).
 
 ## Tests
 Network-free; injected I/O. Run from the repo root:

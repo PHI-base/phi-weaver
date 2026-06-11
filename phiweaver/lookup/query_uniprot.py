@@ -28,11 +28,11 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import sqlite3
 from dataclasses import asdict, dataclass
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable, List, Optional
+
+from phiweaver.common import ResponseCache, make_getter, utc_now
 
 BASE_URL = "https://rest.uniprot.org"
 DEFAULT_FIELDS = (
@@ -75,71 +75,19 @@ class LookupResult:
         return asdict(self)
 
 
-def _now() -> str:
-    return datetime.now(timezone.utc).isoformat(timespec="seconds")
-
-
-# --------------------------------------------------------------------------- HTTP
-
-def _requests_get(url: str, params: dict):
-    """Default HTTP getter. Returns (status_code, json_or_None, headers_dict).
-
-    `requests` is imported lazily so the module loads/tests without it.
-    """
-    import requests
-
-    resp = requests.get(
-        url,
-        params=params,
-        timeout=30,
-        headers={"User-Agent": USER_AGENT, "Accept": "application/json"},
-    )
-    try:
-        body = resp.json()
-    except ValueError:
-        body = None
-    return resp.status_code, body, dict(resp.headers)
-
-
-# -------------------------------------------------------------------------- Cache
-
-class Cache:
-    """Tiny SQLite cache of raw UniProt JSON responses, keyed by request signature."""
-
-    def __init__(self, path=DEFAULT_CACHE):
-        self.path = Path(path)
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        self._conn = sqlite3.connect(str(self.path))
-        self._conn.execute(
-            "CREATE TABLE IF NOT EXISTS responses ("
-            " key TEXT PRIMARY KEY, payload TEXT NOT NULL, release TEXT, cached_at TEXT)"
-        )
-        self._conn.commit()
-
-    def get(self, key: str):
-        row = self._conn.execute(
-            "SELECT payload, release, cached_at FROM responses WHERE key = ?", (key,)
-        ).fetchone()
-        if not row:
-            return None
-        return {"payload": json.loads(row[0]), "release": row[1], "cached_at": row[2]}
-
-    def put(self, key: str, payload: dict, release: Optional[str]):
-        self._conn.execute(
-            "INSERT OR REPLACE INTO responses (key, payload, release, cached_at)"
-            " VALUES (?, ?, ?, ?)",
-            (key, json.dumps(payload), release, _now()),
-        )
-        self._conn.commit()
-
-    def close(self):
-        self._conn.close()
+# The provenance timestamp, HTTP getter and response cache come from the shared envelope
+# (phiweaver.common). `Cache`/`_now`/`_requests_get` are kept as module aliases for
+# backward compatibility (e.g. `query_uniprot.Cache(...)`).
+_now = utc_now
+_requests_get = make_getter(USER_AGENT)
+Cache = ResponseCache
 
 
 # ------------------------------------------------------------------------- Client
 
 class UniProtClient:
-    def __init__(self, cache: Optional[Cache] = None, http_get: Optional[Callable] = None):
+    def __init__(self, cache: Optional[ResponseCache] = None,
+                 http_get: Optional[Callable] = None):
         self.cache = cache
         self._http_get = http_get or _requests_get
 
@@ -148,13 +96,13 @@ class UniProtClient:
         if use_cache and self.cache:
             hit = self.cache.get(key)
             if hit:
-                return hit["payload"], hit["release"], True
+                return hit["payload"], hit["meta"].get("release"), True
         status, body, headers = self._http_get(url, params)
         if status != 200 or body is None:
             raise UniProtError(f"UniProt request failed (HTTP {status}) for {url}")
         release = headers.get("x-uniprot-release") or headers.get("X-UniProt-Release")
         if use_cache and self.cache:
-            self.cache.put(key, body, release)
+            self.cache.put(key, body, {"release": release})
         return body, release, False
 
     def lookup(self, gene=None, locus_tag=None, organism_id=None, accession=None,

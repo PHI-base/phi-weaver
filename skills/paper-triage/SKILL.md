@@ -1,6 +1,16 @@
 ---
 name: paper-triage
 description: Assess whether a paper contains curatable pathogen–host interaction data for PHI-base/PHI-Canto and outline what could be curated. Use when a new paper/PDF enters the pipeline.
+backing_script: null
+tests: null
+inputs:
+  - paper / PDF
+outputs:
+  - scope verdict + reason
+  - pathogen/host list with organisms
+  - candidate genes/proteins + evidence type
+  - candidate phenotype/disease items
+  - open questions / missing information
 ---
 
 # Paper Triage

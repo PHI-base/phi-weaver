@@ -1,6 +1,15 @@
 ---
 name: phipo-mapping
 description: Map described pathogen/host/interaction phenotypes to PHIPO ontology terms, with evidence and confidence. Use when annotating phenotypes for a curation.
+backing_script: phiweaver/lookup/validate_ontology_ids.py
+tests: tests/test_validate_ontology_ids.py
+inputs:
+  - phenotype description + source location
+  - phenotype category (pathogen / host / interaction)
+outputs:
+  - candidate PHIPO term ID(s) + label
+  - rationale + confidence per candidate
+  - explicit "no good match" where applicable
 ---
 
 # PHIPO Mapping

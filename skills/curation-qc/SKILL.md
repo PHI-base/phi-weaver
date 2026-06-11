@@ -1,6 +1,16 @@
 ---
 name: curation-qc
 description: Quality-check a draft curation for completeness, accuracy, and provenance before human review. Use before marking any curation ready for a curator.
+backing_script:
+  - phiweaver/lookup/validate_ontology_ids.py
+  - phiweaver/lookup/query_uniprot.py
+tests: tests/test_validate_ontology_ids.py
+inputs:
+  - draft curation (file or notes)
+outputs:
+  - QC report (pass / fail / needs-attention per check)
+  - ranked list of unresolved issues and missing data
+  - "draft — not validated" marker
 ---
 
 # Curation QC

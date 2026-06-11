@@ -1,6 +1,15 @@
 ---
 name: uniprot-lookup
 description: Resolve a gene or protein to a UniProtKB accession and evidence-backed function. Use before asserting any gene/protein identity or function in a curation.
+backing_script: phiweaver/lookup/query_uniprot.py
+tests: tests/test_query_uniprot.py
+inputs:
+  - gene name / locus tag / accession
+  - organism (NCBI taxon id)
+outputs:
+  - UniProtKB accession (or not_found / ambiguous)
+  - protein and gene names, organism
+  - function summary + evidence type (experimental vs inferred)
 ---
 
 # UniProt Lookup

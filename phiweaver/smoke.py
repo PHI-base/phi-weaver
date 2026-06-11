@@ -125,6 +125,14 @@ def _no_network(url, params):
     raise AssertionError("smoke test must not hit the network")
 
 
+def check_skill_contract():
+    """Every skill declares valid wiring and skills/REGISTRY.md is up to date."""
+    from phiweaver import registry
+    problems = registry.check(REPO_ROOT)
+    if problems:
+        raise AssertionError("; ".join(problems))
+
+
 def check_unit_tests():
     """The bundled unit-test suite passes (run from the repo root)."""
     proc = subprocess.run(
@@ -141,6 +149,7 @@ CHECKS = [
     ("pipeline root + storage bootstrap", check_pipeline_root_and_storage),
     ("DB schema create + query", check_db_schema),
     ("offline tools", check_offline_tooling),
+    ("skill contract + registry", check_skill_contract),
     ("unit-test suite", check_unit_tests),
 ]
 
