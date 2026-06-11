@@ -32,6 +32,27 @@ python3 phi_canto_sqlite.py    # creates phi_canto_tracking.db with sample data
 The DB file is gitignored (it holds per-curator progress), so each clone/Codespace starts
 fresh.
 
+> The tracking code now lives in the `phiweaver.tracking` package
+> (`phiweaver/tracking/…`); the scripts in this folder are thin compatibility shims.
+
+## Schema migrations
+
+The schema is managed by a tiny **versioned migration runner**
+(`phiweaver/tracking/migrations.py`). `PHICantoSQLite.create_schema()` just applies any
+pending migrations; it is idempotent and safe on a pre-existing DB. Versions are tracked
+per **namespace** in a `schema_migrations` table, so a **specialised module can add its own
+migrations without editing core**:
+
+```python
+from phiweaver.tracking import migrations
+migrations.register_migrations("mymodule", [("add foo table", "CREATE TABLE foo(...)")])
+migrations.run_migrations(conn)   # applies pending migrations for every namespace
+```
+
+Migrations are append-only — add new ones to the end of a namespace's list; never renumber
+or rewrite an applied one. Queries live in the data-returning `phiweaver/tracking/repository.py`
+(no printing), separate from the `PHICantoSQLite` methods that display them.
+
 ## Daily Workflow
 
 Use the helper scripts in this folder:

@@ -47,6 +47,16 @@ Every backed tool follows the shared *envelope* (`phiweaver/common`):
 6. **Wire in** — reference the tool from the skill's workflow (the command), and, if it
    should run during QC, from `curation-qc`.
 
+## Needs its own DB tables?
+Register migrations under your **own namespace** — no need to edit core schema:
+```python
+from phiweaver.tracking import migrations
+migrations.register_migrations("mymodule", [("add foo table", "CREATE TABLE foo(...)")])
+```
+Migrations are append-only and tracked per namespace in `schema_migrations`. Put queries in
+a data-returning module (like `phiweaver/tracking/repository.py`) so they test without
+capturing stdout.
+
 ## Conventions
 - Run from the repo root (`python3 -m phiweaver.<subpkg>.<tool>`); no install needed.
 - Derive paths from `phiweaver.repo_root()`, never hardcode machine paths.

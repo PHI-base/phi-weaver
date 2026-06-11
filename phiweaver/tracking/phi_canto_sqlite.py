@@ -9,6 +9,8 @@ from datetime import datetime, date
 import os
 from pathlib import Path
 
+from phiweaver.tracking import migrations, repository
+
 class PHICantoSQLite:
     def __init__(self, db_path='phi_canto_tracking.db'):
         """Initialize SQLite database connection"""
@@ -29,96 +31,22 @@ class PHICantoSQLite:
             return False
 
     def create_schema(self):
-        """Create database schema"""
-        schema_sql = """
-        -- Species table
-        CREATE TABLE IF NOT EXISTS species (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            type TEXT CHECK(type IN ('host', 'pathogen')) NOT NULL,
-            taxonomy_id INTEGER,
-            common_name TEXT,
-            notes TEXT,
-            created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
+        """Bring the database schema up to date by running all pending migrations.
 
-        -- Articles table
-        CREATE TABLE IF NOT EXISTS articles (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            pmid TEXT UNIQUE,
-            doi TEXT,
-            title TEXT NOT NULL,
-            journal TEXT,
-            pub_year INTEGER,
-            authors TEXT,
-            status TEXT CHECK(status IN ('queued', 'in_progress', 'curated', 'reviewed', 'published')) DEFAULT 'queued',
-            curator TEXT,
-            priority TEXT CHECK(priority IN ('low', 'medium', 'high')) DEFAULT 'medium',
-            obsidian_note_path TEXT,
-            created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-
-        -- Proteins table
-        CREATE TABLE IF NOT EXISTS proteins (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            gene_id TEXT,
-            uniprot_id TEXT,
-            species_id INTEGER,
-            name TEXT,
-            gene_name TEXT,
-            function_summary TEXT,
-            protein_type TEXT CHECK(protein_type IN ('effector', 'resistance', 'virulence', 'other')),
-            obsidian_note_path TEXT,
-            created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (species_id) REFERENCES species(id)
-        );
-
-        -- Curation sessions table
-        CREATE TABLE IF NOT EXISTS curation_sessions (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            session_date DATE NOT NULL,
-            curator TEXT NOT NULL,
-            article_id INTEGER,
-            session_duration_hours REAL,
-            proteins_curated INTEGER DEFAULT 0,
-            interactions_added INTEGER DEFAULT 0,
-            experiments_annotated INTEGER DEFAULT 0,
-            notes TEXT,
-            obsidian_session_log TEXT,
-            created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (article_id) REFERENCES articles(id)
-        );
-
-        -- Protein-article relationships
-        CREATE TABLE IF NOT EXISTS protein_article_mentions (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            protein_id INTEGER,
-            article_id INTEGER,
-            mention_context TEXT,
-            experimental_evidence TEXT CHECK(experimental_evidence IN ('complementation', 'knockout', 'overexpression', 'biochemical', 'other')),
-            curated INTEGER DEFAULT 0,
-            created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (protein_id) REFERENCES proteins(id),
-            FOREIGN KEY (article_id) REFERENCES articles(id),
-            UNIQUE(protein_id, article_id)
-        );
-
-        -- Create indexes for better performance
-        CREATE INDEX IF NOT EXISTS idx_articles_status ON articles(status);
-        CREATE INDEX IF NOT EXISTS idx_proteins_species ON proteins(species_id);
-        CREATE INDEX IF NOT EXISTS idx_sessions_curator_date ON curation_sessions(curator, session_date);
+        Delegates to phiweaver.tracking.migrations (the schema lives there as the v1
+        baseline). Idempotent and safe on a pre-existing DB; modules can register their
+        own migrations without editing this method.
         """
-
         try:
-            self.cursor.executescript(schema_sql)
-            self.connection.commit()
-            print("✅ Database schema created successfully")
+            applied = migrations.run_migrations(self.connection)
+            total = sum(applied.values())
+            if total:
+                print(f"✅ Database schema up to date ({total} migration(s) applied)")
+            else:
+                print("✅ Database schema already up to date")
             return True
         except sqlite3.Error as err:
-            print(f"❌ Error creating schema: {err}")
+            print(f"❌ Error applying migrations: {err}")
             return False
 
     def populate_sample_data(self):
@@ -197,23 +125,8 @@ class PHICantoSQLite:
         print("✅ Sample data inserted successfully")
 
     def get_curation_progress(self, days=30):
-        """Get curation progress summary"""
-        query = """
-        SELECT
-            DATE(session_date) as date,
-            curator,
-            COUNT(*) as sessions,
-            SUM(proteins_curated) as total_proteins,
-            SUM(interactions_added) as total_interactions,
-            SUM(session_duration_hours) as total_hours
-        FROM curation_sessions
-        WHERE session_date >= DATE('now', '-{} days')
-        GROUP BY DATE(session_date), curator
-        ORDER BY session_date DESC
-        """.format(days)
-
-        self.cursor.execute(query)
-        results = self.cursor.fetchall()
+        """Get curation progress summary (data from repository; this method prints)."""
+        results = repository.curation_progress(self.connection, days)
 
         print(f"\n📊 Curation Progress (Last {days} days)")
         print("-" * 80)
@@ -228,27 +141,8 @@ class PHICantoSQLite:
         return results
 
     def get_article_status(self):
-        """Get current status of articles"""
-        query = """
-        SELECT
-            a.status,
-            COUNT(a.id) as article_count,
-            COUNT(pam.id) as total_protein_mentions
-        FROM articles a
-        LEFT JOIN protein_article_mentions pam ON a.id = pam.article_id
-        GROUP BY a.status
-        ORDER BY
-            CASE a.status
-                WHEN 'queued' THEN 1
-                WHEN 'in_progress' THEN 2
-                WHEN 'curated' THEN 3
-                WHEN 'reviewed' THEN 4
-                WHEN 'published' THEN 5
-            END
-        """
-
-        self.cursor.execute(query)
-        results = self.cursor.fetchall()
+        """Get current status of articles (data from repository; this method prints)."""
+        results = repository.article_status(self.connection)
 
         print("\n📚 Article Curation Status")
         print("-" * 50)
@@ -259,23 +153,8 @@ class PHICantoSQLite:
         return results
 
     def find_effector_proteins(self, species_pattern=None):
-        """Find effector proteins"""
-        query = """
-        SELECT p.gene_id, p.name, p.gene_name, s.name as species_name, p.function_summary
-        FROM proteins p
-        JOIN species s ON p.species_id = s.id
-        WHERE p.protein_type = 'effector'
-        """
-
-        params = []
-        if species_pattern:
-            query += " AND s.name LIKE ?"
-            params.append(f"%{species_pattern}%")
-
-        query += " ORDER BY s.name, p.gene_id"
-
-        self.cursor.execute(query, params)
-        results = self.cursor.fetchall()
+        """Find effector proteins (data from repository; this method prints)."""
+        results = repository.effector_proteins(self.connection, species_pattern)
 
         print(f"\n🎯 Effector Proteins" + (f" (filtered by '{species_pattern}')" if species_pattern else ""))
         print("-" * 80)
@@ -366,22 +245,8 @@ class PHICantoSQLite:
 
     def get_completion_metrics(self):
         """Per-article completion metrics, aggregated from article-linked sessions, for
-        articles that have reached 'curated' or beyond."""
-        query = """
-        SELECT a.id, a.title, a.pmid, a.status, a.updated_date,
-               COUNT(cs.id) AS sessions,
-               COALESCE(SUM(cs.proteins_curated), 0) AS proteins,
-               COALESCE(SUM(cs.interactions_added), 0) AS interactions,
-               COALESCE(SUM(cs.experiments_annotated), 0) AS experiments,
-               COALESCE(SUM(cs.session_duration_hours), 0) AS hours
-        FROM articles a
-        LEFT JOIN curation_sessions cs ON cs.article_id = a.id
-        WHERE a.status IN ('curated', 'reviewed', 'published')
-        GROUP BY a.id
-        ORDER BY a.updated_date DESC
-        """
-        self.cursor.execute(query)
-        results = self.cursor.fetchall()
+        articles that have reached 'curated' or beyond (data from repository; prints)."""
+        results = repository.completion_metrics(self.connection)
 
         print("\n🏁 Completion Metrics (curated and beyond)")
         print("-" * 72)

@@ -85,14 +85,15 @@ class RecordCompletionTests(unittest.TestCase):
             db.disconnect()
 
     def test_completion_metrics_report_aggregates_linked_sessions(self):
+        # Query layer is tested via the repository — no stdout capture.
+        from phiweaver.tracking import repository
         with tempfile.TemporaryDirectory() as tmp:
             db = fresh_db(tmp)
             db.record_completion(base_name="A", summary="s", proteins_curated=2,
                                  interactions_added=4)
             db.record_completion(base_name="B", summary="s", proteins_curated=1,
                                  experiments_annotated=9)
-            with contextlib.redirect_stdout(io.StringIO()):
-                rows = db.get_completion_metrics()
+            rows = repository.completion_metrics(db.connection)
             titles = {r["title"]: r for r in rows}
             self.assertEqual(titles["A"]["proteins"], 2)
             self.assertEqual(titles["A"]["interactions"], 4)
@@ -100,8 +101,7 @@ class RecordCompletionTests(unittest.TestCase):
             # queued/in_progress articles must not appear
             db.cursor.execute("INSERT INTO articles (title, status) VALUES ('C', 'queued')")
             db.connection.commit()
-            with contextlib.redirect_stdout(io.StringIO()):
-                rows2 = db.get_completion_metrics()
+            rows2 = repository.completion_metrics(db.connection)
             self.assertNotIn("C", {r["title"] for r in rows2})
             db.disconnect()
 
