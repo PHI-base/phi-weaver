@@ -1,0 +1,148 @@
+# PHI-Weaver Modularity & Refactor Plan
+
+**Status:** proposal / not yet started · **Created:** 2026-06-11 · **Owner:** TBD
+
+A plan to make PHI-Weaver's parts independently **updatable and testable**, and to let
+**specialised curation modules** be plugged in later by following one contract. This is a
+**behaviour-preserving** restructure: nothing about curation output changes — only where
+code lives and how the pieces find each other. Every phase is staged behind the existing
+`scripts/smoke_test.py` and the unit suite.
+
+> Captured from the 2026-06-11 structure evaluation. Implement in the phase order below;
+> each phase is its own reviewable PR.
+
+---
+
+## 1. Where we are today
+
+The repo has two layers:
+
+- **Content vault** — numbered Obsidian folders (`00-Inbox` … `11-CLAUDE-AI`),
+  `content-links/`, and external literature storage (`../PHI-Canto-Literature/`, override
+  `PHI_LITERATURE_ROOT`).
+- **Tooling engine** — `scripts/`, `skills/`, `11-CLAUDE-AI/` (pipeline, `db/`,
+  `pdf-convert-skill/`, timeline generators), `docs/`, with `AGENTS.md` as the source of
+  truth and `CLAUDE.md` as a thin bridge.
+
+### What is already modular (keep, build on)
+- **`scripts/` is a strong module pattern**: deterministic tools, injected I/O, a
+  JSON + provenance + exit-code envelope, network-free tests. The template to extend.
+- **`skills/` are cleanly separated and tool-agnostic** (Claude Code via `CLAUDE.md`,
+  OpenCode natively) — a real plug-in seam.
+- **Content is externalised and overridable** — engine and data evolve independently.
+- **A test + smoke-test foundation exists** — the precondition for safe per-part updates.
+- **Paths derive from `__file__`**; `AGENTS.md` is a single source of truth.
+
+### Gaps that block modularity
+1. **`11-CLAUDE-AI/` is a grab-bag** (15 top-level entries) mixing the orchestrator, the DB
+   package, PDF conversion, timeline generators, session logs, docs, and a stray JSON
+   report — unrelated concerns, different cadences, in a Claude-specific folder that holds
+   tool-agnostic engine code.
+2. **No package boundary**: modules find each other through scattered `sys.path`
+   manipulation (4+ sites); no `pyproject.toml`, no defined import surface; tests reach
+   across trees.
+3. **Tests are centralised in `scripts/tests/` but cover code elsewhere** (`11-CLAUDE-AI/db`),
+   not co-located, discovery hardcoded to one path.
+4. **Skill→script links are prose-only and inconsistent** — `uniprot-lookup` never
+   references its backing `query_uniprot.py`; no machine-readable contract.
+5. **The DB layer resists extension**: `phi_canto_sqlite.py` bundles schema + sample data +
+   queries + `print()`; `create_schema()` is `CREATE IF NOT EXISTS` only — **no migrations**,
+   so a module needing new tables/columns can't evolve the schema cleanly.
+6. **Aspirational vs actual architecture diverge**: the documented 6-module pipeline has no
+   matching code seams.
+7. **Content-folder taxonomy drift**: two `07-` prefixes (`07-Standards`, `07-Wiki`), gaps
+   at 01/03/08/09/10.
+
+---
+
+## 2. Target shape
+
+### 2a. An importable package
+Replace `sys.path` glue with a real package installed via `pip install -e .`:
+
+```
+phiweaver/
+  __init__.py
+  lookup/            # query_uniprot.py, validate_ontology_ids.py
+  pipeline/          # curation_pipeline.py (orchestration only)
+  tracking/          # db: schema, migrations, repository, reporting
+  pdf/               # pdf-convert
+  common/            # shared: provenance envelope, HTTP-getter injection, cache
+pyproject.toml       # package metadata + console_scripts entry points
+tests/               # mirrors phiweaver/ ; one discovery root
+```
+
+Claude-specific / operational material (session logs, automation guide, timeline tools)
+moves out of the engine into an `agent/` (or stays in `docs/`), so the engine package is
+genuinely tool-agnostic — matching `AGENTS.md`.
+
+### 2b. The module contract (how a specialised module plugs in)
+A **module = a skill + a deterministic script + co-located tests**, all wired by a small,
+machine-readable contract. Standardise what `query_uniprot.py` / `validate_ontology_ids.py`
+already do:
+
+- **I/O envelope** (the module interface):
+  - structured result with a `status` field, the payload, and **provenance** (source,
+    cache hit/miss, UTC timestamp);
+  - `--json` for machine output, human summary otherwise;
+  - exit `0` on success / `1` on failure;
+  - **injectable I/O** (HTTP getter / DB handle) so tests are deterministic and offline;
+  - **never guess** — ambiguity and "not found" are explicit statuses, not invented data.
+- **Skill frontmatter** declares the wiring, e.g.:
+  ```yaml
+  ---
+  name: <skill>
+  description: <when to use>
+  backing_script: phiweaver/lookup/<tool>.py   # or null for reasoning-only skills
+  inputs: [ ... ]
+  outputs: [ ... ]
+  tests: tests/lookup/test_<tool>.py
+  ---
+  ```
+- **A generated registry** (`skills/REGISTRY.md` or a JSON manifest, produced by a script)
+  so an agent or human can enumerate available modules and their backing tools/tests.
+
+New specialised curation tasks then ship as: one skill folder + one script under the right
+subpackage + one test file, following the envelope. Independently testable, independently
+shippable, discoverable via the registry.
+
+---
+
+## 3. Phased migration (each phase = one PR, behind the smoke test)
+
+| Phase | Goal | Key moves | Risk | Done when |
+|------|------|-----------|------|-----------|
+| **P1** | Package + metadata | Add `pyproject.toml`; create `phiweaver/` and move `scripts/` tools + `db/` + pipeline in as subpackages (keep import shims if needed); `pip install -e .` | Med (import paths) | `pip install -e .` works; smoke + unit suite green with **zero `sys.path` hacks** |
+| **P2** | Module contract | Standardise the envelope in `common/`; add skill frontmatter (`backing_script`, `inputs`, `outputs`, `tests`); generate `skills/REGISTRY.md` | Low | Every skill declares its wiring; registry generates; a "new module" checklist documented |
+| **P3** | Test relocation | Move tests to `tests/` mirroring the package; smoke test + CI discover from repo root | Low | One discovery root; no cross-tree `sys.path` in tests |
+| **P4** | Split `11-CLAUDE-AI/` | Engine → `phiweaver/`; agent/operational material → `agent/` or `docs/`; drop the stray converted-report JSON | Med (many refs) | No tool-agnostic engine code under a vendor-named folder; docs/refs updated |
+| **P5** | Extensible DB | Split `phi_canto_sqlite.py` into `schema` + **versioned migration runner** + repository (returns data, no printing) + CLI presentation | Med | A module can add a migration without editing core; query layer unit-tested without stdout capture |
+| **P6** | Fix skill→tool linkage | Reference `query_uniprot.py` from `uniprot-lookup`; backfill any other gaps | Low | Every backed skill names its script; covered by the registry check |
+| **P7** | Content taxonomy | Resolve the double `07-`; decide numbered-pipeline vs semantic names | Low | Folder scheme is consistent and documented |
+
+**Recommended sequencing:** P6 (+ P7) are safe quick wins and can land first or anytime.
+P1→P3 deliver most of the "update/test parts independently" benefit. P4→P5 are what
+specifically unlock *new specialised modules*. Do P1 before P4/P5.
+
+---
+
+## 4. Guardrails
+
+- **Behaviour-preserving**: no change to curation outputs; if any behaviour must change,
+  call it out explicitly in that PR.
+- **Green gate every phase**: `python3 scripts/smoke_test.py` + `python3 -m unittest
+  discover` must pass before and after.
+- **No mass reformatting**; follow `AGENTS.md` §4 coding standards.
+- **Respect file-safety rules** (`AGENTS.md` §5): show moves/deletions; keep the DB and
+  literature out of git.
+- **One phase per PR**, small and reviewable; update affected docs in the same PR.
+
+---
+
+## 5. Open questions
+- Final name/location for agent-operational material (`agent/` vs `docs/` vs keep a slim
+  `11-CLAUDE-AI/` for session logs only).
+- Registry format: human `REGISTRY.md`, machine `registry.json`, or both (generated).
+- Migration runner: hand-rolled (a `schema_version` table + ordered SQL) vs a small
+  dependency — prefer hand-rolled to keep the zero-setup, stdlib-only promise.
+- Whether to keep the numbered content-folder scheme at all.

@@ -30,6 +30,7 @@ Index of all Claude Code session logs for OBS-PHI-Canto vault.
 | 2026-05-07 | [[2026-05-07-phi-curation-framework-github-prep]]     | PHI-Curation-Framework Repository Prep  | Prepared complete vault for GitHub sharing: sanitized personal configs, created comprehensive README, established collaborative workflow. |
 | 2026-06-10 | [[2026-06-10-phi-weaver-sync-restructure]]            | PHI-Weaver Sync, Restructure & Rebrand  | Synced renamed PHI-base/phi-weaver remote, fixed CRLF churn, made storage portable + Codespaces support, removed MySQL, renamed mysql-setup→db, docs/ move, full rebrand to PHI-Weaver. |
 | 2026-06-11 | [[2026-06-11-ontology-id-validation]]                 | Biocuration Tooling (3 improvements)    | Closed out the 2026-06-10 list: ontology-ID validator (PHIPO/GO/PHIDO/UniProtKB format + OLS obsolete check), fresh-checkout smoke test (also run on Codespace build), and real completion metrics in the tracking DB (article-linked sessions, status→curated, counts auto-derived from notes). 31 network-free tests; carried memories to the phi-weaver path. |
+| 2026-06-11 | [[2026-06-11-modularity-assessment]]                  | Modularity Assessment                   | Evaluated vault modularity (parts independently updatable/testable + future specialised modules); found grab-bag `11-CLAUDE-AI/`, sys.path glue, no package, no DB migrations, prose-only skill→tool links. Wrote phased plan to `docs/MODULARITY-PLAN.md`. No code changes. |
 
 ## Tags / Topics
 - **Vault setup**: 2026-04-11
@@ -44,3 +45,4 @@ Index of all Claude Code session logs for OBS-PHI-Canto vault.
 - **External Storage Migration**: 2026-05-07
 - **Repository Restructure & Rebrand**: 2026-06-10
 - **Biocuration Tooling**: 2026-06-11
+- **Architecture & Modularity**: 2026-06-11
