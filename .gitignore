@@ -49,6 +49,9 @@ __pycache__/
 *.pyo
 *.pyd
 
+# Local API-response caches for the scripts/ helper tools (UniProt, OLS)
+scripts/.cache/
+
 # Python virtual environment
 .venv/
 venv/

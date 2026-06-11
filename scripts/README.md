@@ -77,3 +77,51 @@ python3 -m unittest discover -s scripts/tests        # or: pytest scripts/tests
 ```
 Covers found / ambiguous / not-found, reviewed-before-TrEMBL ordering, function-evidence
 labelling, HTTP errors, direct accession fetch, and cache hits.
+
+## `validate_ontology_ids.py` — PHIPO / GO / PHIDO / UniProtKB ID validation
+
+Checks the identifiers a curation depends on, so an invented, mistyped, or **obsolete**
+term never reaches a curator. Backs the term-verification steps in the
+[`curation-qc`](../skills/curation-qc/SKILL.md) and
+[`phipo-mapping`](../skills/phipo-mapping/SKILL.md) skills.
+
+Two stages:
+1. **Format** (offline, always): the ID matches the official syntax for its prefix
+   (`GO`/`PHIPO`/`PHIDO` = 7-digit; UniProtKB = the canonical accession regex).
+2. **Existence / obsolescence** (online, OBO ontologies): the term exists and is current,
+   via the EBI **Ontology Lookup Service** (`https://www.ebi.ac.uk/ols4/api`).
+
+UniProtKB accessions are format-checked only here — their existence (and function) is the
+job of `query_uniprot.py`, so they are marked `format_checked_only` rather than re-looked-up.
+
+### CLI
+```bash
+# validate specific IDs (format + live OLS existence/obsolete check)
+python3 scripts/validate_ontology_ids.py PHIPO:0000001 GO:0009405
+
+# extract and validate every ontology ID found in a draft curation
+python3 scripts/validate_ontology_ids.py --file draft-curation.md
+
+# offline syntax check only (no network), machine-readable
+python3 scripts/validate_ontology_ids.py --format-only PHIPO:0000001 --json
+
+# options: --format-only  --json  --no-cache  --cache PATH (or ONTOLOGY_CACHE)
+```
+Exit code `0` only if every ID passes (valid format and not missing/obsolete); else `1`.
+
+### Behaviour (aligned with `AGENTS.md`)
+- **Never guesses / never corrects.** A bad-format ID is reported, not "fixed"; a term OLS
+  does not return is `not_found`, never assumed valid.
+- **Obsolete = fail.** The skills require non-obsolete terms; an obsolete term reports
+  `obsolete` and fails the run, carrying its label so the curator can find a replacement.
+- **Provenance.** Each online result records the source (OLS), cache hit/miss, and a UTC
+  timestamp.
+
+### Tests
+Network-free — the HTTP getter is injected:
+```bash
+python3 -m unittest discover -s scripts/tests        # or: pytest scripts/tests
+```
+Covers each ID format, exists / obsolete / not-found, format-invalid and unknown-prefix
+short-circuits (no network), UniProt format-checked-only, offline mode, HTTP errors,
+wrong-term-returned, cache hits, and free-text ID extraction.

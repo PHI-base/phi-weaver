@@ -16,7 +16,9 @@ described in a paper, without inventing term IDs.
 1. Extract the phenotype description verbatim from the source (with its location).
 2. Decide whether it is a single-species (pathogen or host) or interaction phenotype.
 3. Search PHIPO for candidate terms matching the description.
-4. Verify each candidate term ID exists and is current (not obsolete) in the ontology.
+4. Verify each candidate term ID exists and is current (not obsolete) in the ontology:
+   `python3 scripts/validate_ontology_ids.py PHIPO:XXXXXXX` (checks existence + obsolescence
+   via the EBI Ontology Lookup Service; never invent or "correct" an ID).
 5. Propose the best term(s) with rationale. If none fit well, say so and describe the
    gap rather than forcing a term.
 

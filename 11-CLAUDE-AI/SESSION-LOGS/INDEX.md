@@ -29,6 +29,7 @@ Index of all Claude Code session logs for OBS-PHI-Canto vault.
 | 2026-05-07 | [[2026-05-07-external-storage-migration]]             | External Storage Migration              | Infrastructure improvement: separated development vault from content storage, updated automation, improved performance.                    |
 | 2026-05-07 | [[2026-05-07-phi-curation-framework-github-prep]]     | PHI-Curation-Framework Repository Prep  | Prepared complete vault for GitHub sharing: sanitized personal configs, created comprehensive README, established collaborative workflow. |
 | 2026-06-10 | [[2026-06-10-phi-weaver-sync-restructure]]            | PHI-Weaver Sync, Restructure & Rebrand  | Synced renamed PHI-base/phi-weaver remote, fixed CRLF churn, made storage portable + Codespaces support, removed MySQL, renamed mysql-setup→db, docs/ move, full rebrand to PHI-Weaver. |
+| 2026-06-11 | [[2026-06-11-ontology-id-validation]]                 | Ontology-ID Validation Tool             | Built `scripts/validate_ontology_ids.py` (PHIPO/GO/PHIDO/UniProtKB format + OLS existence/obsolete check) with 16 network-free tests; wired into curation-qc & phipo-mapping skills; carried memories to the phi-weaver path; gitignored scripts/.cache. |
 
 ## Tags / Topics
 - **Vault setup**: 2026-04-11
@@ -42,3 +43,4 @@ Index of all Claude Code session logs for OBS-PHI-Canto vault.
 - **System Architecture**: 2026-04-24
 - **External Storage Migration**: 2026-05-07
 - **Repository Restructure & Rebrand**: 2026-06-10
+- **Biocuration Tooling**: 2026-06-11
