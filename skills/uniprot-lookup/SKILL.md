@@ -18,8 +18,11 @@ identity or function.
 ## Workflow
 1. Collect identifiers from the source: gene name/symbol, locus tag, organism, and
    sequence if given.
-2. Query UniProtKB for the organism + identifier. Prefer reviewed (Swiss-Prot) entries;
-   note when only unreviewed (TrEMBL) exists.
+2. Query UniProtKB for the organism + identifier with the backing script
+   `python3 scripts/query_uniprot.py --gene <NAME> --organism <TAXID>` (or
+   `--locus-tag` / `--accession`; add `--json` for machine output). It prefers reviewed
+   (Swiss-Prot) entries, flags TrEMBL as lower confidence, returns `ambiguous` with all
+   candidates rather than guessing, and records provenance (UniProt release + timestamp).
 3. Confirm the match by organism and gene/locus. If ambiguous, list candidates rather
    than guessing.
 4. Extract: primary accession, protein name, gene name(s), organism, and function with
