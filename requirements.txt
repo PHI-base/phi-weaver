@@ -1,1 +1,4 @@
-PyMuPDF>=1.27.0
+# Optional runtime deps. Core tooling, tests and scripts/smoke_test.py run without these;
+# they are only needed for the live features noted below.
+PyMuPDF>=1.27.0   # PDF -> markdown conversion (11-CLAUDE-AI/pdf-convert-skill)
+requests>=2.28    # live UniProt / OLS lookups (scripts/query_uniprot.py, validate_ontology_ids.py)

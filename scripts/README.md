@@ -125,3 +125,19 @@ python3 -m unittest discover -s scripts/tests        # or: pytest scripts/tests
 Covers each ID format, exists / obsolete / not-found, format-invalid and unknown-prefix
 short-circuits (no network), UniProt format-checked-only, offline mode, HTTP errors,
 wrong-term-returned, cache hits, and free-text ID extraction.
+
+## `smoke_test.py` — fresh-checkout sanity check
+
+Answers "I just cloned this repo — does the core tooling work here?" in one command.
+**Network-free and needs zero pip installs** (the optional deps are only for live lookups
+/ PDF conversion), so it's the first thing to run on a fresh clone or in a new Codespace.
+
+```bash
+python3 scripts/smoke_test.py          # human checklist, exit 0/1
+python3 scripts/smoke_test.py --quiet  # summary + failures only
+```
+
+Checks: repo layout · all core modules import with stdlib only · the pipeline
+auto-detects the repo root and bootstraps the `active/completed/media` storage folders ·
+a fresh SQLite tracking DB creates its schema and accepts a row · the offline scripts
+behave · the unit-test suite passes. Exit `0` only if every check is green.

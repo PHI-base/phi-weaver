@@ -10,12 +10,21 @@ On the GitHub repo page (`PHI-base/phi-weaver`): **Code ▸ Codespaces ▸ Creat
 
 The devcontainer builds automatically and:
 - installs Python 3.11, `git`, `gh`, Node
-- runs `pip install -r requirements.txt` (this brings in **PyMuPDF**, the PDF converter's
-  only dependency)
+- runs `pip install -r requirements.txt` (PDF conversion needs **PyMuPDF**; live
+  UniProt/OLS lookups need **requests**)
 - installs the Claude Code VS Code extension (`anthropic.claude-dev`)
 - sets `PHI_CURATION_ENV=codespace`
 
 Wait for the terminal to show setup is complete.
+
+## 1b. Verify the checkout (optional, ~1 s)
+
+```bash
+python3 scripts/smoke_test.py
+```
+
+This network-free check confirms the tooling imports, the storage folders bootstrap, the
+tracking DB builds, and the tests pass. All green means you're good to go.
 
 ## 2. Storage is already configured
 

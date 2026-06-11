@@ -49,6 +49,13 @@ Deterministic validator for the IDs a curation depends on, in two stages:
 - Referenced it from `skills/curation-qc/SKILL.md` (step 2, `--file` whole-draft check) and `skills/phipo-mapping/SKILL.md` (step 4, per-term check).
 - Fixed a latent gap: `scripts/.cache/` was **not** actually gitignored (the UniProt README claimed it was) — added it; both caches now ignored.
 
+### 6. New tool: `scripts/smoke_test.py` (fresh-checkout sanity check)
+- One command to answer "I just cloned this — does the tooling work here?". **Network-free, zero pip installs** (optional deps are only for live lookups / PDF conversion).
+- Six checks: repo layout · all core modules import with **stdlib only** · pipeline auto-detects repo root + bootstraps `active/completed/media` storage (via a temp `PHI_LITERATURE_ROOT`) · fresh SQLite tracking DB creates schema + accepts a row · offline scripts behave · the unit-test suite passes. Exit `0/1`; `--quiet` for summary only.
+- Verified both directions: all green on a normal run **and** with `requests`/PyMuPDF blocked (simulated bare checkout); confirmed a forced check failure exits `1`.
+- Wired into docs: `scripts/README.md` section + a "1b. Verify the checkout" step in `docs/DEMO-CODESPACES.md`.
+- Fixed a latent gap: `requirements.txt` listed only PyMuPDF though the UniProt README told users `pip install -r requirements.txt` brings in `requests` — added `requests>=2.28` with comments on what each dep is actually for.
+
 ## 📝 Key Decisions
 
 - **OLS over per-ontology APIs**: one REST service resolves PHIPO/GO/PHIDO uniformly and exposes `is_obsolete` directly. UniProt existence intentionally left to `query_uniprot.py` rather than duplicated.
@@ -62,14 +69,15 @@ Deterministic validator for the IDs a curation depends on, in two stages:
 
 ## 🔜 Recommendations for Future Sessions
 
-- Remaining items from 2026-06-10: **real completion metrics into the tracking DB**, and an end-to-end **smoke test** for a fresh checkout.
+- Remaining item from 2026-06-10: **real completion metrics into the tracking DB** (the smoke test is now done, see §6).
 - Consider having `curation-qc` shell out to `validate_ontology_ids.py --file` automatically as part of its report generation.
+- Consider running `smoke_test.py` from the devcontainer `postCreateCommand` so a Codespace self-verifies on build.
 - Optional: split the large `11-CLAUDE-AI/` folder (touches timeline-script paths — do as its own tested effort).
 
 ## Files
 
-- New: `scripts/validate_ontology_ids.py`, `scripts/tests/test_validate_ontology_ids.py`
-- Edited: `scripts/README.md`, `skills/curation-qc/SKILL.md`, `skills/phipo-mapping/SKILL.md`, `.gitignore`
+- New: `scripts/validate_ontology_ids.py`, `scripts/tests/test_validate_ontology_ids.py`, `scripts/smoke_test.py`
+- Edited: `scripts/README.md`, `skills/curation-qc/SKILL.md`, `skills/phipo-mapping/SKILL.md`, `.gitignore`, `requirements.txt`, `docs/DEMO-CODESPACES.md`
 
 ---
 
