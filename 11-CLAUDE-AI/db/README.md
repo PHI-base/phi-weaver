@@ -42,6 +42,7 @@ python3 session_logger.py quick 'Project Name' 'Summary' [proteins] [interaction
 
 # Progress analytics and gaps
 python3 daily_curation.py progress    # recent work
+python3 daily_curation.py completed   # real completion metrics per curated article
 python3 daily_curation.py gaps        # data needing attention
 python3 daily_curation.py help        # all commands
 
@@ -69,6 +70,16 @@ protein_article_mentions (id, protein_id, article_id, experimental_evidence, cur
 Key features: precise `YYYY-MM-DD HH:MM:SS` timestamps on all activity, `obsidian_note_path`
 fields linking records back to markdown notes, article workflow status
 (queued → in_progress → curated → reviewed → published), and progress analytics over time.
+
+### Completion metrics
+
+When `curation_pipeline.py complete-paper` finishes a paper it calls
+`PHICantoSQLite.record_completion()`, which **in one transaction** flips the article to
+`curated` and inserts a `curation_sessions` row **linked to that article** (`article_id`)
+carrying the real counts. Counts not supplied on the command line are derived
+deterministically from the curation notes (distinct UniProtKB accessions, locus tags, and
+ontology terms actually present). View the aggregated per-article result with
+`daily_curation.py completed` (or `PHICantoSQLite.get_completion_metrics()`).
 
 ## Example Queries (SQLite syntax)
 

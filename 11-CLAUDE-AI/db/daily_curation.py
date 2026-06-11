@@ -104,6 +104,15 @@ def show_progress():
 
     db.disconnect()
 
+def show_completed():
+    """Show real completion metrics per curated article"""
+    db = PHICantoSQLite()
+    if not db.connect():
+        return
+
+    db.get_completion_metrics()
+    db.disconnect()
+
 def find_gaps():
     """Find proteins and articles that need attention"""
     db = PHICantoSQLite()
@@ -147,6 +156,7 @@ def show_help():
     print("python3 daily_curation.py add 12345 'Title'      - Add article to pipeline")
     print("python3 daily_curation.py status 12345 curated   - Update article status")
     print("python3 daily_curation.py progress               - Show progress summary")
+    print("python3 daily_curation.py completed              - Show completion metrics per curated article")
     print("python3 daily_curation.py gaps                   - Find data gaps")
     print("python3 daily_curation.py help                   - Show this help")
     print()
@@ -180,6 +190,9 @@ if __name__ == "__main__":
 
     elif command == "progress":
         show_progress()
+
+    elif command == "completed":
+        show_completed()
 
     elif command == "gaps":
         find_gaps()

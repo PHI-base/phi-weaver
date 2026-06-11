@@ -288,6 +288,112 @@ class PHICantoSQLite:
 
         return results
 
+    DEFAULT_CURATOR = "martin.urban"
+
+    def record_completion(self, base_name, summary, note_path=None, pmid=None,
+                          proteins_curated=0, interactions_added=0,
+                          experiments_annotated=0, session_duration_hours=None,
+                          derived_notes=None, curator=None, session_date=None):
+        """Record a finished curation: flip its article to 'curated' and log a real,
+        article-linked completion session — in one transaction.
+
+        This is the authoritative "completion metrics" entry point, replacing the old
+        behaviour where completion logged a session with hardcoded zero counts and never
+        updated article status.
+
+        The article is matched by pmid, then obsidian_note_path, then title; if none
+        exists yet (e.g. it was never added during intake), a minimal row is created so
+        the metrics always have somewhere to attach.
+
+        Returns a dict describing what was recorded.
+        """
+        if session_date is None:
+            session_date = date.today()
+        if isinstance(session_date, date):
+            session_date = session_date.isoformat()  # avoid the 3.12 date-adapter warning
+        curator = curator or self.DEFAULT_CURATOR
+        cur = self.cursor
+
+        # 1. Find the article (pmid → note_path → title), else create a minimal row.
+        article_id = None
+        for column, value in (("pmid", pmid), ("obsidian_note_path", note_path),
+                              ("title", base_name)):
+            if not value:
+                continue
+            row = cur.execute(
+                f"SELECT id FROM articles WHERE {column} = ?", (value,)).fetchone()
+            if row:
+                article_id = row["id"]
+                break
+
+        article_created = False
+        if article_id is None:
+            cur.execute(
+                "INSERT INTO articles (pmid, title, status, curator, obsidian_note_path)"
+                " VALUES (?, ?, 'curated', ?, ?)",
+                (pmid, base_name, curator, note_path))
+            article_id = cur.lastrowid
+            article_created = True
+        else:
+            cur.execute(
+                "UPDATE articles SET status = 'curated', updated_date = CURRENT_TIMESTAMP"
+                " WHERE id = ?", (article_id,))
+
+        # 2. Log the completion session, linked to the article, with real metrics.
+        notes = f"Completed: {summary}"
+        if derived_notes:
+            notes += f" | {derived_notes}"
+        cur.execute(
+            "INSERT INTO curation_sessions"
+            " (session_date, curator, article_id, session_duration_hours,"
+            "  proteins_curated, interactions_added, experiments_annotated, notes)"
+            " VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (session_date, curator, article_id, session_duration_hours,
+             proteins_curated, interactions_added, experiments_annotated, notes))
+        session_id = cur.lastrowid
+        self.connection.commit()
+
+        return {
+            "article_id": article_id,
+            "article_created": article_created,
+            "session_id": session_id,
+            "status": "curated",
+            "proteins_curated": proteins_curated,
+            "interactions_added": interactions_added,
+            "experiments_annotated": experiments_annotated,
+            "session_duration_hours": session_duration_hours,
+        }
+
+    def get_completion_metrics(self):
+        """Per-article completion metrics, aggregated from article-linked sessions, for
+        articles that have reached 'curated' or beyond."""
+        query = """
+        SELECT a.id, a.title, a.pmid, a.status, a.updated_date,
+               COUNT(cs.id) AS sessions,
+               COALESCE(SUM(cs.proteins_curated), 0) AS proteins,
+               COALESCE(SUM(cs.interactions_added), 0) AS interactions,
+               COALESCE(SUM(cs.experiments_annotated), 0) AS experiments,
+               COALESCE(SUM(cs.session_duration_hours), 0) AS hours
+        FROM articles a
+        LEFT JOIN curation_sessions cs ON cs.article_id = a.id
+        WHERE a.status IN ('curated', 'reviewed', 'published')
+        GROUP BY a.id
+        ORDER BY a.updated_date DESC
+        """
+        self.cursor.execute(query)
+        results = self.cursor.fetchall()
+
+        print("\n🏁 Completion Metrics (curated and beyond)")
+        print("-" * 72)
+        if not results:
+            print("No completed curations recorded yet.")
+        for r in results:
+            print(f"✅ {r['title'][:50]} (PMID {r['pmid'] or '—'}) [{r['status']}]")
+            print(f"   proteins {r['proteins']} | interactions {r['interactions']} | "
+                  f"experiments {r['experiments']} | hours {r['hours']} | "
+                  f"sessions {r['sessions']}")
+        return results
+
     def disconnect(self):
         """Close database connection"""
         if self.cursor:

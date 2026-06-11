@@ -25,6 +25,7 @@ Usage:
 
 import sys
 import os
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -37,10 +38,51 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'db'))
 
 try:
     from session_logger import quick_session
+    from phi_canto_sqlite import PHICantoSQLite
     HAS_DB = True
 except ImportError:
     print("⚠️  Database integration not available - continuing without DB logging")
     HAS_DB = False
+
+# Fungal-style locus tags (e.g. FGSG_11164) — a real, content-derived protein signal,
+# since papers in this corpus often cite proteins by locus tag rather than accession.
+LOCUS_TAG_RE = re.compile(r"\b[A-Z]{2,6}_\d{4,6}\b")
+
+
+def derive_completion_metrics(notes_path):
+    """Deterministically count the identifiers actually present in a curation notes file.
+
+    Reuses the ID extractor from scripts/validate_ontology_ids.py so the counts stay
+    consistent with the QC tool. Returns distinct counts plus a human-readable provenance
+    string. Never guesses: if the file is unreadable, all counts are zero.
+    """
+    blank = {"uniprot": 0, "locus_tags": 0, "ontology_terms": 0, "proteins": 0,
+             "summary": "no curation notes file to scan"}
+    try:
+        text = Path(notes_path).read_text(encoding="utf-8")
+    except OSError:
+        return blank
+
+    scripts_dir = Path(__file__).resolve().parents[1] / "scripts"
+    if str(scripts_dir) not in sys.path:
+        sys.path.insert(0, str(scripts_dir))
+    from validate_ontology_ids import extract_ids  # local, deterministic
+
+    uniprot, ontology = set(), set()
+    for token in extract_ids(text):
+        prefix = token.split(":", 1)[0].upper()
+        if prefix in ("UNIPROT", "UNIPROTKB"):
+            uniprot.add(token.split(":", 1)[1].upper())
+        else:  # PHIPO / GO / PHIDO
+            ontology.add(token.upper())
+    locus_tags = {m.group(0) for m in LOCUS_TAG_RE.finditer(text)}
+
+    # Distinct proteins referenced, by either accession or locus tag.
+    proteins = len(uniprot) + len(locus_tags)
+    summary = (f"derived from notes: {len(uniprot)} UniProtKB accession(s), "
+               f"{len(locus_tags)} locus tag(s), {len(ontology)} ontology term(s)")
+    return {"uniprot": len(uniprot), "locus_tags": len(locus_tags),
+            "ontology_terms": len(ontology), "proteins": proteins, "summary": summary}
 
 class CurationPipeline:
     def __init__(self):
@@ -66,6 +108,9 @@ class CurationPipeline:
         self.literature_path = self.external_storage / "completed"
         self.media_path = self.external_storage / "media"
         # Tools live inside the repo itself
+        # The tracking DB has a fixed home so completion metrics always land in the same
+        # file regardless of the current working directory.
+        self.db_path = self.vault_root / "11-CLAUDE-AI" / "db" / "phi_canto_tracking.db"
         self.pdf_converter = self.vault_root / "11-CLAUDE-AI" / "pdf-convert-skill" / "pdf-convert.py"
         self.reorganizer = self.vault_root / "11-CLAUDE-AI" / "obsidian_reorganise.py"
         self.reorganizer_config = self.vault_root / "11-CLAUDE-AI" / "reorganise-config-OBS-PHI-Canto.yaml"
@@ -171,8 +216,16 @@ class CurationPipeline:
 
         return True
 
-    def complete_paper_workflow(self, filename, summary):
-        """Complete curation and move files to Literature folder"""
+    def complete_paper_workflow(self, filename, summary, proteins=None,
+                                interactions=None, experiments=None, hours=None,
+                                pmid=None):
+        """Complete curation and move files to Literature folder.
+
+        Records real completion metrics in the tracking DB: any counts not given
+        explicitly are derived from the curation notes (distinct UniProtKB accessions,
+        locus tags and ontology terms actually present), and the article is flipped to
+        'curated' with the session linked to it.
+        """
         print(f"🏁 Completing Curation: {filename}")
         print("=" * 50)
 
@@ -221,21 +274,39 @@ class CurationPipeline:
                 file.unlink()
                 self.log_action(f"🧹 Cleaned up: {file.name}")
 
-        # Step 2: Log completion session
+        # Step 2: Record real completion metrics in the tracking DB
+        notes_path = self.literature_path / f"{base_name}-Curation-Notes.md"
+        derived = derive_completion_metrics(notes_path)
+        # Explicit counts win; otherwise fall back to what the notes actually contain.
+        proteins_final = proteins if proteins is not None else derived["proteins"]
+        interactions_final = interactions if interactions is not None else 0
+        experiments_final = experiments if experiments is not None else derived["ontology_terms"]
+        self.log_action("Completion metrics", derived["summary"])
+
         if HAS_DB:
-            self.log_action("Logging completion session")
+            self.log_action("Recording completion in tracking DB")
             try:
-                result = quick_session(
-                    project=f"Complete {base_name}",
-                    summary=summary,
-                    proteins=0,  # User can specify these
-                    interactions=0,
-                    hours=None
-                )
-                if result:
-                    self.log_action(f"✅ Session logged: {result['session_id']}")
+                db = PHICantoSQLite(str(self.db_path))
+                if db.connect():
+                    db.create_schema()  # no-op if it already exists
+                    result = db.record_completion(
+                        base_name=base_name, summary=summary,
+                        note_path=str(notes_path), pmid=pmid,
+                        proteins_curated=proteins_final,
+                        interactions_added=interactions_final,
+                        experiments_annotated=experiments_final,
+                        session_duration_hours=hours,
+                        derived_notes=derived["summary"],
+                    )
+                    db.disconnect()
+                    verb = "created" if result["article_created"] else "updated"
+                    self.log_action(
+                        f"✅ Article {verb} → curated (session {result['session_id']}): "
+                        f"{proteins_final} proteins, {interactions_final} interactions, "
+                        f"{experiments_final} experiments"
+                        + (f", {hours} h" if hours else ""))
             except Exception as e:
-                self.log_action(f"⚠️  Session logging error: {e}")
+                self.log_action(f"⚠️  Completion logging error: {e}")
 
         # Step 3: Update literature index if it exists
         self.update_literature_index(base_name, summary)
@@ -325,7 +396,10 @@ Complete automation for PDF curation workflow.
 Commands:
   new-paper <pdf_path>           Copy PDF to vault and process
   process-pdf <filename>         Process PDF already in To-curate
-  complete-paper <filename> <summary>  Move completed curation to Literature
+  complete-paper <filename> <summary> [proteins] [interactions] [experiments] [hours]
+                                 Move completed curation to Literature and record real
+                                 completion metrics (counts auto-derived from the notes
+                                 when not given; article flipped to 'curated')
   auto-process <pdf_path>        Full automation: copy + process
   help                          Show this help
 
@@ -336,8 +410,11 @@ Examples:
   # Process PDF already in To-curate folder
   python3 curation_pipeline.py process-pdf paper.pdf
 
-  # Complete curation
+  # Complete curation (metrics auto-derived from the curation notes)
   python3 curation_pipeline.py complete-paper paper.pdf "Added 5 effector proteins"
+
+  # Complete curation with explicit metrics (proteins interactions experiments hours)
+  python3 curation_pipeline.py complete-paper paper.pdf "5 effectors" 5 8 12 3.5
 
   # Full automation
   python3 curation_pipeline.py auto-process ~/Downloads/paper.pdf
@@ -370,9 +447,14 @@ def main():
 
     elif command == "complete-paper":
         if len(sys.argv) < 4:
-            print("Usage: complete-paper <filename> <summary>")
+            print("Usage: complete-paper <filename> <summary> "
+                  "[proteins] [interactions] [experiments] [hours]")
             return
-        pipeline.complete_paper_workflow(sys.argv[2], sys.argv[3])
+        as_int = lambda i: int(sys.argv[i]) if len(sys.argv) > i else None
+        pipeline.complete_paper_workflow(
+            sys.argv[2], sys.argv[3],
+            proteins=as_int(4), interactions=as_int(5), experiments=as_int(6),
+            hours=(float(sys.argv[7]) if len(sys.argv) > 7 else None))
 
     elif command == "auto-process":
         if len(sys.argv) < 3:

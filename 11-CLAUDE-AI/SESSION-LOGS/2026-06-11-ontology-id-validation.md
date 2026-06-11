@@ -56,6 +56,14 @@ Deterministic validator for the IDs a curation depends on, in two stages:
 - Wired into docs: `scripts/README.md` section + a "1b. Verify the checkout" step in `docs/DEMO-CODESPACES.md`.
 - Fixed a latent gap: `requirements.txt` listed only PyMuPDF though the UniProt README told users `pip install -r requirements.txt` brings in `requests` — added `requests>=2.28` with comments on what each dep is actually for.
 
+### 7. Real completion metrics in the tracking DB
+- **Problem:** `complete_paper_workflow` logged a session with hardcoded `proteins=0, interactions=0`, never linked it to the article, and never flipped the article to `curated` — so "completion metrics" were fake zeros.
+- **DB primitive:** `PHICantoSQLite.record_completion()` — in one transaction, finds the article (pmid → note_path → title, creating a minimal row if none exists), flips it to `curated`, and inserts a **article-linked** (`article_id`) `curation_sessions` row with the real counts. Plus `get_completion_metrics()` aggregating per curated article.
+- **Content-derived metrics:** `curation_pipeline.derive_completion_metrics()` counts the identifiers actually present in the curation notes — distinct UniProtKB accessions, fungal locus tags (`FGSG_…`), and ontology terms — reusing `validate_ontology_ids.extract_ids` so it stays consistent with the QC tool. Explicit CLI counts win; otherwise these fill in.
+- **Wiring:** `complete-paper` now takes optional `[proteins] [interactions] [experiments] [hours]`, writes to the **canonical DB path** (`11-CLAUDE-AI/db/phi_canto_tracking.db`, anchored regardless of CWD), and prints what it recorded. New `daily_curation.py completed` report.
+- **Verified end-to-end** against a temp storage root + temp DB (1 accession + 2 locus tags → 3 proteins, 2 ontology terms → article created + curated + linked session) and against the real DB (`completed` shows the existing curated FgTPP1 article's metrics). Fixed the Python 3.12 date-adapter deprecation by storing ISO date strings.
+- 6 new tests (article create/update/match-by-note-path, report aggregation + status filter, deriver counting + missing-file). Full suite **31 passing**.
+
 ## 📝 Key Decisions
 
 - **OLS over per-ontology APIs**: one REST service resolves PHIPO/GO/PHIDO uniformly and exposes `is_obsolete` directly. UniProt existence intentionally left to `query_uniprot.py` rather than duplicated.
@@ -69,15 +77,16 @@ Deterministic validator for the IDs a curation depends on, in two stages:
 
 ## 🔜 Recommendations for Future Sessions
 
-- Remaining item from 2026-06-10: **real completion metrics into the tracking DB** (the smoke test is now done, see §6).
+- **All three deeper-biocuration items from 2026-06-10 are now done** (ontology-ID validation §2, smoke test §6, completion metrics §7).
 - Consider having `curation-qc` shell out to `validate_ontology_ids.py --file` automatically as part of its report generation.
+- The interactions count still can't be reliably content-derived (needs explicit entry) — a future improvement could parse interaction statements.
 - ~~Run `smoke_test.py` from the devcontainer `postCreateCommand`~~ — **done**: added as the final, non-blocking (`|| echo`) `postCreateCommand` step in `.devcontainer/devcontainer.json`, so a Codespace self-verifies on build.
 - Optional: split the large `11-CLAUDE-AI/` folder (touches timeline-script paths — do as its own tested effort).
 
 ## Files
 
-- New: `scripts/validate_ontology_ids.py`, `scripts/tests/test_validate_ontology_ids.py`, `scripts/smoke_test.py`
-- Edited: `scripts/README.md`, `skills/curation-qc/SKILL.md`, `skills/phipo-mapping/SKILL.md`, `.gitignore`, `requirements.txt`, `docs/DEMO-CODESPACES.md`, `.devcontainer/devcontainer.json`
+- New: `scripts/validate_ontology_ids.py`, `scripts/tests/test_validate_ontology_ids.py`, `scripts/smoke_test.py`, `scripts/tests/test_completion_metrics.py`
+- Edited: `scripts/README.md`, `skills/curation-qc/SKILL.md`, `skills/phipo-mapping/SKILL.md`, `.gitignore`, `requirements.txt`, `docs/DEMO-CODESPACES.md`, `.devcontainer/devcontainer.json`, `11-CLAUDE-AI/curation_pipeline.py`, `11-CLAUDE-AI/db/phi_canto_sqlite.py`, `11-CLAUDE-AI/db/daily_curation.py`, `11-CLAUDE-AI/AUTOMATION-GUIDE.md`, `11-CLAUDE-AI/db/README.md`
 
 ---
 

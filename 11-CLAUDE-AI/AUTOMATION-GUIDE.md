@@ -21,8 +21,16 @@ python3 curation_pipeline.py process-pdf paper.pdf
 
 ### Complete Curation
 ```bash
-# When finished - moves to Literature folder with logging
+# When finished - moves to Literature, flips the article to 'curated', and records
+# REAL completion metrics. Counts not given are auto-derived from the curation notes
+# (distinct UniProtKB accessions, locus tags, and ontology terms actually present).
 python3 curation_pipeline.py complete-paper paper.pdf "Added 3 effectors, 5 interactions"
+
+# ...or pass explicit metrics: proteins interactions experiments hours
+python3 curation_pipeline.py complete-paper paper.pdf "3 effectors" 3 5 8 2.0
+
+# Review per-article completion metrics any time:
+cd 11-CLAUDE-AI/db && python3 daily_curation.py completed
 ```
 
 ## 🛠️ Available Tools
@@ -35,7 +43,7 @@ python3 curation_pipeline.py complete-paper paper.pdf "Added 3 effectors, 5 inte
 | `auto-process` | Full automation: copy + convert + setup | `python3 curation_pipeline.py auto-process paper.pdf` |
 | `new-paper` | Copy PDF to vault and process | `python3 curation_pipeline.py new-paper paper.pdf` |
 | `process-pdf` | Convert existing PDF in To-curate | `python3 curation_pipeline.py process-pdf paper.pdf` |
-| `complete-paper` | Move finished work to Literature | `python3 curation_pipeline.py complete-paper paper.pdf "summary"` |
+| `complete-paper` | Move to Literature + record real completion metrics (status→curated) | `python3 curation_pipeline.py complete-paper paper.pdf "summary" [proteins] [interactions] [experiments] [hours]` |
 
 ### 2. Session Management (`workflow_helper.py`)
 **Track your daily work** with integrated database logging:
