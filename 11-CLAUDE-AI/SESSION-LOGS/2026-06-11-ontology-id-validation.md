@@ -71,13 +71,13 @@ Deterministic validator for the IDs a curation depends on, in two stages:
 
 - Remaining item from 2026-06-10: **real completion metrics into the tracking DB** (the smoke test is now done, see §6).
 - Consider having `curation-qc` shell out to `validate_ontology_ids.py --file` automatically as part of its report generation.
-- Consider running `smoke_test.py` from the devcontainer `postCreateCommand` so a Codespace self-verifies on build.
+- ~~Run `smoke_test.py` from the devcontainer `postCreateCommand`~~ — **done**: added as the final, non-blocking (`|| echo`) `postCreateCommand` step in `.devcontainer/devcontainer.json`, so a Codespace self-verifies on build.
 - Optional: split the large `11-CLAUDE-AI/` folder (touches timeline-script paths — do as its own tested effort).
 
 ## Files
 
 - New: `scripts/validate_ontology_ids.py`, `scripts/tests/test_validate_ontology_ids.py`, `scripts/smoke_test.py`
-- Edited: `scripts/README.md`, `skills/curation-qc/SKILL.md`, `skills/phipo-mapping/SKILL.md`, `.gitignore`, `requirements.txt`, `docs/DEMO-CODESPACES.md`
+- Edited: `scripts/README.md`, `skills/curation-qc/SKILL.md`, `skills/phipo-mapping/SKILL.md`, `.gitignore`, `requirements.txt`, `docs/DEMO-CODESPACES.md`, `.devcontainer/devcontainer.json`
 
 ---
 
