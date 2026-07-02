@@ -49,8 +49,10 @@ __pycache__/
 *.pyo
 *.pyd
 
-# Local API-response caches for the scripts/ helper tools (UniProt, OLS)
+# Local API-response caches for the lookup helper tools (UniProt, OLS, PHIPO).
+# Tools moved from scripts/ into phiweaver/ (P1); keep both paths ignored.
 scripts/.cache/
+phiweaver/**/.cache/
 
 # Python virtual environment
 .venv/

@@ -1,9 +1,14 @@
 ---
 name: phipo-mapping
 description: Map described pathogen/host/interaction phenotypes to PHIPO ontology terms, with evidence and confidence. Use when annotating phenotypes for a curation.
-backing_script: phiweaver/lookup/validate_ontology_ids.py
-tests: tests/test_validate_ontology_ids.py
+backing_script:
+  - phiweaver/lookup/map_phenotype.py
+  - phiweaver/lookup/validate_ontology_ids.py
+tests:
+  - tests/test_map_phenotype.py
+  - tests/test_validate_ontology_ids.py
 inputs:
+  - figure caption / results text (from the converted paper)
   - phenotype description + source location
   - phenotype category (pathogen / host / interaction)
 outputs:
@@ -22,14 +27,19 @@ described in a paper, without inventing term IDs.
 - When a phenotype, infective-ability change, or interaction outcome needs an ontology term.
 
 ## Workflow
-1. Extract the phenotype description verbatim from the source (with its location).
-2. Decide whether it is a single-species (pathogen or host) or interaction phenotype.
-3. Search PHIPO for candidate terms matching the description.
-4. Verify each candidate term ID exists and is current (not obsolete) in the ontology:
-   `python3 scripts/validate_ontology_ids.py PHIPO:XXXXXXX` (checks existence + obsolescence
-   via the EBI Ontology Lookup Service; never invent or "correct" an ID).
-5. Propose the best term(s) with rationale. If none fit well, say so and describe the
-   gap rather than forcing a term.
+1. Read the figure captions and results text of the converted paper (`*_converted.md`,
+   produced by the PDF converter). Figure captions are a dense source of phenotypes.
+2. Identify each phenotype description verbatim, with its location. Deciding what *is* a
+   phenotype is your judgement — the tools below do not do that step for you.
+3. Decide whether it is a single-species (pathogen or host) or interaction phenotype.
+4. Map each phrase to candidate PHIPO terms with the backing tool — it searches PHIPO via
+   the EBI Ontology Lookup Service and returns real term IDs, never invented ones:
+   `python3 -m phiweaver.lookup.map_phenotype "reduced virulence"`
+   (a phrase with no hit is reported as `no_match`, not mapped to a guess).
+5. Verify the chosen term ID exists and is current (not obsolete):
+   `python3 -m phiweaver.lookup.validate_ontology_ids PHIPO:XXXXXXX`.
+6. Propose the best term(s) with rationale and confidence. If none fit well, say so and
+   describe the gap rather than forcing a term.
 
 ## Expected outputs
 - Verbatim phenotype text + source location.
