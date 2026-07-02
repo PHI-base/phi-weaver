@@ -124,8 +124,36 @@ class DeriveMetricsTests(unittest.TestCase):
     def test_missing_file_returns_zeros(self):
         m = cp.derive_completion_metrics(Path("/no/such/file.md"))
         self.assertEqual(
-            (m["uniprot"], m["locus_tags"], m["ontology_terms"], m["proteins"]),
-            (0, 0, 0, 0))
+            (m["uniprot"], m["locus_tags"], m["ontology_terms"], m["proteins"],
+             m["interactions"]),
+            (0, 0, 0, 0, 0))
+
+    def test_counts_interaction_entries_under_heading(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            notes = Path(tmp) / "notes.md"
+            notes.write_text(
+                "## Curation Status\n"
+                "- [ ] Pathogen-host interactions identified\n"   # NOT under an interaction heading
+                "\n### Interactions Documented\n"
+                "- FgABC1 deletion -> reduced virulence on wheat\n"
+                "- FgABC1 deletion -> abnormal conidiation\n"
+                "- {{interaction_list}}\n"                          # template placeholder: skipped
+                "\n## Proteins\n"
+                "- some protein note\n",                            # different section: not counted
+                encoding="utf-8")
+            m = cp.derive_completion_metrics(notes)
+            self.assertEqual(m["interactions"], 2)
+            self.assertIn("2 interaction(s)", m["summary"])
+
+    def test_no_interaction_section_is_zero(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            notes = Path(tmp) / "notes.md"
+            notes.write_text(
+                "## Summary\nWe studied a pathogen-host interaction in prose.\n"
+                "- a bullet that is not under an interaction heading\n",
+                encoding="utf-8")
+            m = cp.derive_completion_metrics(notes)
+            self.assertEqual(m["interactions"], 0)  # prose is never counted
 
 
 if __name__ == "__main__":

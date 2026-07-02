@@ -47,6 +47,35 @@ except ImportError:
 LOCUS_TAG_RE = re.compile(r"\b[A-Z]{2,6}_\d{4,6}\b")
 
 
+# Curation notes list pathogen–host interactions as bullet entries under an
+# "Interactions…" heading (see 08-Wiki/Templates/Article-Template.md). Those explicit
+# entries are counted deterministically — interactions are never inferred from prose.
+_HEADING_RE = re.compile(r"^#{1,6}\s")
+_INTERACTION_HEADING_RE = re.compile(r"^#{1,6}\s+.*interaction", re.IGNORECASE)
+_BULLET_RE = re.compile(r"^\s*[-*]\s+(.*\S)\s*$")
+_PLACEHOLDER_RE = re.compile(r"^\{\{.*\}\}$")
+
+
+def _count_interaction_entries(text):
+    """Count explicit interaction entries under any 'Interaction…' heading.
+
+    Conservative and deterministic: counts non-empty, non-placeholder bullet lines inside a
+    section whose heading mentions 'interaction'. Notes without such a section yield 0 — the
+    count is never guessed from prose.
+    """
+    count = 0
+    in_section = False
+    for line in text.splitlines():
+        if _HEADING_RE.match(line):
+            in_section = bool(_INTERACTION_HEADING_RE.match(line))
+            continue
+        if in_section:
+            mm = _BULLET_RE.match(line)
+            if mm and not _PLACEHOLDER_RE.match(mm.group(1).strip()):
+                count += 1
+    return count
+
+
 def derive_completion_metrics(notes_path):
     """Deterministically count the identifiers actually present in a curation notes file.
 
@@ -55,7 +84,7 @@ def derive_completion_metrics(notes_path):
     string. Never guesses: if the file is unreadable, all counts are zero.
     """
     blank = {"uniprot": 0, "locus_tags": 0, "ontology_terms": 0, "proteins": 0,
-             "summary": "no curation notes file to scan"}
+             "interactions": 0, "summary": "no curation notes file to scan"}
     try:
         text = Path(notes_path).read_text(encoding="utf-8")
     except OSError:
@@ -74,10 +103,13 @@ def derive_completion_metrics(notes_path):
 
     # Distinct proteins referenced, by either accession or locus tag.
     proteins = len(uniprot) + len(locus_tags)
+    interactions = _count_interaction_entries(text)
     summary = (f"derived from notes: {len(uniprot)} UniProtKB accession(s), "
-               f"{len(locus_tags)} locus tag(s), {len(ontology)} ontology term(s)")
+               f"{len(locus_tags)} locus tag(s), {len(ontology)} ontology term(s), "
+               f"{interactions} interaction(s)")
     return {"uniprot": len(uniprot), "locus_tags": len(locus_tags),
-            "ontology_terms": len(ontology), "proteins": proteins, "summary": summary}
+            "ontology_terms": len(ontology), "proteins": proteins,
+            "interactions": interactions, "summary": summary}
 
 class CurationPipeline:
     def __init__(self):
@@ -221,8 +253,9 @@ class CurationPipeline:
 
         Records real completion metrics in the tracking DB: any counts not given
         explicitly are derived from the curation notes (distinct UniProtKB accessions,
-        locus tags and ontology terms actually present), and the article is flipped to
-        'curated' with the session linked to it.
+        locus tags and ontology terms present, and interaction entries listed under an
+        'Interactions' heading), and the article is flipped to 'curated' with the session
+        linked to it.
         """
         print(f"🏁 Completing Curation: {filename}")
         print("=" * 50)
@@ -277,7 +310,7 @@ class CurationPipeline:
         derived = derive_completion_metrics(notes_path)
         # Explicit counts win; otherwise fall back to what the notes actually contain.
         proteins_final = proteins if proteins is not None else derived["proteins"]
-        interactions_final = interactions if interactions is not None else 0
+        interactions_final = interactions if interactions is not None else derived["interactions"]
         experiments_final = experiments if experiments is not None else derived["ontology_terms"]
         self.log_action("Completion metrics", derived["summary"])
 
