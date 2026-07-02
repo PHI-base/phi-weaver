@@ -91,17 +91,17 @@ python3 daily_curation.py gaps
 python3 daily_curation.py help
 ```
 
-### 5. File Organization (`obsidian_reorganise.py`)
+### 5. File Organization (`11-CLAUDE-AI/vault-ops/obsidian_reorganise.py`)
 **Auto-organize files** with WikiLink updates:
 
 ```bash
 cd 11-CLAUDE-AI
 
 # Preview changes (always run first!)
-python3 obsidian_reorganise.py --config reorganise-config-OBS-PHI-Canto.yaml
+python3 11-CLAUDE-AI/vault-ops/obsidian_reorganise.py --config 11-CLAUDE-AI/vault-ops/reorganise-config-OBS-PHI-Canto.yaml
 
 # Execute moves (Obsidian must be open)
-python3 obsidian_reorganise.py --config reorganise-config-OBS-PHI-Canto.yaml --execute
+python3 11-CLAUDE-AI/vault-ops/obsidian_reorganise.py --config 11-CLAUDE-AI/vault-ops/reorganise-config-OBS-PHI-Canto.yaml --execute
 ```
 
 ## 📋 Complete Workflows
@@ -164,7 +164,7 @@ Located in `11-CLAUDE-AI/db/`:
 - Automatic timestamp tracking (YYYY-MM-DD HH:MM:SS)
 
 ### File Organization Rules
-Configure in `reorganise-config-OBS-PHI-Canto.yaml`:
+Configure in `11-CLAUDE-AI/vault-ops/reorganise-config-OBS-PHI-Canto.yaml`:
 - Automatic file placement based on content patterns
 - Updates WikiLinks when moving files
 - Keeps vault organized without manual effort
@@ -184,7 +184,7 @@ Configure in `pdf-convert-skill/pdf-convert-config.json`:
 | **End work** | `python3 workflow_helper.py end-session "Project" "Summary" 3 5 2.0` |
 | **Check progress** | `python3 daily_curation.py progress` |
 | **Complete paper** | `python3 curation_pipeline.py complete-paper paper.pdf "Summary"` |
-| **Organize files** | `python3 obsidian_reorganise.py --config config.yaml --execute` |
+| **Organize files** | `python3 11-CLAUDE-AI/vault-ops/obsidian_reorganise.py --config config.yaml --execute` |
 
 ## 🎯 Benefits
 

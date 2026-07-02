@@ -21,8 +21,8 @@ The timeline system automatically tracks PHI-Canto system development milestones
 - **`11-CLAUDE-AI/SESSION-LOGS/INDEX.md`** - Complete session index (includes content work)
 
 ### **Generator Scripts**
-- **`11-CLAUDE-AI/update_timeline_incremental.py`** - Incremental updater (recommended)
-- **`11-CLAUDE-AI/generate_dev_timeline.py`** - Full regeneration (when needed)
+- **`11-CLAUDE-AI/vault-ops/update_timeline_incremental.py`** - Incremental updater (recommended)
+- **`11-CLAUDE-AI/vault-ops/generate_dev_timeline.py`** - Full regeneration (when needed)
 
 ### **Documentation**
 - **`CLAUDE.md`** - Main system documentation (includes timeline section)
@@ -33,16 +33,16 @@ The timeline system automatically tracks PHI-Canto system development milestones
 ### **Check for Updates**
 ```bash
 # See what new development sessions would be added
-python3 11-CLAUDE-AI/update_timeline_incremental.py --check-only
+python3 11-CLAUDE-AI/vault-ops/update_timeline_incremental.py --check-only
 ```
 
 ### **Update Timeline**
 ```bash
 # Add new sessions while preserving existing content (RECOMMENDED)
-python3 11-CLAUDE-AI/update_timeline_incremental.py
+python3 11-CLAUDE-AI/vault-ops/update_timeline_incremental.py
 
 # Full regeneration (overwrites manual edits)
-python3 11-CLAUDE-AI/generate_dev_timeline.py
+python3 11-CLAUDE-AI/vault-ops/generate_dev_timeline.py
 ```
 
 ### **View Timeline**
@@ -102,7 +102,7 @@ The system automatically identifies development vs content work using keyword an
 
 ### **Incremental Update (Recommended)**
 ```bash
-python3 11-CLAUDE-AI/update_timeline_incremental.py
+python3 11-CLAUDE-AI/vault-ops/update_timeline_incremental.py
 ```
 **Pros**:
 - ✅ Preserves manual edits and customizations
@@ -114,7 +114,7 @@ python3 11-CLAUDE-AI/update_timeline_incremental.py
 
 ### **Full Regeneration**
 ```bash
-python3 11-CLAUDE-AI/generate_dev_timeline.py
+python3 11-CLAUDE-AI/vault-ops/generate_dev_timeline.py
 ```
 **Pros**:
 - ✅ Ensures complete consistency
@@ -133,7 +133,7 @@ python3 11-CLAUDE-AI/generate_dev_timeline.py
 1. Complete development work
 2. Create session log in `SESSION-LOGS/`
 3. Update session index
-4. Run: `python3 11-CLAUDE-AI/update_timeline_incremental.py`
+4. Run: `python3 11-CLAUDE-AI/vault-ops/update_timeline_incremental.py`
 5. Commit to git
 
 ### **Weekly Review Workflow**
@@ -143,7 +143,7 @@ python3 11-CLAUDE-AI/generate_dev_timeline.py
 4. Update daily timeline summary if needed
 
 ### **Project Review Workflow**
-1. Generate fresh timeline: `python3 11-CLAUDE-AI/generate_dev_timeline.py`
+1. Generate fresh timeline: `python3 11-CLAUDE-AI/vault-ops/generate_dev_timeline.py`
 2. Export timeline: `cp DEVELOPMENT-TIMELINE.md ~/Desktop/project-timeline-$(date +%Y%m%d).md`
 3. Create presentation summary from daily timeline
 
@@ -203,7 +203,7 @@ ls 11-CLAUDE-AI/SESSION-LOGS/*.md
 cat 11-CLAUDE-AI/SESSION-LOGS/INDEX.md | tail -5
 
 # Debug with check-only
-python3 11-CLAUDE-AI/update_timeline_incremental.py --check-only
+python3 11-CLAUDE-AI/vault-ops/update_timeline_incremental.py --check-only
 ```
 
 ### **Missing Development Sessions**
@@ -218,7 +218,7 @@ python3 11-CLAUDE-AI/update_timeline_incremental.py --check-only
 cp 11-CLAUDE-AI/DEVELOPMENT-TIMELINE.md 11-CLAUDE-AI/DEVELOPMENT-TIMELINE-backup.md
 
 # Full regeneration
-python3 11-CLAUDE-AI/generate_dev_timeline.py
+python3 11-CLAUDE-AI/vault-ops/generate_dev_timeline.py
 
 # Compare and merge manual edits if needed
 diff 11-CLAUDE-AI/DEVELOPMENT-TIMELINE-backup.md 11-CLAUDE-AI/DEVELOPMENT-TIMELINE.md
@@ -250,15 +250,15 @@ Add to `.git/hooks/post-commit`:
 ```bash
 #!/bin/bash
 # Auto-update timeline after commits
-python3 11-CLAUDE-AI/update_timeline_incremental.py
+python3 11-CLAUDE-AI/vault-ops/update_timeline_incremental.py
 ```
 
 ### **Alias Setup**
 Add to `~/.bashrc`:
 ```bash
 # Replace /path/to/phi-weaver with your local clone path
-alias timeline-update="python3 /path/to/phi-weaver/11-CLAUDE-AI/update_timeline_incremental.py"
-alias timeline-check="python3 /path/to/phi-weaver/11-CLAUDE-AI/update_timeline_incremental.py --check-only"
+alias timeline-update="python3 /path/to/phi-weaver/11-CLAUDE-AI/vault-ops/update_timeline_incremental.py"
+alias timeline-check="python3 /path/to/phi-weaver/11-CLAUDE-AI/vault-ops/update_timeline_incremental.py --check-only"
 alias timeline-view="cat /path/to/phi-weaver/11-CLAUDE-AI/DEVELOPMENT-TIMELINE.md"
 ```
 

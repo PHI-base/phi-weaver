@@ -134,12 +134,9 @@ class CurationPipeline:
         self.inbox_path = self.external_storage / "active"
         self.literature_path = self.external_storage / "completed"
         self.media_path = self.external_storage / "media"
-        # Tools live inside the repo itself
         # The tracking DB has a fixed home so completion metrics always land in the same
         # file regardless of the current working directory.
         self.db_path = self.vault_root / "11-CLAUDE-AI" / "db" / "phi_canto_tracking.db"
-        self.reorganizer = self.vault_root / "11-CLAUDE-AI" / "obsidian_reorganise.py"
-        self.reorganizer_config = self.vault_root / "11-CLAUDE-AI" / "reorganise-config-OBS-PHI-Canto.yaml"
 
     def log_action(self, action, details=""):
         """Log pipeline actions"""

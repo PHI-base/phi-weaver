@@ -63,7 +63,7 @@ tags: [development, timeline, auto-generated]
 
 This timeline is automatically generated from session logs using:
 ```bash
-python3 11-CLAUDE-AI/generate_dev_timeline.py
+python3 11-CLAUDE-AI/vault-ops/generate_dev_timeline.py
 ```
 
 **Development Filter Criteria**:

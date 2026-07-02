@@ -46,7 +46,7 @@ tags: [timeline, development, daily-summary]
 To update this timeline:
 ```bash
 # Auto-generate from session logs
-python3 11-CLAUDE-AI/generate_dev_timeline.py
+python3 11-CLAUDE-AI/vault-ops/generate_dev_timeline.py
 
 # Manual daily entry format:
 • **YYYY-MM-DD** - Category: Brief description of system improvement

@@ -23,7 +23,7 @@ from pathlib import Path
 
 class IncrementalTimelineUpdater:
     def __init__(self):
-        self.vault_root = Path(__file__).parent.parent
+        self.vault_root = Path(__file__).resolve().parents[2]  # vault-ops -> 11-CLAUDE-AI -> repo root
         self.session_logs_dir = self.vault_root / "11-CLAUDE-AI" / "SESSION-LOGS"
         self.timeline_file = self.vault_root / "11-CLAUDE-AI" / "DEVELOPMENT-TIMELINE.md"
 

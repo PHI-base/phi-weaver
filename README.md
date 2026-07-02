@@ -94,7 +94,7 @@ python3 11-CLAUDE-AI/curation_pipeline.py auto-process ~/Downloads/paper.pdf
 python3 11-CLAUDE-AI/db/session_logger.py quick "Project Name" "Summary"
 
 # Generate development timeline
-python3 11-CLAUDE-AI/update_timeline_incremental.py
+python3 11-CLAUDE-AI/vault-ops/update_timeline_incremental.py
 ```
 
 ## 📚 **Core Workflows**
@@ -123,10 +123,10 @@ python3 11-CLAUDE-AI/db/daily_curation.py gaps
 ### **3. Timeline Tracking**
 ```bash
 # Update development timeline (preserves manual edits)
-python3 11-CLAUDE-AI/update_timeline_incremental.py
+python3 11-CLAUDE-AI/vault-ops/update_timeline_incremental.py
 
 # Full regeneration when needed
-python3 11-CLAUDE-AI/generate_dev_timeline.py
+python3 11-CLAUDE-AI/vault-ops/generate_dev_timeline.py
 ```
 
 ## 🏗️ **System Architecture**
