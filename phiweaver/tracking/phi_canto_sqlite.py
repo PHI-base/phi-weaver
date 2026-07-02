@@ -9,18 +9,30 @@ from datetime import datetime, date
 import os
 from pathlib import Path
 
+from phiweaver import repo_root
 from phiweaver.tracking import migrations, repository
 
+# Canonical tracking-DB location (see AGENTS.md): a fixed home under the repo root so every
+# consumer — pipeline, session logger, registry generator, daily report — reads and writes
+# the SAME database regardless of the caller's current working directory.
+DEFAULT_DB_PATH = "11-CLAUDE-AI/db/phi_canto_tracking.db"
+
 class PHICantoSQLite:
-    def __init__(self, db_path='phi_canto_tracking.db'):
-        """Initialize SQLite database connection"""
-        self.db_path = db_path
+    def __init__(self, db_path=None):
+        """Initialize SQLite database connection.
+
+        With no db_path, use the canonical tracking DB under the repo root, so the
+        database location does not depend on the caller's working directory.
+        """
+        self.db_path = str(db_path) if db_path is not None else str(
+            repo_root() / DEFAULT_DB_PATH)
         self.connection = None
         self.cursor = None
 
     def connect(self):
         """Connect to SQLite database, create if needed"""
         try:
+            Path(self.db_path).parent.mkdir(parents=True, exist_ok=True)
             self.connection = sqlite3.connect(self.db_path)
             self.connection.row_factory = sqlite3.Row  # Enable dict-like access
             self.cursor = self.connection.cursor()
