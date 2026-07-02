@@ -1,10 +1,10 @@
-# Reorganisation config for OBS-PHI-Canto vault
+# Reorganisation config for the phi-weaver vault
 # Use with: python obsidian_reorganise.py --config reorganise-config-OBS-PHI-Canto.yaml
 #
-# IMPORTANT: OBS-PHI-Canto must be the active vault in Obsidian for --execute to work.
+# IMPORTANT: the phi-weaver vault must be the active vault in Obsidian for --execute to work.
 # Verify with: /mnt/c/Windows/System32/cmd.exe /c 'D:\ObsidianProgram\Obsidian.com vault list'
 
-vault_path: /mnt/z/OBS-PHI-Canto
+vault_path: /mnt/z/phi-weaver
 target_folder: 00-Inbox
 obsidian_cli: 'D:\ObsidianProgram\Obsidian.com'
 extensions: [".md", ".canvas"]

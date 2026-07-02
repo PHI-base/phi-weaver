@@ -272,7 +272,7 @@ def main():
     if success:
         print("\n🎯 Article Registry Dashboard created!")
         print("📄 Open: 08-Wiki/Article-Registry.md")
-        print("🔄 To update: python3 generate_article_registry.py")
+        print("🔄 To update: python3 -m phiweaver.tracking.generate_article_registry")
     else:
         print("❌ Failed to generate registry")
 

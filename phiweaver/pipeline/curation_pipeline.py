@@ -106,7 +106,6 @@ class CurationPipeline:
         # The tracking DB has a fixed home so completion metrics always land in the same
         # file regardless of the current working directory.
         self.db_path = self.vault_root / "11-CLAUDE-AI" / "db" / "phi_canto_tracking.db"
-        self.pdf_converter = self.vault_root / "11-CLAUDE-AI" / "pdf-convert-skill" / "pdf-convert.py"
         self.reorganizer = self.vault_root / "11-CLAUDE-AI" / "obsidian_reorganise.py"
         self.reorganizer_config = self.vault_root / "11-CLAUDE-AI" / "reorganise-config-OBS-PHI-Canto.yaml"
 
@@ -163,9 +162,13 @@ class CurationPipeline:
         os.chdir(self.inbox_path)
 
         try:
-            result = subprocess.run([
-                "python3", str(self.pdf_converter), filename
-            ], capture_output=True, text=True, cwd=self.inbox_path)
+            # Run the converter as a package module. cwd is the (external) active/ folder,
+            # which is outside the repo, so put the repo root (vault_root) on PYTHONPATH to
+            # keep phiweaver importable.
+            result = subprocess.run(
+                ["python3", "-m", "phiweaver.pdf.pdf_convert", filename],
+                capture_output=True, text=True, cwd=self.inbox_path,
+                env={**os.environ, "PYTHONPATH": str(self.vault_root)})
 
             if result.returncode == 0:
                 self.log_action("✅ PDF conversion completed")

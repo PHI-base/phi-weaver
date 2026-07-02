@@ -18,7 +18,7 @@ Wiki-style organization for PHI-Canto curation workflow and documentation.
 - Status tracking with visual indicators  
 - Curator assignments and workload
 - Recent activity summary
-- **Auto-updates**: Run `python3 generate_article_registry.py`
+- **Auto-updates**: Run `python3 -m phiweaver.tracking.generate_article_registry`
 
 ### [[08-Wiki/Protein-Registry|🧬 Protein Registry]]
 - Central catalog of all tracked proteins
@@ -59,7 +59,7 @@ Wiki-style organization for PHI-Canto curation workflow and documentation.
 2. **Select Article**: Priority-based assignment
 3. **Use Template**: [[08-Wiki/Templates/Article-Template|Article Template]]
 4. **Follow Protocol**: [[08-Wiki/Curation-Protocols/Standard-Process|Standard Process]]
-5. **Log Session**: `python3 session_logger.py quick "Project" "Summary" proteins interactions hours`
+5. **Log Session**: `python3 -m phiweaver.tracking.session_logger quick "Project" "Summary" proteins interactions hours`
 6. **Update Registry**: Auto-generated on session completion
 
 ### Database Integration
@@ -74,7 +74,7 @@ The wiki connects seamlessly with your SQLite database:
 
 ### Article Registry
 ```bash
-python3 generate_article_registry.py
+python3 -m phiweaver.tracking.generate_article_registry
 ```
 - Updates article pipeline overview
 - Refreshes status indicators
@@ -139,7 +139,7 @@ The wiki leverages your existing vault structure:
 ## 🛠️ Maintenance
 
 ### Automatic Updates
-- Article registry regenerated with `generate_article_registry.py`
+- Article registry regenerated with `python3 -m phiweaver.tracking.generate_article_registry`
 - Session logs automatically link to wiki pages
 - Database changes reflected in wiki dashboards
 

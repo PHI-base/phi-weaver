@@ -1,6 +1,6 @@
 # PHI-Weaver Modularity & Refactor Plan
 
-**Status:** proposal / not yet started · **Created:** 2026-06-11 · **Owner:** TBD
+**Status:** ✅ complete — all phases P1–P7 landed 2026-06-11 · **Created:** 2026-06-11
 
 A plan to make PHI-Weaver's parts independently **updatable and testable**, and to let
 **specialised curation modules** be plugged in later by following one contract. This is a
@@ -117,7 +117,7 @@ shippable, discoverable via the registry.
 | **P3** ✅ done with P1 | Test relocation | Tests moved to top-level `tests/`; smoke + discovery run from repo root (`-s tests`) | Low | ✅ One discovery root; no cross-tree `sys.path` in tests |
 | **P4** ✅ done (2026-06-11) | Split `11-CLAUDE-AI/` | PDF-conversion engine → `phiweaver/pdf/` (shim left at old path); dropped the stray converted-report JSON; added `11-CLAUDE-AI/README.md` documenting the folder's operational role. Scoped: `obsidian_reorganise.py` + timeline generators stay as vault-operational tooling with their data (not curation engine). | Med (many refs) | ✅ The curation engine (lookup/tracking/pipeline/**pdf**) is all under `phiweaver/`; `11-CLAUDE-AI/` is documented as Claude-operational; docs/refs updated; smoke 7/7 |
 | **P5** ✅ done (2026-06-11) | Extensible DB | `phiweaver/tracking/migrations.py` (namespaced versioned runner; baseline = core v1) + `repository.py` (data-returning queries); `create_schema()` now just runs migrations; query methods delegate to the repository | Med | ✅ A module registers migrations under its own namespace without editing core; repository queries unit-tested without stdout capture; pre-existing DBs upgrade without data loss; 48 tests + smoke green |
-| **P6** | Fix skill→tool linkage | Reference `query_uniprot.py` from `uniprot-lookup`; backfill any other gaps | Low | Every backed skill names its script; covered by the registry check |
+| **P6** ✅ done (2026-06-11) | Fix skill→tool linkage | Reference `query_uniprot.py` from `uniprot-lookup`; backfill any other gaps | Low | ✅ Every backed skill names its script; covered by the registry check |
 | **P7** ✅ done (2026-06-11) | Content taxonomy | Renamed `07-Wiki` → `08-Wiki` to break the duplicate `07-` prefix; updated all path references (code/docs/config + folder contents); session logs left as historical record. (A fuller semantic renumbering was judged low-value and deferred.) | Low | ✅ No duplicate folder prefixes; references updated; smoke 7/7 |
 
 **Recommended sequencing:** P6 (+ P7) are safe quick wins and can land first or anytime.
