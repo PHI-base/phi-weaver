@@ -92,6 +92,8 @@ _Templates/
 *.docx
 *.xlsx
 *.pptx
+# ...but keep the shared benchmarking scorecard (a deliberate team template, not a source file)
+!07-Standards/curation-benchmarking/PHI-Weaver-Curation-Scorecard.xlsx
 
 # Media files (colleagues can regenerate via automation)
 03-Media/
