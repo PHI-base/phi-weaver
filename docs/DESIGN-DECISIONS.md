@@ -21,6 +21,8 @@ Keep this current: when a real design choice is made or reversed, add/adjust an 
   (via phipo-mapping) → curation-qc`; enumerated in `skills/REGISTRY.md`.
 - **Curation-example library** — `07-Standards/curation-examples/`: flat, tag-classified worked
   examples with a generated `INDEX.md` (`phiweaver.curation_examples`).
+- **Benchmarking scorecard** — `07-Standards/curation-benchmarking/`: an Excel scoring matrix;
+  phiweaver pre-fills the objective column via `fill_scorecard.py`, a human scores the rest.
 - **Content vault** — numbered Obsidian folders; literature lives in external storage
   (`PHI_LITERATURE_ROOT`, default `../PHI-Canto-Literature/`).
 - **Tracking DB** — SQLite, canonical home `11-CLAUDE-AI/db/phi_canto_tracking.db`.
@@ -113,10 +115,27 @@ because a wrong example propagates its mistakes. **Alternatives:** folder-per-cl
 multi-class overlap); JSON schema now (deferred — no machine consumer yet). **Status:** scaffold
 built (generator + template + tags + index); examples to be produced by curating real papers.
 
+### D12 — Benchmarking scorecard: phiweaver pre-checks, human scores
+A line-manager request for a benchmarking tool. **Decision:** an Excel scorecard scores curation
+quality item by item, with a defined rubric, a scoring rule, and a **completeness (recall)**
+dimension alongside correctness (precision). phiweaver **pre-fills the objective column** (ID
+validity, ontology-term existence) and a human fills the judgement ratings; a curation scored
+all-correct with full completeness becomes a validated example (D10). **Why:** front-loads the
+mechanical checks so curator time goes to judgement — and, critically, **phiweaver must not score
+its own drafts**, or the benchmark is circular and meaningless (the scorer must be independent).
+Prefilling is automated by `fill_scorecard.py` reading the draft's `auto_check` block (single or
+batch). **Alternatives:** phiweaver self-scoring correctness (rejected — grading its own work);
+a single overall score instead of per-item + completeness (rejected — hides misses). **Status:**
+scorecard + generator + prefill built (`07-Standards/curation-benchmarking/`); ratings and
+completeness stay manual by design.
+
 ### D11 — Deliberately deferred / not done
 - **Full vault renumbering** — low value; numbering gaps left cosmetic.
-- **JSON curation-record schema** — only once a machine consumer exists (AI few-shot / gold-
-  standard QC tests); it should mirror PHI-Canto's annotation model.
+- **JSON curation-record schema** — a machine consumer now exists (the benchmarking-scorecard
+  prefill, **D12**), so a *first slice* landed: drafts carry a small machine-readable
+  `auto_check` block (see the curation-example template) read by `fill_scorecard.py`. The *full*
+  curation-record schema (all annotations, mirroring PHI-Canto's model) remains deferred until a
+  consumer needs it (e.g. gold-standard QC tests / few-shot retrieval).
 - **`physical-interaction` scope** — confirm it is in PHI-Canto's phenotype scope before building
   an example for it.
 - **`04-Literature/`** — kept as a migration signpost; the live workflow uses external storage.
