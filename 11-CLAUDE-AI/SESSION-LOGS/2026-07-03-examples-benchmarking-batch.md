@@ -59,21 +59,34 @@ participants: [Claude Fable 5, martin2urban]
   curation-example **frontmatter** wrapper — the library only needs the frontmatter; do NOT
   retype into the template body.
 
-## ✅ Verification
-Smoke **7/7**, **76 tests** (was 62). Tree clean apart from `.obsidian/` editor state; drafts +
-scorecards live in external `active/`.
+## ✅ Gold-standard example + import tooling (later in session)
+- **First validated gold-standard example**: PMID:26177154 (*F. oxysporum* AVR effectors × tomato
+  *I-7*, gene-for-gene), imported from PHI-Canto session 077ec02bbb46ec45 (curator Hsin-Yu Chang).
+  Saved as PDF → text via `fitz` → structured → **wrapped in curation-example frontmatter keeping
+  PHI-Canto's structure** (`status: validated`) → index regenerated. Library = 1 validated
+  example. (`8f186cf`) The read-only Canto URL couldn't be fetched (annotations load via JS).
+- **PHIDO validation gap found**: `validate_ontology_ids` lists PHIDO but OLS4 doesn't host it, so
+  PHIDO:0000164 falsely returns `not_found`. Logged.
+- **`docs/BACKLOG.md`** created as the durable to-do (harness task tools are session-scoped):
+  PHIDO gap, format convergence, physical-interaction scope. (`e9c5a43`)
+- **`gold-standard-import` skill** built (registry now 7 skills) — names the PHI-Canto-export →
+  validated-example workflow (extract, validate IDs, wrap frontmatter, register). (`92ba5b2`)
+- Guidance given: target **~8–12 gold-standard examples**, one per canonical case type,
+  benchmark-driven growth (coverage, not volume; quality > quantity).
 
-## ⏭️ NEXT (continue soon)
-1. **Convert the user's PHI-Canto gold-standard HTML into a frontmatter-wrapped `.md` example**
-   in `07-Standards/curation-examples/` (user to point at the HTML file), then regenerate the
-   index. Clarify `_TEMPLATE.md`/README that the body may be the real PHI-Canto curation and only
-   the frontmatter is required.
-2. **Format convergence** (design question): phiweaver drafts use the template body shape while
-   gold standards use PHI-Canto's — converge them (toward PHI-Canto's structure) so retrieval /
-   benchmarking compare like-for-like.
-3. Optional: UniProt mapping for Zhang from the genome IDs; read Zhang supplementary S1–S7.
+## ✅ Verification
+Smoke **7/7**, **76 tests**, **7 skills**, **1 validated example**. Tree clean apart from
+`.obsidian/` editor state; drafts + scorecards + source PDFs live in external `active/`.
+
+## ⏭️ NEXT
+1. **Fix the PHIDO validation gap** (mark PHIDO format-checked-only, like UniProtKB) — `docs/BACKLOG.md`.
+2. **Generate ~8–12 gold-standard examples** across canonical case types (start with
+   gene-deletion→virulence, effector, overexpression, host resistance); grow benchmark-driven.
+3. **Format convergence** — align phiweaver's draft shape with PHI-Canto's so drafts and gold
+   standards compare like-for-like.
+4. Decide the **physical-interaction scope**; optional Zhang UniProt mapping + supplementary read.
 
 ---
 
-*Human-in-the-loop drafting workflow; no curation content auto-committed. See
-`docs/DESIGN-DECISIONS.md` (D10 examples, D12 benchmarking).*
+*Human-in-the-loop drafting + gold-standard-import workflow; per-paper work products stay in
+external `active/`. See `docs/DESIGN-DECISIONS.md`, `docs/BACKLOG.md`.*
