@@ -50,11 +50,17 @@ reviewed_date: <YYYY-MM-DD>
 phiweaver fills this block with the results of its deterministic checks (ID validity, term
 existence/obsolescence). `07-Standards/curation-benchmarking/fill_scorecard.py` reads it to
 pre-fill the scorecard's header and auto-check column; the reviewer's ratings stay blank.
-Keys map to the scorecard's item rows; leave a value empty to skip that row.
+`auto_check` keys map to the scorecard's item rows (empty = skip). `triage` and `flags`
+(category + detail) let **unattended batch drafting record what needs the curator instead of
+asking** — `python3 -m phiweaver.batch_summary <drafts>` rolls them up into one review
+dashboard. Flag categories: `needs_pmid`, `needs_accession`, `needs_term_choice`,
+`needs_genotype_modelling`, `needs_evidence_code`, `scope_question`, `completeness_gap`, `other`.
+Triage: `in_scope` | `partial` | `scope_uncertain` | `needs_human_decision` | `out_of_scope`.
 
 ```json
 {
   "meta": {"date": "", "pmid": "", "paper": "", "system": "", "draft_by": "phiweaver"},
+  "triage": "in_scope",
   "auto_check": {
     "uniprot_id": "",
     "species_strain_cultivar": "",
@@ -69,6 +75,9 @@ Keys map to the scorecard's item rows; leave a value empty to skip that row.
     "disease_name": "",
     "rna_expression_level": "",
     "physical_interaction": ""
-  }
+  },
+  "flags": [
+    {"category": "needs_pmid", "detail": "example — replace with the real flags for this paper"}
+  ]
 }
 ```

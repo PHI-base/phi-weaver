@@ -33,6 +33,18 @@ Needs openpyxl. Close the target `.xlsx` in Excel before rerunning (an open file
 The auto-check column reflects only the machine-checkable items (ID validity, term
 existence/obsolescence); the curator still fills every rating and the completeness block.
 
+## Batch review dashboard
+For unattended batch drafting, phiweaver records what it can't resolve as **structured flags**
+(category + detail) and a **triage** verdict in each draft's json block, instead of asking
+questions mid-run. Roll them up into one review dashboard:
+```
+python3 -m phiweaver.batch_summary /path/active/*-phiweaver-DRAFT.md --out BATCH-REVIEW.md --csv batch.csv
+```
+It lists every paper most-in-need-of-attention first (triage, auto-check signal, flags), then
+groups the flags by category across the batch so you can work through them (e.g. resolve all
+`needs_accession` at once). Pure stdlib. The human answers the flags at review time — nothing is
+asked during drafting.
+
 ## Notes
 - Confirm whether *physical / molecular interaction* is in PHI-Canto's phenotype scope before
   treating it as a scored row.
