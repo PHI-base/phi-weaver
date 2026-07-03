@@ -11,21 +11,22 @@ curator assistance*, never a replacement for an expert curator.
 
 | Capability | How | Backed by |
 |---|---|---|
-| **Convert papers** (PDF → clean markdown, images + captions) | `curation_pipeline.py process-pdf` | `phiweaver/pdf/` |
+| **Convert papers** (PDF → clean markdown, images + captions) | `python3 -m phiweaver.pipeline.curation_pipeline process-pdf` | `phiweaver/pdf/` |
 | **Triage a paper** for curatable PHI content (scope verdict + candidate items) | `paper-triage` skill | reasoning + converter |
 | **Resolve genes/proteins** to a UniProtKB accession + evidence-backed function | `uniprot-lookup` skill | `phiweaver/lookup/query_uniprot.py` |
-| **Map phenotypes** to PHIPO terms (no invented IDs) | `phipo-mapping` skill | OLS |
+| **Create genotypes** (alleles, complementation, multi-allele, expression level) | `genotype-creation` skill | reasoning + PHI-Canto conventions |
+| **Map phenotypes** to real PHIPO terms (never invented; `no_match` if none fit) | `phipo-mapping` skill | `phiweaver/lookup/map_phenotype.py` (EBI OLS) |
+| **Annotate phenotypes** (type, term, evidence code, conditions, extensions) | `phenotype-annotation` skill | via phipo-mapping + validator |
 | **Validate ontology IDs** (PHIPO/GO/PHIDO/UniProtKB: format + exists + non-obsolete) | `phiweaver/lookup/validate_ontology_ids.py` | EBI OLS |
 | **QC a draft curation** before human review | `curation-qc` skill | the validator + lookups |
-| **Track progress + real completion metrics** (status→curated, article-linked counts) | `curation_pipeline.py complete-paper`, `daily_curation.py` | SQLite DB |
-| **Session logging + dev timeline** | `phiweaver/tracking/session_logger.py`, timeline scripts | SQLite + markdown |
+| **Track progress + real completion metrics** (status→curated; protein & interaction counts derived from the notes) | `curation_pipeline.py complete-paper`, `daily_curation.py` | SQLite DB |
+| **Reuse validated examples** (worked curations, tag-classified, retrieved as references) | `python3 -m phiweaver.curation_examples` → `07-Standards/curation-examples/` | markdown + generated index |
+| **Session logging + dev timeline** | `phiweaver/tracking/session_logger.py`, `11-CLAUDE-AI/vault-ops/` | SQLite + markdown |
 | **Verify the toolkit is healthy** (fresh checkout / Codespace) | `python3 -m phiweaver.smoke` | — |
 
 Guardrails are enforced throughout: never invent identifiers/terms; check UniProtKB first;
 verify ontology terms exist and aren't obsolete; separate evidence / interpretation /
 speculation; preserve provenance. (See `AGENTS.md`.)
-
----
 
 ## Current architecture
 
@@ -36,36 +37,46 @@ Two clean layers:
   (`PHI_LITERATURE_ROOT`, default `../PHI-Canto-Literature/`; a `demo-literature/` folder
   in Codespaces). Keeps the engine lean and content portable.
 - **Tooling engine** — deterministic, testable tools:
-  - `scripts/` — standalone tools with a shared envelope (`--json`, status, provenance,
-    exit codes, injectable I/O) and **network-free tests** (`tests/`, 48 passing).
-  - `phiweaver/` — the importable engine package: `lookup/` (UniProt, ontology validation),
-    `tracking/` (SQLite DB + migrations + repository), `pipeline/` (orchestration), `pdf/`
-    (conversion), `common/` (shared envelope), `registry.py`. Run from the repo root
-    (`python3 -m phiweaver.…`); install optional.
+  - `phiweaver/` — the importable engine package: `lookup/` (UniProt, ontology validation,
+    phenotype→PHIPO), `tracking/` (SQLite DB + migrations + repository), `pipeline/`
+    (orchestration), `pdf/` (conversion), `common/` (shared envelope), `registry.py` (skill
+    registry), `curation_examples.py` (example-library index). Run from the repo root
+    (`python3 -m phiweaver.…`), stdlib-only; install optional. `scripts/` keeps thin
+    compatibility shims for the old command paths.
   - `skills/` — one folder per reusable workflow (`SKILL.md`), **tool-agnostic** (Claude
-    Code via `CLAUDE.md`, OpenCode natively); enumerated in `skills/REGISTRY.md`.
-  - `11-CLAUDE-AI/` — Claude-operational material: session logs, the dev timeline + its
-    generators, operational guides, and compatibility shims.
+    Code via `CLAUDE.md`, OpenCode natively); the **6 skills** are enumerated in
+    `skills/REGISTRY.md`.
+  - `07-Standards/curation-examples/` — the validated **curation-example library** (worked
+    examples, tag-classified, with a generated `INDEX.md`) that phiweaver retrieves
+    references from when drafting a similar case.
+  - `11-CLAUDE-AI/` — Claude/vault-operational material: session logs, `vault-ops/` (dev
+    timeline generators + the Obsidian reorganiser), operational guides, the tracking DB,
+    and compatibility shims.
   - `AGENTS.md` is the single source of truth; `CLAUDE.md` is a thin bridge; `docs/` holds
-    deep references (incl. `ADDING-A-MODULE.md`).
+    the deep references (`ADDING-A-MODULE.md`, `DESIGN-DECISIONS.md`, `PLUGIN-ARCHITECTURE.md`).
 
-**Data flow:** `PDF → convert → triage → entity/UniProt lookup → ontology mapping +
-validation → QC → tracking DB (completion metrics) → curator review → PHI-Canto`.
+**Data flow:** `PDF → convert → triage → entity/UniProt lookup → genotype creation →
+phenotype mapping (PHIPO) + validation → phenotype annotation → QC → tracking DB
+(completion metrics) → curator review → PHI-Canto`.
 
-**Safety net:** `phiweaver.smoke` (7 checks) + the unit suite (48 tests) gate every change
+**Safety net:** `phiweaver.smoke` (7 checks) + the unit suite (69 tests) gate every change
 and run on Codespace build, so parts can be updated with confidence.
-
----
 
 ## Future improvement possibilities
 
-- **Structural (modularity):** ✅ **complete** — the importable `phiweaver/` package
-  (P1), the enforced module contract + registry (P2), co-located tests (P3), the
-  `11-CLAUDE-AI/` split (P4), the DB migration layer (P5), skill→tool links (P6), and the
-  folder-prefix tidy (P7) all landed. See `docs/MODULARITY-PLAN.md` and
-  `docs/ADDING-A-MODULE.md`.
-- **Capability (genuinely future):** parse **interaction** counts from notes (currently
-  explicit-only) · automate entity recognition / ontology suggestion · direct PHI-Canto
-  submission · richer completion analytics.
+- **Structural (modularity):** ✅ **complete** — the importable `phiweaver/` package (P1),
+  the module contract + registry (P2), co-located tests (P3), the `11-CLAUDE-AI/` split (P4,
+  extended 2026-07 into `vault-ops/` + engine decoupling), the DB migration layer (P5),
+  skill→tool links (P6), and the folder-prefix tidy (P7) all landed. See
+  `docs/MODULARITY-PLAN.md` and `docs/DESIGN-DECISIONS.md`.
+- **Curation examples:** the validated-example library is scaffolded; the next step is
+  producing the first worked examples by curating real papers (phiweaver drafts →
+  human-validated).
+- **Plug-in host + local AI (a direction, not built):** PHI-Weaver as a host for
+  independently-developed modules (figure→phenotype, phenotype→PHIPO), run out-of-process
+  with a local AI on the ROGER GPU cluster and a light portable core. See
+  `docs/PLUGIN-ARCHITECTURE.md`.
+- **Capability (genuinely future):** automate entity recognition / ontology suggestion ·
+  direct PHI-Canto submission · richer completion analytics.
 
 None of these are blockers — the toolkit is functional now.
