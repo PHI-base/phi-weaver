@@ -7,6 +7,20 @@ Human-validated worked curations that phiweaver retrieves as references when dra
 
 **An example is a _draft_ until a curator reviews it and sets `status: validated`.** Only validated examples should be used as references.
 
-**0 validated**, 0 draft, 0 total.
+**1 validated**, 0 draft, 1 total.
 
-_No examples yet. Copy `_TEMPLATE.md` to a new file and curate one — phiweaver drafts it; a curator reviews it and sets `status: validated`._
+## All examples
+
+| Example | Status | Topics | Annotation types | Source |
+| --- | --- | --- | --- | --- |
+| [[PMID26177154-Fol-I7-gene-for-gene]] | ✅ validated | effector, gene-for-gene | gene-annotation, interaction-phenotype | PMID:26177154 |
+
+## By topic
+
+_The same example appears under every topic it is tagged with._
+
+### effector
+- ✅ [[PMID26177154-Fol-I7-gene-for-gene]] — Fusarium oxysporum f. sp. lycopersici
+
+### gene-for-gene
+- ✅ [[PMID26177154-Fol-I7-gene-for-gene]] — Fusarium oxysporum f. sp. lycopersici
