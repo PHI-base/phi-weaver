@@ -21,6 +21,8 @@ curator assistance*, never a replacement for an expert curator.
 | **QC a draft curation** before human review | `curation-qc` skill | the validator + lookups |
 | **Track progress + real completion metrics** (status→curated; protein & interaction counts derived from the notes) | `curation_pipeline.py complete-paper`, `daily_curation.py` | SQLite DB |
 | **Reuse validated examples** (worked curations, tag-classified, retrieved as references) | `python3 -m phiweaver.curation_examples` → `07-Standards/curation-examples/` | markdown + generated index |
+| **Import a gold-standard curation** (a completed PHI-Canto session → validated example) | `gold-standard-import` skill | `07-Standards/curation-examples/` |
+| **Benchmark curation quality** (blind, scored vs gold standards; shareable HTML report) | `benchmark` skill → scorecards → `benchmark_report` | `07-Standards/curation-benchmarking/` |
 | **Session logging + dev timeline** | `phiweaver/tracking/session_logger.py`, `11-CLAUDE-AI/vault-ops/` | SQLite + markdown |
 | **Verify the toolkit is healthy** (fresh checkout / Codespace) | `python3 -m phiweaver.smoke` | — |
 

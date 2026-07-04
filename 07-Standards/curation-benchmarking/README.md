@@ -4,6 +4,26 @@
 quality, designed so **phiweaver pre-fills the machine-checkable parts and a human reviews the
 judgement calls**.
 
+## Quickstart — running a benchmark
+To benchmark phiweaver on papers you have **already curated** (gold standards):
+1. **Launch a blind, sandboxed session** — network limited to UniProt + EBI OLS, so PHI-base /
+   PHI-Canto / GitHub are unreachable (needs `bubblewrap`):
+   `claude --settings 07-Standards/curation-benchmarking/benchmark-sandbox.settings.json`
+2. **Exclude leakage** — make sure each paper's *own* gold standard is not a retrievable example in
+   `../curation-examples/` (remove it + regenerate the index if so).
+3. **Trigger the run** — invoke the **`benchmark`** skill with your papers. Claude drafts each one
+   blind (paper + UniProt/OLS only, every ID validated) and pre-fills a scorecard per paper.
+4. **Score** (human) — open each scorecard, rate every item against the gold standard, and fill the
+   completeness block. phiweaver never scores its own draft.
+5. **Report** —
+   ```
+   python3 scorecards_to_csv.py curated/*.xlsx --control control/*.xlsx --out scores.csv
+   python3 -m phiweaver.benchmark_report scores.csv --out benchmark-report.html
+   ```
+   (and `python3 -m phiweaver.batch_summary <drafts> --out BATCH-REVIEW.md` for the flag dashboard).
+
+The `benchmark` skill is the full runbook; the sections below are the reference for each piece.
+
 ## Sheets
 - **Guide** — purpose, the rating rubric, the scoring rule, and how to use it.
 - **Scorecard** — the per-paper template (copy the tab for each paper). Items are grouped by
