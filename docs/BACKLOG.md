@@ -6,10 +6,12 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
 `PLUGIN-ARCHITECTURE.md`.
 
 ## Tooling / bugs
-- [ ] **PHIDO validation gap** — `validate_ontology_ids` lists PHIDO as supported, but EBI OLS4
-  does not host PHIDO, so every PHIDO ID returns `not_found` (a false negative). Fix: either
-  resolve PHIDO from another source, or mark PHIDO as *format-checked-only* (like UniProtKB) so it
-  isn't wrongly failed. Surfaced 2026-07-03 curating PMID:26177154 (PHIDO:0000164 Fusarium wilt).
+- [x] **PHIDO validation gap** (fixed 2026-07-04) — OLS4 does not host PHIDO, so every PHIDO ID
+  used to return `not_found` (a false negative). Fixed by vendoring the ontology
+  (`phiweaver/lookup/data/phido.obo`, from github.com/PHI-base/phido) and resolving PHIDO
+  **offline** against it — existence + obsolescence, no network. GO/PHIPO still use OLS.
+  Refresh instructions: `phiweaver/lookup/data/README.md`. Surfaced 2026-07-03 curating
+  PMID:26177154 (PHIDO:0000164 Fusarium wilt), which now validates 7/7.
 
 ## Curation workflow
 - [ ] **Format convergence** — phiweaver *drafts* use the example-template body shape while *gold

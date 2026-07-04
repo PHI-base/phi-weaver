@@ -40,8 +40,9 @@ content in its own structure — only add the curation-example frontmatter wrapp
    ontology term ID + name, evidence code, conditions / extensions, figure, and the curator.
 3. **Validate every ontology ID** and never alter the curator's IDs:
    `python3 -m phiweaver.lookup.validate_ontology_ids GO:XXXXXXX PHIPO:XXXXXXX PHIDO:XXXXXXX`.
-   Record the result; **flag any that cannot be verified** (PHIDO is not hosted in EBI OLS4, so it
-   returns `not_found` — treat it as format-checked-only, not wrong).
+   GO/PHIPO resolve online via EBI OLS; PHIDO resolves offline against the bundled
+   `phiweaver/lookup/data/phido.obo` (OLS4 does not host PHIDO). Record the result and **flag any
+   that fail** (`not_found` / `obsolete`) for the curator.
 4. **Write the example** `07-Standards/curation-examples/<PMID>-<short-slug>.md`:
    - the curation-example **frontmatter** — `type: curation-example`, `status: validated`,
      `topics` (from `TAGS.md`), `annotation_types`, `evidence`, `pathogen`, `host`,

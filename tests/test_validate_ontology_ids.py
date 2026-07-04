@@ -132,6 +132,67 @@ class ValidateTests(unittest.TestCase):
         self.assertEqual(getter.calls, 1)
 
 
+class PhidoOfflineTests(unittest.TestCase):
+    """PHIDO is not on OLS4, so it resolves offline against the bundled .obo.
+    These inject a tiny index so they never touch the filesystem or the network."""
+
+    INDEX = {
+        "PHIDO:0000164": ("Fusarium wilt", False),
+        "PHIDO:0000002": ("obsolete abortion", True),
+    }
+
+    def _validator(self, index):
+        def boom(url, params):
+            raise AssertionError("PHIDO must not hit OLS/the network")
+        return v.OntologyValidator(http_get=boom, phido_index=index)
+
+    def test_existing_phido_passes(self):
+        r = self._validator(self.INDEX).validate("PHIDO:0000164")
+        self.assertEqual(r.existence, "exists")
+        self.assertEqual(r.label, "Fusarium wilt")
+        self.assertEqual(r.source, v.PHIDO_SOURCE)
+        self.assertTrue(r.ok)
+
+    def test_obsolete_phido_fails(self):
+        r = self._validator(self.INDEX).validate("PHIDO:0000002")
+        self.assertEqual(r.existence, "obsolete")
+        self.assertFalse(r.ok)
+
+    def test_missing_phido_is_not_found(self):
+        r = self._validator(self.INDEX).validate("PHIDO:0009999")
+        self.assertEqual(r.existence, "not_found")
+        self.assertFalse(r.ok)
+
+    def test_format_only_skips_phido_lookup(self):
+        r = self._validator(self.INDEX).validate("PHIDO:0000164", online=False)
+        self.assertEqual(r.existence, "not_checked")
+        self.assertTrue(r.ok)
+
+    def test_missing_ontology_file_is_reported_not_silently_passed(self):
+        # index None models an unreadable bundled file: honest error, not not_found.
+        r = self._validator(None).validate("PHIDO:0000164")
+        self.assertEqual(r.existence, "error")
+        self.assertFalse(r.ok)
+
+    def test_bundled_ontology_loads_and_has_fusarium_wilt(self):
+        # Exercises the real bundled file end-to-end (the term that used to false-fail).
+        r = v.OntologyValidator().validate("PHIDO:0000164")
+        self.assertEqual(r.existence, "exists")
+        self.assertEqual(r.label, "Fusarium wilt")
+
+
+class LoaderTests(unittest.TestCase):
+    def test_load_phido_parses_terms_and_obsolete_flags(self):
+        idx = v._load_phido()
+        self.assertIsNotNone(idx)
+        self.assertIn("PHIDO:0000164", idx)
+        self.assertEqual(idx["PHIDO:0000164"], ("Fusarium wilt", False))
+        self.assertTrue(idx["PHIDO:0000002"][1])  # obsolete abortion
+
+    def test_load_phido_missing_file_returns_none(self):
+        self.assertIsNone(v._load_phido(v.Path("/no/such/phido.obo")))
+
+
 class ExtractionTests(unittest.TestCase):
     def test_extracts_and_dedupes_ids_in_order(self):
         text = (

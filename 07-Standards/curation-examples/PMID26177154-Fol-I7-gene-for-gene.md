@@ -72,7 +72,8 @@ All by Macroscopic observation (quantitative); extension `gene_for_gene_interact
 | AVR1+ AVR2+ AVR3+ (race 1) WT | Moneymaker | PHIDO:0000164 | Fusarium wilt | Fig 2 |
 
 ## phiweaver validation note
-`validate_ontology_ids` (2026-07-03): the GO and PHIPO terms above all exist and are
-non-obsolete (6/6). **PHIDO:0000164** returned `not_found` in EBI OLS — PHIDO is not (fully)
-hosted in OLS4, so the validator can't confirm it there; the term is valid in PHI-Canto. (Flags a
-tooling gap: `validate_ontology_ids` cannot currently verify PHIDO IDs online.)
+`validate_ontology_ids` (2026-07-04): all 7 ontology IDs exist and are non-obsolete (7/7).
+The GO and PHIPO terms resolve online via EBI OLS; **PHIDO:0000164** (Fusarium wilt) resolves
+offline against the bundled PHIDO ontology (`phiweaver/lookup/data/phido.obo`, vendored from
+github.com/PHI-base/phido) — OLS4 does not host PHIDO. (Superseded the earlier note that PHIDO
+could not be verified; that tooling gap is now closed.)

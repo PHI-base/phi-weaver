@@ -62,7 +62,7 @@ independent human scoring** — see `07-Standards/curation-benchmarking/README.m
 - Each paper's **own gold standard was excluded** from retrieval (no leakage).
 - The gold standard was used **only at scoring**, never as drafting input.
 - **phiweaver did not grade its own drafts** — the ratings are the human's.
-- Every ontology ID validated (or explicitly flagged, e.g. PHIDO — not in OLS).
+- Every ontology ID validated (GO/PHIPO via OLS, PHIDO offline against the bundled ontology).
 
 ## Human review
 - Scoring is the human curator's judgement against the gold standard — that is the benchmark.

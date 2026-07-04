@@ -7,10 +7,14 @@ stages:
 
   1. FORMAT (offline, always): does the ID match the official syntax for its prefix?
      Catches typos and invented IDs without touching the network.
-  2. EXISTENCE / OBSOLESCENCE (online, OBO ontologies only): does the term actually exist
-     in the ontology, and is it current (not obsolete)? Resolved via the EBI Ontology
-     Lookup Service REST API (https://www.ebi.ac.uk/ols4/api). Responses are cached and
-     stamped with a retrieval timestamp for provenance.
+  2. EXISTENCE / OBSOLESCENCE: does the term actually exist in the ontology, and is it
+     current (not obsolete)?
+       - GO and PHIPO resolve **online** via the EBI Ontology Lookup Service REST API
+         (https://www.ebi.ac.uk/ols4/api). Responses are cached and stamped with a
+         retrieval timestamp for provenance.
+       - PHIDO is **not hosted by OLS4**, so it resolves **offline** against a bundled
+         copy of the ontology (`data/phido.obo`, vendored from github.com/PHI-base/phido).
+         This closes a false-negative gap where every PHIDO ID used to return not_found.
 
 UniProtKB accessions are format-checked here; their *existence* is resolved by the
 companion `query_uniprot.py` (which also returns the protein function), so this script
@@ -40,8 +44,9 @@ import os
 import re
 import sys
 from dataclasses import asdict, dataclass
+from functools import lru_cache
 from pathlib import Path
-from typing import Callable, List, Optional
+from typing import Callable, Dict, List, Optional, Tuple
 
 from phiweaver.common import ResponseCache, make_getter, utc_now
 
@@ -49,8 +54,19 @@ OLS_BASE_URL = "https://www.ebi.ac.uk/ols4/api"
 USER_AGENT = "PHI-Weaver-validate-ontology-ids/1.0 (https://github.com/PHI-base/phi-weaver)"
 DEFAULT_CACHE = Path(__file__).resolve().parent / ".cache" / "ontology_cache.sqlite"
 
-# OBO-style ontologies we can verify online, mapped to their OLS ontology name.
-OLS_ONTOLOGY = {"PHIPO": "phipo", "GO": "go", "PHIDO": "phido"}
+# Prefixes that use the OBO 7-digit local-id syntax.
+OBO_PREFIXES = {"PHIPO", "GO", "PHIDO"}
+# The subset we verify online, mapped to their OLS ontology name. PHIDO is absent on
+# purpose: OLS4 does not host it, so it is resolved offline against the bundled .obo.
+OLS_ONTOLOGY = {"PHIPO": "phipo", "GO": "go"}
+
+# Bundled PHIDO ontology (vendored from github.com/PHI-base/phido — see data/README.md).
+PHIDO_OBO_PATH = Path(__file__).resolve().parent / "data" / "phido.obo"
+PHIDO_SOURCE = "bundled phido.obo"
+
+# Sentinel: "no PHIDO index was injected, use the bundled one". Distinct from an
+# injected None, which models an unreadable ontology file.
+_UNSET = object()
 
 # Official ID syntax per prefix. Anchored, so a partial match is a fail.
 #   GO/PHIPO/PHIDO: 7-digit zero-padded numeric local id.
@@ -116,7 +132,7 @@ def _split_id(raw: str):
         return None, raw
     prefix, local = raw.split(":", 1)
     key = prefix.strip().upper()
-    if key in OLS_ONTOLOGY:
+    if key in OBO_PREFIXES:
         return key, local.strip()
     if key in _UNIPROT_PREFIXES:
         return "UniProtKB", local.strip()
@@ -126,20 +142,70 @@ def _split_id(raw: str):
 def check_format(raw: str):
     """Pure, offline format check. Returns (prefix_or_None, format_valid: bool)."""
     prefix, local = _split_id(raw)
-    if prefix in OLS_ONTOLOGY:
+    if prefix in OBO_PREFIXES:
         return prefix, bool(_OBO_RE.match(local))
     if prefix == "UniProtKB":
         return prefix, bool(_UNIPROT_RE.match(local))
     return None, False
 
 
+# ------------------------------------------------------------------- PHIDO (offline)
+
+def _load_phido(path: Path = PHIDO_OBO_PATH) -> Optional[Dict[str, Tuple[Optional[str], bool]]]:
+    """Parse the bundled PHIDO .obo into {obo_id: (name, is_obsolete)}.
+
+    Reads only `[Term]` stanzas (ignoring `[Typedef]` etc.). Returns None if the file
+    is missing/unreadable, so the caller can report an honest error rather than treating
+    every PHIDO ID as not_found.
+    """
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        return None
+    index: Dict[str, Tuple[Optional[str], bool]] = {}
+    in_term = False
+    cur_id: Optional[str] = None
+    name: Optional[str] = None
+    obsolete = False
+
+    def flush():
+        if in_term and cur_id:
+            index[cur_id] = (name, obsolete)
+
+    for line in text.splitlines():
+        line = line.strip()
+        if line.startswith("[") and line.endswith("]"):
+            flush()
+            in_term = line == "[Term]"
+            cur_id, name, obsolete = None, None, False
+        elif not in_term:
+            continue
+        elif line.startswith("id:"):
+            cur_id = line[3:].strip()
+        elif line.startswith("name:"):
+            name = line[5:].strip()
+        elif line.startswith("is_obsolete:"):
+            obsolete = line.split(":", 1)[1].strip().lower() == "true"
+    flush()
+    return index
+
+
+@lru_cache(maxsize=1)
+def _phido_index() -> Optional[Dict[str, Tuple[Optional[str], bool]]]:
+    """Module-level cache of the parsed bundled PHIDO ontology (None if unavailable)."""
+    return _load_phido()
+
+
 # ------------------------------------------------------------------------- Client
 
 class OntologyValidator:
     def __init__(self, cache: Optional[ResponseCache] = None,
-                 http_get: Optional[Callable] = None):
+                 http_get: Optional[Callable] = None,
+                 phido_index=_UNSET):
         self.cache = cache
         self._http_get = http_get or _requests_get
+        # Injectable for tests; falls back to the bundled ontology when not supplied.
+        self._phido_index = phido_index
 
     def _get(self, url: str, params: dict, use_cache: bool):
         key = url + "?" + json.dumps(params, sort_keys=True)
@@ -175,7 +241,11 @@ class OntologyValidator:
             return ValidationResult(raw, prefix, True, "not_checked",
                                     None, None, False, None, None)
 
-        # OBO term: verify existence + obsolescence via OLS.
+        if prefix == "PHIDO":
+            # PHIDO is not on OLS4 — resolve offline against the bundled ontology.
+            return self._validate_phido(raw)
+
+        # GO/PHIPO: verify existence + obsolescence via OLS.
         obo_id = f"{prefix}:{raw.split(':', 1)[1].strip()}"
         ontology = OLS_ONTOLOGY[prefix]
         try:
@@ -199,6 +269,26 @@ class OntologyValidator:
                                     "term is obsolete; do not use")
         return ValidationResult(raw, prefix, True, "exists",
                                 label, OLS_BASE_URL, cached, _now())
+
+    def _validate_phido(self, raw: str) -> ValidationResult:
+        """Resolve a PHIDO ID offline against the bundled ontology."""
+        index = _phido_index() if self._phido_index is _UNSET else self._phido_index
+        obo_id = f"PHIDO:{raw.split(':', 1)[1].strip()}"
+        if index is None:
+            return ValidationResult(raw, "PHIDO", True, "error",
+                                    None, PHIDO_SOURCE, False, _now(),
+                                    f"cannot read bundled PHIDO ontology ({PHIDO_OBO_PATH})")
+        if obo_id not in index:
+            return ValidationResult(raw, "PHIDO", True, "not_found",
+                                    None, PHIDO_SOURCE, False, None,
+                                    "term not present in bundled PHIDO")
+        name, obsolete = index[obo_id]
+        if obsolete:
+            return ValidationResult(raw, "PHIDO", True, "obsolete",
+                                    name, PHIDO_SOURCE, False, None,
+                                    "term is obsolete; do not use")
+        return ValidationResult(raw, "PHIDO", True, "exists",
+                                name, PHIDO_SOURCE, False, None)
 
 
 def _find_term(body: dict, obo_id: str):
@@ -239,7 +329,10 @@ def format_human(results: List[ValidationResult]) -> str:
         label = f"  {r.label}" if r.label else ""
         prov = ""
         if r.existence in ("exists", "obsolete", "not_found"):
-            prov = f"  ({'cached' if r.from_cache else 'live'} via OLS)"
+            if r.source == OLS_BASE_URL:
+                prov = f"  ({'cached' if r.from_cache else 'live'} via OLS)"
+            elif r.source:
+                prov = f"  (via {r.source})"
         lines.append(f"{symbol} {r.input_id}  [{r.existence}]{label}{prov}")
         if r.error and r.existence not in ("format_checked_only",):
             lines.append(f"    {r.error}")
