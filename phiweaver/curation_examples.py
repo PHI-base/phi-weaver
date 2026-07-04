@@ -36,6 +36,26 @@ REQUIRED_FIELDS = ("type", "status", "topics", "source")
 VALID_STATUS = ("draft", "validated")
 _SKIP_NAMES = {"INDEX.md", "TAGS.md"}
 
+# PHI-Canto's own annotation types — the coverage target for the gold-standard library.
+# (name, sessions-with-this-type) from canto.phi-base.org/tools/sessions_with_type_list;
+# the count is a rough prevalence, so coverage can be prioritised by frequency. Kept in
+# sync with the `annotation_types` vocabulary in TAGS.md; ordered most-common first.
+PHI_CANTO_ANNOTATION_TYPES = (
+    ("disease_name", 339),
+    ("pathogen_host_interaction_phenotype", 333),
+    ("pathogen_phenotype", 281),
+    ("biological_process", 263),
+    ("molecular_function", 223),
+    ("cellular_component", 152),
+    ("physical_interaction", 99),
+    ("wt_rna_expression", 95),
+    ("gene_for_gene_phenotype", 58),
+    ("host_phenotype", 17),
+    ("post_translational_modification", 14),
+    ("wt_protein_expression", 4),
+)
+_CANONICAL_ANNOTATION_TYPES = {name for name, _ in PHI_CANTO_ANNOTATION_TYPES}
+
 
 def _as_list(value) -> List[str]:
     if value is None:
@@ -95,6 +115,8 @@ def render_index(examples: List[Example]) -> str:
         f"{len(examples)} total.",
         "",
     ]
+    out += render_coverage(validated)
+
     if not examples:
         out += ["_No examples yet. Copy `_TEMPLATE.md` to a new file and curate one — "
                 "phiweaver drafts it; a curator reviews it and sets `status: validated`._", ""]
@@ -125,6 +147,36 @@ def render_index(examples: List[Example]) -> str:
     return "\n".join(out)
 
 
+def render_coverage(validated: List[Example]) -> List[str]:
+    """A checklist of PHI-Canto's annotation types vs the validated library, so the gaps
+    that still need a gold-standard example are visible at a glance."""
+    covered = {t: 0 for t, _ in PHI_CANTO_ANNOTATION_TYPES}
+    for e in validated:
+        for t in e.annotation_types:
+            if t in covered:
+                covered[t] += 1
+    n_covered = sum(1 for c in covered.values() if c)
+    total = len(PHI_CANTO_ANNOTATION_TYPES)
+    out = [
+        "## Coverage — PHI-Canto annotation types",
+        "",
+        "_The gold-standard library aims to cover every PHI-Canto annotation type (coverage, "
+        "not volume). `Sessions` is how common the type is in PHI-Canto — a rough priority. "
+        "Generated from the `annotation_types` frontmatter of **validated** examples only._",
+        "",
+        f"**{n_covered}/{total} types covered.**",
+        "",
+        "| Annotation type | Sessions | Examples | Status |",
+        "| --- | --- | --- | --- |",
+    ]
+    for name, sessions in PHI_CANTO_ANNOTATION_TYPES:
+        n = covered[name]
+        status = f"✅ {n}" if n else "⬜ gap"
+        out.append(f"| {name} | {sessions} | {n or '—'} | {status} |")
+    out.append("")
+    return out
+
+
 def validate_examples(examples: List[Example]) -> List[str]:
     """Contract problems (empty = all good)."""
     problems: List[str] = []
@@ -137,6 +189,11 @@ def validate_examples(examples: List[Example]) -> List[str]:
                 f"{e.name}: status '{e.status}' not in {VALID_STATUS}")
         if "topics" in e.meta and not e.topics:
             problems.append(f"{e.name}: at least one topic is required")
+        for atype in e.annotation_types:
+            if atype not in _CANONICAL_ANNOTATION_TYPES:
+                problems.append(
+                    f"{e.name}: annotation_type '{atype}' is not a PHI-Canto type "
+                    f"(see TAGS.md)")
     return problems
 
 

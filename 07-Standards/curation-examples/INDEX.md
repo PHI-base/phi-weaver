@@ -9,11 +9,32 @@ Human-validated worked curations that phiweaver retrieves as references when dra
 
 **1 validated**, 0 draft, 1 total.
 
+## Coverage — PHI-Canto annotation types
+
+_The gold-standard library aims to cover every PHI-Canto annotation type (coverage, not volume). `Sessions` is how common the type is in PHI-Canto — a rough priority. Generated from the `annotation_types` frontmatter of **validated** examples only._
+
+**6/12 types covered.**
+
+| Annotation type | Sessions | Examples | Status |
+| --- | --- | --- | --- |
+| disease_name | 339 | 1 | ✅ 1 |
+| pathogen_host_interaction_phenotype | 333 | 1 | ✅ 1 |
+| pathogen_phenotype | 281 | — | ⬜ gap |
+| biological_process | 263 | 1 | ✅ 1 |
+| molecular_function | 223 | 1 | ✅ 1 |
+| cellular_component | 152 | 1 | ✅ 1 |
+| physical_interaction | 99 | — | ⬜ gap |
+| wt_rna_expression | 95 | — | ⬜ gap |
+| gene_for_gene_phenotype | 58 | 1 | ✅ 1 |
+| host_phenotype | 17 | — | ⬜ gap |
+| post_translational_modification | 14 | — | ⬜ gap |
+| wt_protein_expression | 4 | — | ⬜ gap |
+
 ## All examples
 
 | Example | Status | Topics | Annotation types | Source |
 | --- | --- | --- | --- | --- |
-| [[PMID26177154-Fol-I7-gene-for-gene]] | ✅ validated | effector, gene-for-gene | gene-annotation, interaction-phenotype | PMID:26177154 |
+| [[PMID26177154-Fol-I7-gene-for-gene]] | ✅ validated | effector, gene-for-gene | molecular_function, biological_process, cellular_component, gene_for_gene_phenotype, pathogen_host_interaction_phenotype, disease_name | PMID:26177154 |
 
 ## By topic
 

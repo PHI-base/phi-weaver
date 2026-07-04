@@ -14,7 +14,7 @@ topics:
   - effector
   - gene-deletion
 annotation_types:
-  - interaction-phenotype
+  - pathogen_host_interaction_phenotype
 source: PMID:111
 pathogen: Fusarium graminearum
 ---
@@ -100,6 +100,27 @@ class ValidateTests(unittest.TestCase):
             self.assertEqual(
                 ce.validate_examples(ce.discover_examples(
                     write_dir(tmp, {"a.md": EXAMPLE_A}))), [])
+
+    def test_non_canonical_annotation_type_is_flagged(self):
+        bad = ("---\ntype: curation-example\nstatus: validated\ntopics:\n  - effector\n"
+               "annotation_types:\n  - made_up_type\nsource: PMID:9\n---\n")
+        with tempfile.TemporaryDirectory() as tmp:
+            problems = ce.validate_examples(ce.discover_examples(
+                write_dir(tmp, {"bad.md": bad})))
+            self.assertTrue(any("made_up_type" in p for p in problems))
+
+
+class CoverageTests(unittest.TestCase):
+    def test_coverage_counts_validated_types_and_marks_gaps(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            # EXAMPLE_A (validated) carries pathogen_host_interaction_phenotype; the draft
+            # EXAMPLE_B carries none, so it must not count toward coverage.
+            out = ce.render_index(ce.discover_examples(
+                write_dir(tmp, {"a.md": EXAMPLE_A, "b.md": EXAMPLE_B})))
+            self.assertIn("Coverage — PHI-Canto annotation types", out)
+            self.assertIn("1/12 types covered.", out)
+            self.assertIn("pathogen_host_interaction_phenotype", out)
+            self.assertIn("⬜ gap", out)   # e.g. wt_protein_expression uncovered
 
 
 if __name__ == "__main__":

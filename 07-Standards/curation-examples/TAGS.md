@@ -15,10 +15,26 @@ here first with a one-line meaning — don't invent ad-hoc tags in the examples.
 - `chemical-sensitivity` — resistance / sensitivity to a compound
 - `secondary-metabolite` — mycotoxin / secondary-metabolite phenotype
 
-## `annotation_types`
-- `single-species-phenotype` — pathogen OR host alone
-- `interaction-phenotype` — pathogen–host together (metagenotype)
-- `gene-annotation` — gene-level GO annotation (e.g. effector GO:0140418)
+## `annotation_types` — PHI-Canto's own annotation types (the coverage target)
+
+These are the **exact** annotation types PHI-Canto records (see the sessions-with-type list at
+`canto.phi-base.org/tools/sessions_with_type_list`). Tag an example with every type it actually
+contains, using these names verbatim, so the coverage tracker in `INDEX.md` and any
+benchmarking compare like-for-like with PHI-Canto. The count is how many PHI-Canto sessions
+carry that type (a rough prevalence, so gold-standard coverage can be prioritised by frequency).
+
+- `molecular_function` — GO MF gene annotation (223)
+- `biological_process` — GO BP gene annotation (263)
+- `cellular_component` — GO CC gene annotation (152)
+- `pathogen_phenotype` — single-species pathogen phenotype (281)
+- `host_phenotype` — single-species host phenotype (17)
+- `pathogen_host_interaction_phenotype` — metagenotype (pathogen × host) phenotype (333)
+- `gene_for_gene_phenotype` — R-gene / avirulence recognition metagenotype (58)
+- `disease_name` — PHIDO disease-name annotation (339)
+- `physical_interaction` — protein–protein / molecular interaction (99)
+- `wt_rna_expression` — wild-type RNA expression level (95)
+- `wt_protein_expression` — wild-type protein expression level (4)
+- `post_translational_modification` — PTM annotation (14)
 
 ## `evidence`
 - `gene deletion`, `complementation`, `overexpression`, `point mutation`,

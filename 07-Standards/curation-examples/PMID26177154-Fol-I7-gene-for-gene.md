@@ -5,8 +5,12 @@ topics:
   - effector
   - gene-for-gene
 annotation_types:
-  - gene-annotation
-  - interaction-phenotype
+  - molecular_function
+  - biological_process
+  - cellular_component
+  - gene_for_gene_phenotype
+  - pathogen_host_interaction_phenotype
+  - disease_name
 evidence:
   - gene deletion
   - overexpression
