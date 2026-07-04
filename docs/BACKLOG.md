@@ -19,7 +19,7 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
   benchmarking compare like-for-like. *Partly done 2026-07-04*: the example `annotation_types`
   vocabulary now IS PHI-Canto's own annotation types (`TAGS.md`), and `INDEX.md` tracks coverage
   against them. Still to do: converge the draft-template **body shape** toward PHI-Canto's.
-- [ ] **Obsolete PHIDO IDs in source PHI-Canto session** — session `02e545aba274d209`
+- [ ] **Obsolete PHIDO IDs in source PHI-Canto session** ([#1](https://github.com/PHI-base/phi-weaver/issues/1)) — session `02e545aba274d209`
   (PMID:39787257) curated now-obsolete disease-name terms PHIDO:0000163 / PHIDO:0000331. The
   gold-standard example was updated to the current PHIDO:0000162 / PHIDO:0000329; update the
   live PHI-Canto session too so source and example stay in step. (External / curator action.)
