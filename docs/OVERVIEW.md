@@ -17,7 +17,7 @@ curator assistance*, never a replacement for an expert curator.
 | **Create genotypes** (alleles, complementation, multi-allele, expression level) | `genotype-creation` skill | reasoning + PHI-Canto conventions |
 | **Map phenotypes** to real PHIPO terms (never invented; `no_match` if none fit) | `phipo-mapping` skill | `phiweaver/lookup/map_phenotype.py` (EBI OLS) |
 | **Annotate phenotypes** (type, term, evidence code, conditions, extensions) | `phenotype-annotation` skill | via phipo-mapping + validator |
-| **Validate ontology IDs** (PHIPO/GO/PHIDO/UniProtKB: format + exists + non-obsolete) | `phiweaver/lookup/validate_ontology_ids.py` | EBI OLS (GO/PHIPO) + bundled `phido.obo` (PHIDO) |
+| **Validate ontology IDs** (PHIPO/GO/PHIDO/MOD/UniProtKB: format + exists + non-obsolete) | `phiweaver/lookup/validate_ontology_ids.py` | EBI OLS (GO/PHIPO/MOD) + bundled `phido.obo` (PHIDO) |
 | **QC a draft curation** before human review | `curation-qc` skill | the validator + lookups |
 | **Track progress + real completion metrics** (status→curated; protein & interaction counts derived from the notes) | `curation_pipeline.py complete-paper`, `daily_curation.py` | SQLite DB |
 | **Reuse validated examples** (worked curations, tag-classified, retrieved as references) | `python3 -m phiweaver.curation_examples` → `07-Standards/curation-examples/` | markdown + generated index |

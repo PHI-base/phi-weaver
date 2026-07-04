@@ -7,33 +7,34 @@ Human-validated worked curations that phiweaver retrieves as references when dra
 
 **An example is a _draft_ until a curator reviews it and sets `status: validated`.** Only validated examples should be used as references.
 
-**3 validated**, 0 draft, 3 total.
+**4 validated**, 0 draft, 4 total.
 
 ## Coverage — PHI-Canto annotation types
 
 _The gold-standard library aims to cover every PHI-Canto annotation type (coverage, not volume). `Sessions` is how common the type is in PHI-Canto — a rough priority. Generated from the `annotation_types` frontmatter of **validated** examples only._
 
-**10/12 types covered.**
+**11/12 types covered.**
 
 | Annotation type | Sessions | Examples | Status |
 | --- | --- | --- | --- |
-| disease_name | 339 | 3 | ✅ 3 |
+| disease_name | 339 | 4 | ✅ 4 |
 | pathogen_host_interaction_phenotype | 333 | 3 | ✅ 3 |
 | pathogen_phenotype | 281 | 2 | ✅ 2 |
-| biological_process | 263 | 3 | ✅ 3 |
-| molecular_function | 223 | 2 | ✅ 2 |
-| cellular_component | 152 | 2 | ✅ 2 |
-| physical_interaction | 99 | 1 | ✅ 1 |
+| biological_process | 263 | 4 | ✅ 4 |
+| molecular_function | 223 | 3 | ✅ 3 |
+| cellular_component | 152 | 3 | ✅ 3 |
+| physical_interaction | 99 | 2 | ✅ 2 |
 | wt_rna_expression | 95 | 1 | ✅ 1 |
-| gene_for_gene_phenotype | 58 | 1 | ✅ 1 |
-| host_phenotype | 17 | 1 | ✅ 1 |
-| post_translational_modification | 14 | — | ⬜ gap |
+| gene_for_gene_phenotype | 58 | 2 | ✅ 2 |
+| host_phenotype | 17 | 2 | ✅ 2 |
+| post_translational_modification | 14 | 1 | ✅ 1 |
 | wt_protein_expression | 4 | — | ⬜ gap |
 
 ## All examples
 
 | Example | Status | Topics | Annotation types | Source |
 | --- | --- | --- | --- | --- |
+| [[PMID23498959-creD-RLCK185-phosphorylation]] | ✅ validated | effector, physical-interaction, overexpression | molecular_function, biological_process, cellular_component, host_phenotype, gene_for_gene_phenotype, post_translational_modification, physical_interaction, disease_name | PMID:23498959 |
 | [[PMID26177154-Fol-I7-gene-for-gene]] | ✅ validated | effector, gene-for-gene | molecular_function, biological_process, cellular_component, gene_for_gene_phenotype, pathogen_host_interaction_phenotype, disease_name | PMID:26177154 |
 | [[PMID35468894-PINE1-effector-PGIP-physical-interaction]] | ✅ validated | effector, physical-interaction, gene-deletion, overexpression, complementation | molecular_function, biological_process, cellular_component, host_phenotype, pathogen_phenotype, pathogen_host_interaction_phenotype, physical_interaction, wt_rna_expression, disease_name | PMID:35468894 |
 | [[PMID39787257-FgKnr4-cell-wall-stress]] | ✅ validated | gene-deletion, chemical-sensitivity | biological_process, pathogen_phenotype, pathogen_host_interaction_phenotype, disease_name | PMID:39787257 |
@@ -49,6 +50,7 @@ _The same example appears under every topic it is tagged with._
 - ✅ [[PMID35468894-PINE1-effector-PGIP-physical-interaction]] — Sclerotinia sclerotiorum; Botrytis cinerea
 
 ### effector
+- ✅ [[PMID23498959-creD-RLCK185-phosphorylation]] — Xanthomonas oryzae
 - ✅ [[PMID26177154-Fol-I7-gene-for-gene]] — Fusarium oxysporum f. sp. lycopersici
 - ✅ [[PMID35468894-PINE1-effector-PGIP-physical-interaction]] — Sclerotinia sclerotiorum; Botrytis cinerea
 
@@ -60,7 +62,9 @@ _The same example appears under every topic it is tagged with._
 - ✅ [[PMID26177154-Fol-I7-gene-for-gene]] — Fusarium oxysporum f. sp. lycopersici
 
 ### overexpression
+- ✅ [[PMID23498959-creD-RLCK185-phosphorylation]] — Xanthomonas oryzae
 - ✅ [[PMID35468894-PINE1-effector-PGIP-physical-interaction]] — Sclerotinia sclerotiorum; Botrytis cinerea
 
 ### physical-interaction
+- ✅ [[PMID23498959-creD-RLCK185-phosphorylation]] — Xanthomonas oryzae
 - ✅ [[PMID35468894-PINE1-effector-PGIP-physical-interaction]] — Sclerotinia sclerotiorum; Botrytis cinerea

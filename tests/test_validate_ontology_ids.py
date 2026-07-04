@@ -41,6 +41,13 @@ class FormatTests(unittest.TestCase):
         self.assertFalse(v.check_format("GO:00094051")[1])   # too long
         self.assertFalse(v.check_format("PHIPO:abc1234")[1])  # non-numeric
 
+    def test_mod_uses_five_digit_local_id(self):
+        prefix, ok = v.check_format("MOD:00696")
+        self.assertEqual(prefix, "MOD")
+        self.assertTrue(ok)
+        self.assertFalse(v.check_format("MOD:0696")[1])       # 4 digits — too short
+        self.assertFalse(v.check_format("MOD:0000696")[1])    # 7 digits — too long for MOD
+
     def test_uniprot_accession_formats(self):
         for good in ("P12345", "Q1AAA9", "A0A0B4J2F0", "P12345-2"):
             prefix, ok = v.check_format(f"UniProtKB:{good}")
@@ -118,6 +125,24 @@ class ValidateTests(unittest.TestCase):
         val = v.OntologyValidator(http_get=ols_getter([term("GO:0000001")]))
         r = val.validate("GO:0009405")
         self.assertEqual(r.existence, "not_found")
+
+    def test_mod_resolves_via_ols(self):
+        val = v.OntologyValidator(
+            http_get=ols_getter([term("MOD:00696", "phosphorylated residue")]))
+        r = val.validate("MOD:00696")
+        self.assertEqual(r.existence, "exists")
+        self.assertEqual(r.label, "phosphorylated residue")
+        self.assertTrue(r.ok)
+
+    def test_find_term_prefers_defining_ontology(self):
+        # OLS echoes one obo_id from several ontologies; the non-defining cross-reference
+        # carries a placeholder label. We must pick the defining ontology's own entry.
+        body = {"_embedded": {"terms": [
+            {"obo_id": "MOD:00696", "label": "MOD_00696", "is_defining_ontology": False},
+            {"obo_id": "MOD:00696", "label": "phosphorylated residue",
+             "is_defining_ontology": True},
+        ]}}
+        self.assertEqual(v._find_term(body, "MOD:00696")["label"], "phosphorylated residue")
 
     def test_cache_avoids_second_http_call(self):
         getter = CountingGetter([term("GO:0009405", "pathogenesis")])

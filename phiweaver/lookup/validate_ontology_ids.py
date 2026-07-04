@@ -2,14 +2,15 @@
 """
 validate_ontology_ids.py — deterministic ontology-ID validation for PHI-Weaver curation.
 
-Checks the identifiers a curation depends on — PHIPO, GO, PHIDO and UniProtKB — in two
-stages:
+Checks the identifiers a curation depends on — PHIPO, GO, PHIDO, MOD (PSI-MOD) and
+UniProtKB — in two stages:
 
   1. FORMAT (offline, always): does the ID match the official syntax for its prefix?
-     Catches typos and invented IDs without touching the network.
+     Catches typos and invented IDs without touching the network. (OBO terms use a
+     7-digit local id; MOD/PSI-MOD uses a 5-digit local id.)
   2. EXISTENCE / OBSOLESCENCE: does the term actually exist in the ontology, and is it
      current (not obsolete)?
-       - GO and PHIPO resolve **online** via the EBI Ontology Lookup Service REST API
+       - GO, PHIPO and MOD resolve **online** via the EBI Ontology Lookup Service REST API
          (https://www.ebi.ac.uk/ols4/api). Responses are cached and stamped with a
          retrieval timestamp for provenance.
        - PHIDO is **not hosted by OLS4**, so it resolves **offline** against a bundled
@@ -54,11 +55,12 @@ OLS_BASE_URL = "https://www.ebi.ac.uk/ols4/api"
 USER_AGENT = "PHI-Weaver-validate-ontology-ids/1.0 (https://github.com/PHI-base/phi-weaver)"
 DEFAULT_CACHE = Path(__file__).resolve().parent / ".cache" / "ontology_cache.sqlite"
 
-# Prefixes that use the OBO 7-digit local-id syntax.
-OBO_PREFIXES = {"PHIPO", "GO", "PHIDO"}
+# Ontology-term prefixes we recognise (as opposed to UniProtKB accessions).
+OBO_PREFIXES = {"PHIPO", "GO", "PHIDO", "MOD"}
 # The subset we verify online, mapped to their OLS ontology name. PHIDO is absent on
 # purpose: OLS4 does not host it, so it is resolved offline against the bundled .obo.
-OLS_ONTOLOGY = {"PHIPO": "phipo", "GO": "go"}
+# MOD is PSI-MOD (protein modifications), used by PHI-Canto's protein-modification type.
+OLS_ONTOLOGY = {"PHIPO": "phipo", "GO": "go", "MOD": "mod"}
 
 # Bundled PHIDO ontology (vendored from github.com/PHI-base/phido — see data/README.md).
 PHIDO_OBO_PATH = Path(__file__).resolve().parent / "data" / "phido.obo"
@@ -70,8 +72,11 @@ _UNSET = object()
 
 # Official ID syntax per prefix. Anchored, so a partial match is a fail.
 #   GO/PHIPO/PHIDO: 7-digit zero-padded numeric local id.
+#   MOD (PSI-MOD):  5-digit zero-padded numeric local id.
 #   UniProtKB:      the canonical accession regex, with an optional isoform suffix.
-_OBO_RE = re.compile(r"\d{7}$")
+_OBO7_RE = re.compile(r"\d{7}$")
+_MOD_RE = re.compile(r"\d{5}$")
+_LOCAL_ID_RE = {"PHIPO": _OBO7_RE, "GO": _OBO7_RE, "PHIDO": _OBO7_RE, "MOD": _MOD_RE}
 _UNIPROT_RE = re.compile(
     r"(?:[OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9](?:[A-Z][A-Z0-9]{2}[0-9]){1,2})"
     r"(?:-\d+)?$"
@@ -81,7 +86,7 @@ _UNIPROT_PREFIXES = {"UNIPROTKB", "UNIPROT"}
 
 # Matches any candidate ontology ID in free text, for --file extraction.
 _ID_IN_TEXT_RE = re.compile(
-    r"\b(PHIPO|PHIDO|GO|UniProtKB|UniProt):[A-Za-z0-9-]+", re.IGNORECASE)
+    r"\b(PHIPO|PHIDO|GO|MOD|UniProtKB|UniProt):[A-Za-z0-9-]+", re.IGNORECASE)
 
 
 class OntologyError(RuntimeError):
@@ -143,7 +148,7 @@ def check_format(raw: str):
     """Pure, offline format check. Returns (prefix_or_None, format_valid: bool)."""
     prefix, local = _split_id(raw)
     if prefix in OBO_PREFIXES:
-        return prefix, bool(_OBO_RE.match(local))
+        return prefix, bool(_LOCAL_ID_RE[prefix].match(local))
     if prefix == "UniProtKB":
         return prefix, bool(_UNIPROT_RE.match(local))
     return None, False
@@ -227,7 +232,7 @@ class OntologyValidator:
         if prefix is None:
             return ValidationResult(raw, None, False, "unknown_prefix",
                                     None, None, False, None,
-                                    "unrecognised prefix; expected PHIPO/GO/PHIDO/UniProtKB")
+                                    "unrecognised prefix; expected PHIPO/GO/PHIDO/MOD/UniProtKB")
         if not fmt_ok:
             return ValidationResult(raw, prefix, False, "format_invalid",
                                     None, None, False, None,
@@ -292,12 +297,19 @@ class OntologyValidator:
 
 
 def _find_term(body: dict, obo_id: str):
-    """Return the embedded OLS term whose obo_id matches, or None."""
+    """Return the embedded OLS term whose obo_id matches, or None.
+
+    A single obo_id can appear several times in one ontology's response as cross-references
+    from other ontologies (e.g. MOD:00696 is echoed by GO with a placeholder label). Prefer
+    the term flagged as the defining ontology's own entry; fall back to the first match."""
     terms = ((body or {}).get("_embedded") or {}).get("terms") or []
-    for t in terms:
-        if (t.get("obo_id") or "").upper() == obo_id.upper():
+    matches = [t for t in terms if (t.get("obo_id") or "").upper() == obo_id.upper()]
+    if not matches:
+        return None
+    for t in matches:
+        if t.get("is_defining_ontology"):
             return t
-    return None
+    return matches[0]
 
 
 # --------------------------------------------------------------------- Extraction
@@ -345,7 +357,7 @@ def format_human(results: List[ValidationResult]) -> str:
 
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(
-        description="Validate PHIPO / GO / PHIDO / UniProtKB IDs for PHI-Weaver curation.")
+        description="Validate PHIPO / GO / PHIDO / MOD / UniProtKB IDs for PHI-Weaver curation.")
     p.add_argument("ids", nargs="*", help="ontology IDs, e.g. PHIPO:0000001 GO:0009405")
     p.add_argument("--file", help="extract and validate every ontology ID found in a file")
     p.add_argument("--format-only", action="store_true",
