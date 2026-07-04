@@ -71,24 +71,25 @@ MYCGRDRAFT_105330 (F9XI26) → GO:0032995 (EXP).
 | *ZtKnr4Δ* (Z. tritici IPO323) | wild type *T. aestivum* (cv. Riband) | PHIPO:0000365 | decreased pathogen growth within host | Macroscopic observation (qualitative) | 20 dpi | Fig 9A | infects_tissue leaf; compared_to_control *Ztknr4+*[WT level]; infective_ability reduced virulence |
 
 ## Disease name annotations
-> ⚠ Both PHIDO IDs used in this session are now **obsolete** in current PHIDO (each has a
-> replacement — see the validation note). They are recorded here **as curated** for the gold
-> standard; use the replacement ID when curating new papers.
+> The PHIDO IDs below have been **updated to the current (non-obsolete) terms**. The original
+> PHI-Canto session curated the now-obsolete PHIDO:0000163 / PHIDO:0000331; each was replaced by
+> its `replaced_by` successor (same disease, kept as an exact synonym). See the validation note.
 
-| Pathogen genotype (control) | Host genotype | Term ID (as curated) | Term name | Figure |
+| Pathogen genotype (control) | Host genotype | Term ID | Term name | Figure |
 | --- | --- | --- | --- | --- |
-| *FgKnr4+*[WT level] (F. graminearum PH-1) | wild type *T. aestivum* (cv. Bobwhite) | PHIDO:0000163 | fusarium head blight *(obsolete → PHIDO:0000162)* | Fig 5 |
-| *Ztknr4+*[WT level] (Z. tritici IPO323) | wild type *T. aestivum* (cv. Riband) | PHIDO:0000331 | Septoria tritici blotch *(obsolete → PHIDO:0000329)* | Fig 9A |
+| *FgKnr4+*[WT level] (F. graminearum PH-1) | wild type *T. aestivum* (cv. Bobwhite) | PHIDO:0000162 | Fusarium ear blight (syn. Fusarium head blight) | Fig 5 |
+| *Ztknr4+*[WT level] (Z. tritici IPO323) | wild type *T. aestivum* (cv. Riband) | PHIDO:0000329 | Septoria leaf blotch (syn. Septoria tritici blotch) | Fig 9A |
 
 ## phiweaver validation note
 `validate_ontology_ids` (2026-07-04): 12/14 IDs pass. The 2 GO terms (both biological_process)
 and 8 PHIPO terms exist and are non-obsolete (via EBI OLS); both UniProtKB accessions are
-format-valid (existence via `query_uniprot.py`). The 2 **PHIDO disease-name terms are obsolete**
-(caught offline against the bundled PHIDO ontology):
-- **PHIDO:0000163** "fusarium head blight" → replaced_by **PHIDO:0000162** "Fusarium ear blight"
+format-valid (existence via `query_uniprot.py`). The 2 disease-name terms as originally curated
+were **obsolete** (caught offline against the bundled PHIDO ontology) and have been **updated to
+their `replaced_by` successors** in the tables above:
+- **PHIDO:0000163** "fusarium head blight" → **PHIDO:0000162** "Fusarium ear blight"
   (exact synonym "Fusarium head blight").
-- **PHIDO:0000331** "Septoria tritici blotch" → replaced_by **PHIDO:0000329** "Septoria leaf
-  blotch" (exact synonym "Septoria tritici blotch").
+- **PHIDO:0000331** "Septoria tritici blotch" → **PHIDO:0000329** "Septoria leaf blotch"
+  (exact synonym "Septoria tritici blotch").
 
-They are kept as originally curated (a faithful gold standard), with the current replacements
-flagged above so new curation uses the live IDs.
+All 14 IDs used in this example now validate 14/14. Recommend updating the PHI-Canto session
+(`02e545aba274d209`) to the same current IDs so the source and this gold standard stay in step.
