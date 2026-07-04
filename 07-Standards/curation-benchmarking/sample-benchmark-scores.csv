@@ -1,0 +1,14 @@
+paper,group,curatable,captured,UniProtKB ID,GO annotation,Genotype,Pathogen phenotype,Interaction phenotype,Disease name,Evidence code
+P01-Smith-2024,curated,8,8,Correct,Correct,Correct,Correct,Needs improvement,Correct,Correct
+P02-Chen-2023,curated,10,9,Correct,Correct,Needs improvement,Correct,Correct,Correct,Incorrect
+P03-Lee-2022,curated,7,6,Correct,Correct,Correct,Needs improvement,N/A,Correct,Needs improvement
+P04-Zhao-2024,curated,12,10,Correct,Needs improvement,Incorrect,Incorrect,Needs improvement,Incorrect,Incorrect
+P05-Ito-2021,curated,6,6,Correct,Correct,Correct,Correct,Correct,Correct,Correct
+P06-Park-2023,curated,9,7,Correct,Correct,Needs improvement,Needs improvement,Incorrect,Needs improvement,Correct
+P07-Nolan-2022,curated,11,10,Correct,Correct,Correct,Correct,Needs improvement,Correct,Needs improvement
+P08-Meyer-2024,curated,5,5,Correct,Correct,N/A,Correct,N/A,Correct,Correct
+P09-Owusu-2023,curated,10,8,Needs improvement,Correct,Incorrect,Needs improvement,Incorrect,Needs improvement,Incorrect
+P10-Rossi-2021,curated,8,7,Correct,Correct,Correct,Needs improvement,Correct,Correct,Correct
+C1-control-Fol,control,9,7,Correct,Needs improvement,Needs improvement,Incorrect,Incorrect,Needs improvement,Incorrect
+C2-control-Pst,control,7,6,Correct,Correct,Incorrect,Needs improvement,N/A,Incorrect,Needs improvement
+C3-control-Bgh,control,11,8,Needs improvement,Correct,Incorrect,Incorrect,Incorrect,Needs improvement,Incorrect

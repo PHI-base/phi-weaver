@@ -85,6 +85,21 @@ claude --settings 07-Standards/curation-benchmarking/benchmark-sandbox.settings.
   `python3 -m phiweaver.lookup.map_phenotype "reduced virulence"` still works (UniProt/OLS
   reachable) and that fetching a PHI-base URL is blocked, before relying on it for scoring.
 
+## Report / visualisation (for the team)
+```
+python3 -m phiweaver.benchmark_report <scores.csv> --out benchmark-report.html
+```
+Builds a **self-contained HTML report** — headline stats, per-paper accuracy + completeness, an
+item × paper ratings heatmap, average accuracy per item ("where to improve"), and a
+**curated-vs-control** comparison. It opens in any browser with nothing to install, so it's easy
+to share. Pure stdlib. See `sample-benchmark-scores.csv` for the input format and
+`sample-benchmark-report.html` for a synthetic preview.
+
+The scores CSV has one row per paper: `paper, group (curated|control), curatable, captured`, then
+one column per scored item with its rating (Correct / Needs improvement / Incorrect / N/A). Score
+= Correct 1, Needs improvement 0.5, Incorrect 0, N/A excluded. (A helper to export this CSV
+straight from the filled scorecards is on the backlog.)
+
 ## Notes
 - Confirm whether *physical / molecular interaction* is in PHI-Canto's phenotype scope before
   treating it as a scored row.
