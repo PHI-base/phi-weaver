@@ -45,6 +45,23 @@ groups the flags by category across the batch so you can work through them (e.g.
 `needs_accession` at once). Pure stdlib. The human answers the flags at review time — nothing is
 asked during drafting.
 
+## Benchmark integrity (scoring against your own gold standards)
+When you score phiweaver against papers you have **already curated**, keep the comparison honest:
+- **Blind drafting** — phiweaver gets only the paper + reference databases (UniProt, EBI OLS —
+  which a human curator uses too). The gold-standard curation is used only at scoring time, never
+  given to phiweaver as input.
+- **No PHI-base access** — phiweaver must not read the existing curation from PHI-base / PHI-Canto.
+  Web access to those hosts is **denied** in `.claude/settings.json`
+  (`WebFetch(domain:*.phi-base.org)`, `www.phi-base.org`, `canto.phi-base.org`,
+  `phi5.phi-base.org`). The curation tools only reach UniProt + EBI OLS, not PHI-base. Note:
+  `.claude/` is gitignored here, so each curator adds this deny locally (or an admin enables it
+  org-wide in managed settings). Takes effect in a **freshly started** Claude session.
+- **No leakage** — exclude a paper's **own** gold standard from the retrieval example library when
+  benchmarking that paper, or phiweaver just retrieves the answer and looks artificially perfect.
+
+Report the human-reviewed curated papers and a **held-out gold-standard control set** (drafts
+scored against the known-correct curation) side by side.
+
 ## Notes
 - Confirm whether *physical / molecular interaction* is in PHI-Canto's phenotype scope before
   treating it as a scored row.

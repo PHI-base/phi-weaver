@@ -18,6 +18,10 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
 - [ ] **Physical-interaction scope** — decide whether/how PHI-Canto captures protein–protein
   interactions before treating it as a scored/example topic (recurs: Zhang-2024, Miltenburg-2022).
 - [ ] Add more validated gold-standard examples as they are exported from PHI-Canto.
+- [ ] **Benchmark integrity — stronger enforcement**: PHI-base web access is denied for the
+  WebFetch tool in local `.claude/settings.json` (`*.phi-base.org` etc.). For airtight, team-wide,
+  Bash-proof enforcement, add a **network-sandbox allowlist** (UniProt + EBI OLS only) in managed
+  settings so *no* route (including `curl`/`wget`) can reach PHI-base during blind benchmarking.
 
 ## Deferred (see DESIGN-DECISIONS.md D11 / PLUGIN-ARCHITECTURE.md)
 - [ ] Full machine-readable curation-record schema (first slice done: the draft `auto_check` block).
