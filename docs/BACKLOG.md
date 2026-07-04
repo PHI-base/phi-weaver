@@ -23,14 +23,16 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
   (PMID:39787257) curated now-obsolete disease-name terms PHIDO:0000163 / PHIDO:0000331. The
   gold-standard example was updated to the current PHIDO:0000162 / PHIDO:0000329; update the
   live PHI-Canto session too so source and example stay in step. (External / curator action.)
-- [ ] **Physical-interaction scope** — decide whether/how PHI-Canto captures protein–protein
-  interactions before treating it as a scored/example topic (recurs: Zhang-2024, Miltenburg-2022).
+- [x] **Physical-interaction scope** (resolved 2026-07-04) — PHI-Canto **does** capture
+  protein–protein interactions, via a dedicated `physical_interaction` annotation type
+  (Interactor A/B + taxon + evidence: Co-purification / PCA / Two-hybrid). Confirmed by the
+  gold-standard example PMID:35468894 (PINE1 effector × host PGIP). It is now a scored/example
+  topic; `physical_interaction` is one of the 12 tracked annotation types.
 - [ ] **Add more validated gold-standard examples** — coverage target is **all 12 PHI-Canto
   annotation types** (the `annotation_types` vocabulary in `TAGS.md`). Live tracker: the
   "Coverage — PHI-Canto annotation types" table in `curation-examples/INDEX.md` (auto-generated).
-  Currently **7/12** (PMID:26177154 + PMID:39787257). Gaps, by PHI-Canto prevalence:
-  `physical_interaction` (99), `wt_rna_expression` (95), `host_phenotype` (17),
-  `post_translational_modification` (14), `wt_protein_expression` (4).
+  Currently **10/12** (PMID:26177154 + PMID:39787257 + PMID:35468894). Remaining gaps, by
+  PHI-Canto prevalence: `post_translational_modification` (14), `wt_protein_expression` (4).
 - [ ] **Activate the benchmark sandbox allowlist**: the airtight profile exists
   (`07-Standards/curation-benchmarking/benchmark-sandbox.settings.json`) — network allowlisted to
   UniProt + EBI OLS only, `failIfUnavailable: true`. Remaining: **install `bubblewrap`** (not on

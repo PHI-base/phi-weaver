@@ -7,26 +7,26 @@ Human-validated worked curations that phiweaver retrieves as references when dra
 
 **An example is a _draft_ until a curator reviews it and sets `status: validated`.** Only validated examples should be used as references.
 
-**2 validated**, 0 draft, 2 total.
+**3 validated**, 0 draft, 3 total.
 
 ## Coverage — PHI-Canto annotation types
 
 _The gold-standard library aims to cover every PHI-Canto annotation type (coverage, not volume). `Sessions` is how common the type is in PHI-Canto — a rough priority. Generated from the `annotation_types` frontmatter of **validated** examples only._
 
-**7/12 types covered.**
+**10/12 types covered.**
 
 | Annotation type | Sessions | Examples | Status |
 | --- | --- | --- | --- |
-| disease_name | 339 | 2 | ✅ 2 |
-| pathogen_host_interaction_phenotype | 333 | 2 | ✅ 2 |
-| pathogen_phenotype | 281 | 1 | ✅ 1 |
-| biological_process | 263 | 2 | ✅ 2 |
-| molecular_function | 223 | 1 | ✅ 1 |
-| cellular_component | 152 | 1 | ✅ 1 |
-| physical_interaction | 99 | — | ⬜ gap |
-| wt_rna_expression | 95 | — | ⬜ gap |
+| disease_name | 339 | 3 | ✅ 3 |
+| pathogen_host_interaction_phenotype | 333 | 3 | ✅ 3 |
+| pathogen_phenotype | 281 | 2 | ✅ 2 |
+| biological_process | 263 | 3 | ✅ 3 |
+| molecular_function | 223 | 2 | ✅ 2 |
+| cellular_component | 152 | 2 | ✅ 2 |
+| physical_interaction | 99 | 1 | ✅ 1 |
+| wt_rna_expression | 95 | 1 | ✅ 1 |
 | gene_for_gene_phenotype | 58 | 1 | ✅ 1 |
-| host_phenotype | 17 | — | ⬜ gap |
+| host_phenotype | 17 | 1 | ✅ 1 |
 | post_translational_modification | 14 | — | ⬜ gap |
 | wt_protein_expression | 4 | — | ⬜ gap |
 
@@ -35,6 +35,7 @@ _The gold-standard library aims to cover every PHI-Canto annotation type (covera
 | Example | Status | Topics | Annotation types | Source |
 | --- | --- | --- | --- | --- |
 | [[PMID26177154-Fol-I7-gene-for-gene]] | ✅ validated | effector, gene-for-gene | molecular_function, biological_process, cellular_component, gene_for_gene_phenotype, pathogen_host_interaction_phenotype, disease_name | PMID:26177154 |
+| [[PMID35468894-PINE1-effector-PGIP-physical-interaction]] | ✅ validated | effector, physical-interaction, gene-deletion, overexpression, complementation | molecular_function, biological_process, cellular_component, host_phenotype, pathogen_phenotype, pathogen_host_interaction_phenotype, physical_interaction, wt_rna_expression, disease_name | PMID:35468894 |
 | [[PMID39787257-FgKnr4-cell-wall-stress]] | ✅ validated | gene-deletion, chemical-sensitivity | biological_process, pathogen_phenotype, pathogen_host_interaction_phenotype, disease_name | PMID:39787257 |
 
 ## By topic
@@ -44,11 +45,22 @@ _The same example appears under every topic it is tagged with._
 ### chemical-sensitivity
 - ✅ [[PMID39787257-FgKnr4-cell-wall-stress]] — Fusarium graminearum; Zymoseptoria tritici
 
+### complementation
+- ✅ [[PMID35468894-PINE1-effector-PGIP-physical-interaction]] — Sclerotinia sclerotiorum; Botrytis cinerea
+
 ### effector
 - ✅ [[PMID26177154-Fol-I7-gene-for-gene]] — Fusarium oxysporum f. sp. lycopersici
+- ✅ [[PMID35468894-PINE1-effector-PGIP-physical-interaction]] — Sclerotinia sclerotiorum; Botrytis cinerea
 
 ### gene-deletion
+- ✅ [[PMID35468894-PINE1-effector-PGIP-physical-interaction]] — Sclerotinia sclerotiorum; Botrytis cinerea
 - ✅ [[PMID39787257-FgKnr4-cell-wall-stress]] — Fusarium graminearum; Zymoseptoria tritici
 
 ### gene-for-gene
 - ✅ [[PMID26177154-Fol-I7-gene-for-gene]] — Fusarium oxysporum f. sp. lycopersici
+
+### overexpression
+- ✅ [[PMID35468894-PINE1-effector-PGIP-physical-interaction]] — Sclerotinia sclerotiorum; Botrytis cinerea
+
+### physical-interaction
+- ✅ [[PMID35468894-PINE1-effector-PGIP-physical-interaction]] — Sclerotinia sclerotiorum; Botrytis cinerea
