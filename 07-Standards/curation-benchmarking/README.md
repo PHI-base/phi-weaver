@@ -115,9 +115,12 @@ item × paper ratings heatmap, average accuracy per item ("where to improve"), a
 to share. Pure stdlib. See `sample-benchmark-scores.csv` for the input format and
 `sample-benchmark-report.html` for a synthetic preview.
 
-The scores CSV has one row per paper: `paper, group (curated|control), curatable, captured`, then
-one column per scored item with its rating (Correct / Needs improvement / Incorrect / N/A). Score
-= Correct 1, Needs improvement 0.5, Incorrect 0, N/A excluded.
+The scores CSV has one row per paper: `paper, group (curated|control), curatable, captured`, an
+optional `tokens` column (LLM tokens spent drafting that paper — **supplied, not measured** by
+phiweaver), then one column per scored item with its rating (Correct / Needs improvement /
+Incorrect / N/A). Score = Correct 1, Needs improvement 0.5, Incorrect 0, N/A excluded. The report
+**footer records** the generation date, `--model <version>`, the source file path, and the total
+curation tokens — e.g. `--model claude-fable-5`.
 
 **Straight from the filled scorecards** — export the CSV with the bridge, then build the report:
 ```

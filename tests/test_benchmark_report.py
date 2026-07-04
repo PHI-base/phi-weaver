@@ -7,9 +7,9 @@ from pathlib import Path
 
 from phiweaver import benchmark_report as br
 
-CSV = """paper,group,curatable,captured,ID,Pheno
-A,curated,4,4,Correct,Needs improvement
-B,control,5,3,Incorrect,N/A
+CSV = """paper,group,curatable,captured,tokens,ID,Pheno
+A,curated,4,4,12000,Correct,Needs improvement
+B,control,5,3,9000,Incorrect,N/A
 """
 
 
@@ -23,9 +23,10 @@ class LoadTests(unittest.TestCase):
     def test_items_and_papers(self):
         with tempfile.TemporaryDirectory() as tmp:
             papers, items = br.load(write(tmp))
-            self.assertEqual(items, ["ID", "Pheno"])          # fixed cols excluded
+            self.assertEqual(items, ["ID", "Pheno"])          # fixed cols (incl. tokens) excluded
             self.assertEqual([p.name for p in papers], ["A", "B"])
             self.assertEqual(papers[1].group, "control")
+            self.assertEqual(papers[0].tokens, 12000)         # supplied token count read
 
 
 class ScoreTests(unittest.TestCase):
@@ -56,6 +57,16 @@ class RenderTests(unittest.TestCase):
             self.assertIn("where to improve", out)         # item-accuracy section
             self.assertIn("mean accuracy (control)", out)  # control group present
             self.assertIn("Needs imp.", out)               # a status label rendered
+
+    def test_provenance_and_tokens(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            papers, items = br.load(write(tmp))
+            out = br.render_html(papers, items, model="claude-fable-5",
+                                 source="scores.csv", generated="2026-07-04 09:00")
+            self.assertIn("model claude-fable-5", out)     # model version in provenance
+            self.assertIn("generated 2026-07-04 09:00", out)
+            self.assertIn("source scores.csv", out)        # file location
+            self.assertIn("21,000", out)                   # total curation tokens (12000+9000)
 
 
 if __name__ == "__main__":

@@ -8,10 +8,12 @@ heatmap of ratings, the item-level average accuracy ("where to improve"), a cura
 comparison, and a data table. Pure stdlib.
 
 CSV columns (one row per paper):
-    paper, group, curatable, captured, <item1>, <item2>, ...
+    paper, group, curatable, captured, [tokens], <item1>, <item2>, ...
     group    : "curated" (human-reviewed) or "control" (held-out gold standard)
+    tokens   : optional — LLM tokens spent drafting this paper (supplied, not measured here)
     ratings  : Correct | Needs improvement | Incorrect | N/A | (empty = not scored)
-Anything that is not paper/group/curatable/captured is treated as a scored item column.
+Anything not in {paper, group, curatable, captured, tokens} is a scored item column. The report
+footer records the generation date, --model, source file, and total curation tokens (if given).
 
 Score: Correct = 1, Needs improvement = 0.5, Incorrect = 0; N/A and empty are excluded.
 Accuracy = points / applicable items. Completeness = captured / curatable.
@@ -25,10 +27,11 @@ from __future__ import annotations
 import argparse
 import csv
 import html
+from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
 
-FIXED = {"paper", "group", "curatable", "captured"}
+FIXED = {"paper", "group", "curatable", "captured", "tokens"}
 POINTS = {"correct": 1.0, "needs improvement": 0.5, "incorrect": 0.0}
 # status palette: (label, fill, ink). Text label is always shown — never colour alone.
 RATING_STYLE = {
@@ -53,6 +56,8 @@ class Paper:
         self.ratings = {it: (row.get(it) or "").strip() for it in items}
         self.curatable = _int(row.get("curatable"))
         self.captured = _int(row.get("captured"))
+        _tok = row.get("tokens")
+        self.tokens = _int(_tok) if _tok not in (None, "") else None   # supplied, not measured
 
     @property
     def applicable(self) -> List[str]:
@@ -159,20 +164,32 @@ def _item_accuracy(papers: List[Paper], items: List[str]) -> str:
 
 
 def _table(papers: List[Paper], items: List[str]) -> str:
+    show_tok = any(p.tokens is not None for p in papers)
+    tok_h = "<th>Tokens</th>" if show_tok else ""
     head = "".join(f"<th>{html.escape(it[:12])}</th>" for it in items)
     rows = []
     for p in papers:
         cells = "".join(f"<td>{html.escape(p.ratings.get(it, '') or '—')}</td>" for it in items)
+        tok = (f"<td>{p.tokens:,}</td>" if p.tokens is not None else "<td>—</td>") if show_tok else ""
         rows.append(f"<tr><td>{html.escape(p.name)}</td><td>{html.escape(p.group)}</td>"
-                    f"<td>{_pct(p.accuracy)}</td><td>{_pct(p.completeness)}</td>{cells}</tr>")
+                    f"<td>{_pct(p.accuracy)}</td><td>{_pct(p.completeness)}</td>{tok}{cells}</tr>")
     return (f"<div class='scroll'><table class='data'><thead><tr>"
-            f"<th>Paper</th><th>Group</th><th>Acc</th><th>Compl</th>{head}</tr></thead>"
+            f"<th>Paper</th><th>Group</th><th>Acc</th><th>Compl</th>{tok_h}{head}</tr></thead>"
             f"<tbody>{''.join(rows)}</tbody></table></div>")
 
 
-def render_html(papers: List[Paper], items: List[str], title="Benchmark report") -> str:
+def render_html(papers, items, title="Benchmark report", model=None, source=None,
+                generated=None) -> str:
     curated = [p for p in papers if p.group != "control"]
     control = [p for p in papers if p.group == "control"]
+    has_tokens = any(p.tokens is not None for p in papers)
+    total_tokens = sum(p.tokens for p in papers if p.tokens)
+    gen = generated or datetime.now().strftime("%Y-%m-%d %H:%M")
+    prov = " · ".join(
+        [f"generated {html.escape(gen)}"]
+        + ([f"model {html.escape(model)}"] if model else [])
+        + ([f"source {html.escape(source)}"] if source else [])
+        + ([f"{total_tokens:,} curation tokens"] if has_tokens else []))
     tiles = [
         _tile("papers", len(papers), f"{len(curated)} curated · {len(control)} control"),
         _tile("mean accuracy (curated)", _pct(_mean(p.accuracy for p in curated))),
@@ -184,6 +201,8 @@ def render_html(papers: List[Paper], items: List[str], title="Benchmark report")
                   "held-out gold standards"),
             _tile("mean completeness (control)", _pct(_mean(p.completeness for p in control))),
         ]
+    if has_tokens:
+        tiles.append(_tile("curation tokens (total)", f"{total_tokens:,}", "LLM drafting"))
     ordered = curated + control
     css = """
     :root{--ink:#1F2A33;--muted:#5b6b73;--surf:#fff;--band:#eef2f2;--line:#d7e0e0;}
@@ -218,6 +237,7 @@ def render_html(papers: List[Paper], items: List[str], title="Benchmark report")
     .hval{width:44px;color:var(--muted);font-size:13px}
     .data td,.data th{border:1px solid var(--line);padding:4px 8px;text-align:left;white-space:nowrap}
     .data thead th{background:var(--band)}
+    .foot{color:var(--muted);font-size:12px;margin-top:24px;border-top:1px solid var(--line);padding-top:10px}
     @media(prefers-color-scheme:dark){
       body{background:#12181b;color:#e7edee} .tile,.data thead th,.heat thead th,.heat .rowlbl{
         background:#1b2327;border-color:#2b363b} .tile{border-color:#2b363b}
@@ -229,12 +249,14 @@ def render_html(papers: List[Paper], items: List[str], title="Benchmark report")
 <title>{html.escape(title)}</title><style>{css}</style></head><body>
 <h1>{html.escape(title)}</h1>
 <p class="meta">phiweaver curation benchmark · {len(papers)} paper(s) ·
-scores against gold standards (blind, leakage-free).</p>
+scores against gold standards (blind, leakage-free).<br>{prov}</p>
 <div class="tiles">{''.join(tiles)}</div>
 <h2>Accuracy &amp; completeness per paper</h2>{_bars(ordered)}
 <h2>Ratings by item and paper</h2>{_heatmap(ordered, items)}
 <h2>Average accuracy per item (where to improve)</h2>{_item_accuracy(papers, items)}
 <h2>Data</h2>{_table(ordered, items)}
+<p class="foot">{prov}. Token counts are the LLM cost of drafting, supplied per paper —
+phiweaver does not measure them.</p>
 </body></html>"""
 
 
@@ -243,11 +265,15 @@ def main(argv=None) -> int:
     ap.add_argument("csv", help="per-paper scores CSV (see module docstring for columns)")
     ap.add_argument("--out", default="benchmark-report.html", help="output HTML path")
     ap.add_argument("--title", default="Benchmark report")
+    ap.add_argument("--model", default=None,
+                    help="model version used for drafting (shown in the provenance footer)")
     args = ap.parse_args(argv)
     papers, items = load(args.csv)
     if not papers:
         raise SystemExit(f"no rows in {args.csv}")
-    Path(args.out).write_text(render_html(papers, items, args.title), encoding="utf-8")
+    Path(args.out).write_text(
+        render_html(papers, items, args.title, model=args.model, source=args.csv),
+        encoding="utf-8")
     print(f"wrote {args.out} ({len(papers)} paper(s), {len(items)} item(s))")
     return 0
 
