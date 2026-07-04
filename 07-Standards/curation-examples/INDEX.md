@@ -7,28 +7,28 @@ Human-validated worked curations that phiweaver retrieves as references when dra
 
 **An example is a _draft_ until a curator reviews it and sets `status: validated`.** Only validated examples should be used as references.
 
-**4 validated**, 0 draft, 4 total.
+**5 validated**, 0 draft, 5 total.
 
 ## Coverage — PHI-Canto annotation types
 
 _The gold-standard library aims to cover every PHI-Canto annotation type (coverage, not volume). `Sessions` is how common the type is in PHI-Canto — a rough priority. Generated from the `annotation_types` frontmatter of **validated** examples only._
 
-**11/12 types covered.**
+**12/12 types covered.**
 
 | Annotation type | Sessions | Examples | Status |
 | --- | --- | --- | --- |
-| disease_name | 339 | 4 | ✅ 4 |
-| pathogen_host_interaction_phenotype | 333 | 3 | ✅ 3 |
+| disease_name | 339 | 5 | ✅ 5 |
+| pathogen_host_interaction_phenotype | 333 | 4 | ✅ 4 |
 | pathogen_phenotype | 281 | 2 | ✅ 2 |
-| biological_process | 263 | 4 | ✅ 4 |
-| molecular_function | 223 | 3 | ✅ 3 |
+| biological_process | 263 | 5 | ✅ 5 |
+| molecular_function | 223 | 4 | ✅ 4 |
 | cellular_component | 152 | 3 | ✅ 3 |
-| physical_interaction | 99 | 2 | ✅ 2 |
+| physical_interaction | 99 | 3 | ✅ 3 |
 | wt_rna_expression | 95 | 1 | ✅ 1 |
-| gene_for_gene_phenotype | 58 | 2 | ✅ 2 |
+| gene_for_gene_phenotype | 58 | 3 | ✅ 3 |
 | host_phenotype | 17 | 2 | ✅ 2 |
 | post_translational_modification | 14 | 1 | ✅ 1 |
-| wt_protein_expression | 4 | — | ⬜ gap |
+| wt_protein_expression | 4 | 1 | ✅ 1 |
 
 ## All examples
 
@@ -37,6 +37,7 @@ _The gold-standard library aims to cover every PHI-Canto annotation type (covera
 | [[PMID23498959-creD-RLCK185-phosphorylation]] | ✅ validated | effector, physical-interaction, overexpression | molecular_function, biological_process, cellular_component, host_phenotype, gene_for_gene_phenotype, post_translational_modification, physical_interaction, disease_name | PMID:23498959 |
 | [[PMID26177154-Fol-I7-gene-for-gene]] | ✅ validated | effector, gene-for-gene | molecular_function, biological_process, cellular_component, gene_for_gene_phenotype, pathogen_host_interaction_phenotype, disease_name | PMID:26177154 |
 | [[PMID35468894-PINE1-effector-PGIP-physical-interaction]] | ✅ validated | effector, physical-interaction, gene-deletion, overexpression, complementation | molecular_function, biological_process, cellular_component, host_phenotype, pathogen_phenotype, pathogen_host_interaction_phenotype, physical_interaction, wt_rna_expression, disease_name | PMID:35468894 |
+| [[PMID37177781-AvrPi9-OsRGLG5-protein-level]] | ✅ validated | effector, gene-for-gene, physical-interaction, overexpression | molecular_function, biological_process, pathogen_host_interaction_phenotype, gene_for_gene_phenotype, physical_interaction, wt_protein_expression, disease_name | PMID:37177781 |
 | [[PMID39787257-FgKnr4-cell-wall-stress]] | ✅ validated | gene-deletion, chemical-sensitivity | biological_process, pathogen_phenotype, pathogen_host_interaction_phenotype, disease_name | PMID:39787257 |
 
 ## By topic
@@ -53,6 +54,7 @@ _The same example appears under every topic it is tagged with._
 - ✅ [[PMID23498959-creD-RLCK185-phosphorylation]] — Xanthomonas oryzae
 - ✅ [[PMID26177154-Fol-I7-gene-for-gene]] — Fusarium oxysporum f. sp. lycopersici
 - ✅ [[PMID35468894-PINE1-effector-PGIP-physical-interaction]] — Sclerotinia sclerotiorum; Botrytis cinerea
+- ✅ [[PMID37177781-AvrPi9-OsRGLG5-protein-level]] — Magnaporthe oryzae
 
 ### gene-deletion
 - ✅ [[PMID35468894-PINE1-effector-PGIP-physical-interaction]] — Sclerotinia sclerotiorum; Botrytis cinerea
@@ -60,11 +62,14 @@ _The same example appears under every topic it is tagged with._
 
 ### gene-for-gene
 - ✅ [[PMID26177154-Fol-I7-gene-for-gene]] — Fusarium oxysporum f. sp. lycopersici
+- ✅ [[PMID37177781-AvrPi9-OsRGLG5-protein-level]] — Magnaporthe oryzae
 
 ### overexpression
 - ✅ [[PMID23498959-creD-RLCK185-phosphorylation]] — Xanthomonas oryzae
 - ✅ [[PMID35468894-PINE1-effector-PGIP-physical-interaction]] — Sclerotinia sclerotiorum; Botrytis cinerea
+- ✅ [[PMID37177781-AvrPi9-OsRGLG5-protein-level]] — Magnaporthe oryzae
 
 ### physical-interaction
 - ✅ [[PMID23498959-creD-RLCK185-phosphorylation]] — Xanthomonas oryzae
 - ✅ [[PMID35468894-PINE1-effector-PGIP-physical-interaction]] — Sclerotinia sclerotiorum; Botrytis cinerea
+- ✅ [[PMID37177781-AvrPi9-OsRGLG5-protein-level]] — Magnaporthe oryzae

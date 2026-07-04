@@ -28,12 +28,11 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
   (Interactor A/B + taxon + evidence: Co-purification / PCA / Two-hybrid). Confirmed by the
   gold-standard example PMID:35468894 (PINE1 effector × host PGIP). It is now a scored/example
   topic; `physical_interaction` is one of the 12 tracked annotation types.
-- [ ] **Add more validated gold-standard examples** — coverage target is **all 12 PHI-Canto
-  annotation types** (the `annotation_types` vocabulary in `TAGS.md`). Live tracker: the
-  "Coverage — PHI-Canto annotation types" table in `curation-examples/INDEX.md` (auto-generated).
-  Currently **11/12** (PMID:26177154 + PMID:39787257 + PMID:35468894 + PMID:23498959). Only
-  remaining gap: `wt_protein_expression` (4) — needs a session with a wild-type protein-level
-  annotation.
+- [x] **All 12 PHI-Canto annotation types covered** (2026-07-04) — the gold-standard library now
+  has ≥1 validated example for every PHI-Canto annotation type (`annotation_types` vocabulary in
+  `TAGS.md`). Live tracker: the auto-generated "Coverage" table in `curation-examples/INDEX.md`
+  shows **12/12**. Five examples: PMID:26177154, 39787257, 35468894, 23498959, 37177781. Ongoing:
+  keep adding examples for **depth** (more cases per type / more pathosystems), not breadth.
 - [ ] **Activate the benchmark sandbox allowlist**: the airtight profile exists
   (`07-Standards/curation-benchmarking/benchmark-sandbox.settings.json`) — network allowlisted to
   UniProt + EBI OLS only, `failIfUnavailable: true`. Remaining: **install `bubblewrap`** (not on
