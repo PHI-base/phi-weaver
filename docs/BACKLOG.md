@@ -22,9 +22,9 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
 - [ ] **Add more validated gold-standard examples** — coverage target is **all 12 PHI-Canto
   annotation types** (the `annotation_types` vocabulary in `TAGS.md`). Live tracker: the
   "Coverage — PHI-Canto annotation types" table in `curation-examples/INDEX.md` (auto-generated).
-  Currently **6/12** (the one PMID:26177154 example). Gaps, by PHI-Canto prevalence:
-  `pathogen_phenotype` (281), `physical_interaction` (99), `wt_rna_expression` (95),
-  `host_phenotype` (17), `post_translational_modification` (14), `wt_protein_expression` (4).
+  Currently **7/12** (PMID:26177154 + PMID:39787257). Gaps, by PHI-Canto prevalence:
+  `physical_interaction` (99), `wt_rna_expression` (95), `host_phenotype` (17),
+  `post_translational_modification` (14), `wt_protein_expression` (4).
 - [ ] **Activate the benchmark sandbox allowlist**: the airtight profile exists
   (`07-Standards/curation-benchmarking/benchmark-sandbox.settings.json`) — network allowlisted to
   UniProt + EBI OLS only, `failIfUnavailable: true`. Remaining: **install `bubblewrap`** (not on
