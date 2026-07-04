@@ -97,8 +97,15 @@ to share. Pure stdlib. See `sample-benchmark-scores.csv` for the input format an
 
 The scores CSV has one row per paper: `paper, group (curated|control), curatable, captured`, then
 one column per scored item with its rating (Correct / Needs improvement / Incorrect / N/A). Score
-= Correct 1, Needs improvement 0.5, Incorrect 0, N/A excluded. (A helper to export this CSV
-straight from the filled scorecards is on the backlog.)
+= Correct 1, Needs improvement 0.5, Incorrect 0, N/A excluded.
+
+**Straight from the filled scorecards** — export the CSV with the bridge, then build the report:
+```
+python3 scorecards_to_csv.py curated/*.xlsx --control control/*.xlsx --out scores.csv
+python3 -m phiweaver.benchmark_report scores.csv --out benchmark-report.html
+```
+`scorecards_to_csv.py` (needs openpyxl) reads each filled scorecard's Reviewer-rating column and
+completeness block; curated papers are positional, held-out controls via `--control`.
 
 ## Notes
 - Confirm whether *physical / molecular interaction* is in PHI-Canto's phenotype scope before

@@ -27,11 +27,6 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
   which can't be cleanly domain-denied. The local `.claude/settings.json` WebFetch deny on
   `*.phi-base.org` is the interim (website-only) control.
 
-- [ ] **Scorecard → benchmark_report bridge**: a small openpyxl helper that reads the human-filled
-  scorecards (per-item ratings in column D + the completeness cells) and writes the per-paper
-  scores CSV that `phiweaver.benchmark_report` consumes — so the HTML report generates straight
-  from the `.xlsx` files instead of a hand-made CSV.
-
 ## Deferred (see DESIGN-DECISIONS.md D11 / PLUGIN-ARCHITECTURE.md)
 - [ ] Full machine-readable curation-record schema (first slice done: the draft `auto_check` block).
 - [ ] Plug-in host + local AI on ROGER (long-term; needs collaborator / research-computing help).
