@@ -21,7 +21,9 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
 - [ ] **Benchmark integrity — stronger enforcement**: PHI-base web access is denied for the
   WebFetch tool in local `.claude/settings.json` (`*.phi-base.org` etc.). For airtight, team-wide,
   Bash-proof enforcement, add a **network-sandbox allowlist** (UniProt + EBI OLS only) in managed
-  settings so *no* route (including `curl`/`wget`) can reach PHI-base during blind benchmarking.
+  settings so *no* route (including `curl`/`wget`/`gh`) can reach PHI-base **or its GitHub data
+  repos** (`github.com/PHI-base`, `raw.githubusercontent.com`) during blind benchmarking — GitHub
+  can't be cleanly domain-denied, so the allowlist is the only airtight control.
 
 ## Deferred (see DESIGN-DECISIONS.md D11 / PLUGIN-ARCHITECTURE.md)
 - [ ] Full machine-readable curation-record schema (first slice done: the draft `auto_check` block).

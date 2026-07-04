@@ -56,6 +56,13 @@ When you score phiweaver against papers you have **already curated**, keep the c
   `phi5.phi-base.org`). The curation tools only reach UniProt + EBI OLS, not PHI-base. Note:
   `.claude/` is gitignored here, so each curator adds this deny locally (or an admin enables it
   org-wide in managed settings). Takes effect in a **freshly started** Claude session.
+  - The PHI-base **data also live on GitHub** (`github.com/PHI-base`, raw files via
+    `raw.githubusercontent.com`) — a leakage source too, but it **cannot be cleanly domain-denied**
+    (GitHub also hosts the phi-weaver tooling, and the `gh` CLI / `git clone` bypass a WebFetch
+    deny). For GitHub-level protection use the **allowlist** below.
+  - **Airtight option (recommended for scored runs):** a **network-sandbox allowlist** permitting
+    only UniProt + EBI OLS and denying all other network. A blind benchmark needs nothing else
+    (paper is local), so this excludes PHI-base's website *and* GitHub with no enumeration or bypass.
 - **No leakage** — exclude a paper's **own** gold standard from the retrieval example library when
   benchmarking that paper, or phiweaver just retrieves the answer and looks artificially perfect.
 
