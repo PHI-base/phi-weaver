@@ -1,0 +1,13 @@
+{
+  "sandbox": {
+    "enabled": true,
+    "failIfUnavailable": true,
+    "network": {
+      "allowedDomains": ["rest.uniprot.org", "*.uniprot.org", "www.ebi.ac.uk", "*.ebi.ac.uk"],
+      "deniedDomains": ["phi-base.org", "*.phi-base.org", "github.com", "*.github.com", "*.githubusercontent.com"]
+    },
+    "filesystem": {
+      "allowWrite": ["/mnt/z/PHI-Canto-Literature"]
+    }
+  }
+}

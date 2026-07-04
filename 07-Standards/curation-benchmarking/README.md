@@ -69,6 +69,22 @@ When you score phiweaver against papers you have **already curated**, keep the c
 Report the human-reviewed curated papers and a **held-out gold-standard control set** (drafts
 scored against the known-correct curation) side by side.
 
+### Running a locked-down benchmark session (network allowlist)
+`benchmark-sandbox.settings.json` (in this folder) is an **opt-in** profile that runs Claude with
+the network **allowlisted to UniProt + EBI OLS only** — no PHI-base, no GitHub, no other web.
+Launch a scored benchmark session with it:
+```
+claude --settings 07-Standards/curation-benchmarking/benchmark-sandbox.settings.json
+```
+- **Requires bubblewrap** (`bwrap`) — the sandbox needs it. Install first (`sudo apt-get install
+  bubblewrap`, or your distro's equivalent; on WSL, inside the WSL distro). `failIfUnavailable:
+  true` means the session **refuses to start** if the sandbox can't run, so you never benchmark
+  unsandboxed by accident.
+- Use it **only for scored benchmark drafting** — it blocks GitHub, so don't push/develop in it.
+- **Test once** after installing bwrap: in a session started with this profile, confirm
+  `python3 -m phiweaver.lookup.map_phenotype "reduced virulence"` still works (UniProt/OLS
+  reachable) and that fetching a PHI-base URL is blocked, before relying on it for scoring.
+
 ## Notes
 - Confirm whether *physical / molecular interaction* is in PHI-Canto's phenotype scope before
   treating it as a scored row.
