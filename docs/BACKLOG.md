@@ -16,7 +16,13 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
 ## Curation workflow
 - [ ] **Format convergence** — phiweaver *drafts* use the example-template body shape while *gold
   standards* use PHI-Canto's structure; converge them (toward PHI-Canto) so retrieval and
-  benchmarking compare like-for-like.
+  benchmarking compare like-for-like. *Partly done 2026-07-04*: the example `annotation_types`
+  vocabulary now IS PHI-Canto's own annotation types (`TAGS.md`), and `INDEX.md` tracks coverage
+  against them. Still to do: converge the draft-template **body shape** toward PHI-Canto's.
+- [ ] **Obsolete PHIDO IDs in source PHI-Canto session** — session `02e545aba274d209`
+  (PMID:39787257) curated now-obsolete disease-name terms PHIDO:0000163 / PHIDO:0000331. The
+  gold-standard example was updated to the current PHIDO:0000162 / PHIDO:0000329; update the
+  live PHI-Canto session too so source and example stay in step. (External / curator action.)
 - [ ] **Physical-interaction scope** — decide whether/how PHI-Canto captures protein–protein
   interactions before treating it as a scored/example topic (recurs: Zhang-2024, Miltenburg-2022).
 - [ ] **Add more validated gold-standard examples** — coverage target is **all 12 PHI-Canto
