@@ -27,6 +27,11 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
   which can't be cleanly domain-denied. The local `.claude/settings.json` WebFetch deny on
   `*.phi-base.org` is the interim (website-only) control.
 
+- [ ] **Automatic per-paper token logging**: `benchmark_report` can display curation tokens, but
+  phiweaver does not measure them — they are supplied by hand in the `tokens` CSV column. Add a
+  small logging step during drafting that records each paper's LLM token usage (from the CLI/API
+  usage readout) into the scores (or the scorecard), so tokens flow into the report automatically.
+
 ## Deferred (see DESIGN-DECISIONS.md D11 / PLUGIN-ARCHITECTURE.md)
 - [ ] Full machine-readable curation-record schema (first slice done: the draft `auto_check` block).
 - [ ] Plug-in host + local AI on ROGER (long-term; needs collaborator / research-computing help).
