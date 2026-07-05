@@ -33,6 +33,31 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
   `TAGS.md`). Live tracker: the auto-generated "Coverage" table in `curation-examples/INDEX.md`
   shows **12/12**. Five examples: PMID:26177154, 39787257, 35468894, 23498959, 37177781. Ongoing:
   keep adding examples for **depth** (more cases per type / more pathosystems), not breadth.
+- [ ] **Recuration-comparison workflow** (biocurator vs phiweaver; future). Distinct from the
+  gold-standard library — that stays small and rarely updated; this is an *ongoing* stream.
+  Biocurators keep curating PHI-Canto articles by hand without phiweaver; recurate those same
+  articles with phiweaver and diff the two. Goal: compare **different biocurators against
+  phiweaver** (and each other) and use the divergences to fine-tune phiweaver or train biocurators.
+  Neither side is declared "correct" — it's a **neutral, deterministic diff**, not phiweaver scoring
+  itself; a human only adjudicates the divergent rows (that verdict is the training/tuning signal).
+  phiweaver must still recurate **blind** (never sees the biocurator's export as input — reuse the
+  `benchmark` skill + network sandbox). Pieces:
+  - **`recuration-import` skill** (sibling of `gold-standard-import`): biocurator PHI-Canto PDF →
+    structured record keyed by the same 13 annotation-type items the scorecard uses, tagged
+    `curator: <name>`; stored as an **uncommitted** sidecar JSON in external `active/` (unpublished
+    biocurator data — not the gold-standard library, not `status: validated`). This is the "auto-
+    populate the spreadsheet from the PDF" step.
+  - **Comparison-matrix template** — a variant of the quality-matrix `.xlsx` with *biocurator* and
+    *phiweaver* value columns and an auto-computed **Agree / Diverge / phiweaver-only / curator-only**
+    column, instead of the human Correct/Incorrect rating. Keep it a distinct template (different
+    semantics from the gold-standard scorecard).
+  - **`compare_recuration.py`** — deterministic item-by-item diff (ID set-equality, term overlap) +
+    completeness counts → fills the matrix; tests for the set-diff edge cases.
+  - **Cross-biocurator aggregation** — extend `scorecards_to_csv` / `benchmark_report` with a
+    `curator` grouping dimension. Open decision: aggregation home = SQLite tracking DB (recommended,
+    grows over time) vs Excel Summary sheets. Second open decision: when a paper *is* in the
+    gold-standard set, score phiweaver against it (Correct/Incorrect); otherwise stay a neutral diff.
+
 - [ ] **Activate the benchmark sandbox allowlist**: the airtight profile exists
   (`07-Standards/curation-benchmarking/benchmark-sandbox.settings.json`) — network allowlisted to
   UniProt + EBI OLS only, `failIfUnavailable: true`. Remaining: **install `bubblewrap`** (not on
