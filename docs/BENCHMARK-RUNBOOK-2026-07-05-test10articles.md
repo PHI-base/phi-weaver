@@ -10,6 +10,21 @@ score them by hand on the Excel scorecard, and produce a shareable report.
   the example library is bigger (see `docs/BACKLOG.md` and the `benchmark` skill).
 - Full reference: the **`benchmark`** skill and `07-Standards/curation-benchmarking/README.md`.
 
+## Model choice (record it; keep it constant)
+The model is **part of what you are measuring** — an accuracy number is only meaningful attached
+to a specific model. For this task (precision extraction + ontology reasoning under a strict
+no-hallucination rule), more capable models generally help; roughly **Fable 5** (most capable) >
+**Opus 4.8** > **Sonnet** (fast/cheaper).
+- **Use one model for all 10 papers.** Mixing models across the batch confounds the result — you
+  won't know whether a divergence was the paper or the model.
+- **Benchmark the model you will actually curate with.** If production would realistically be
+  Sonnet, benchmark Sonnet; otherwise the number overstates real-world quality.
+- **Record it.** Set the model at session start (`/model`) and keep it fixed; `benchmark_report`
+  records it as provenance.
+- **This run:** use **Fable 5** to establish the quality ceiling (best phiweaver can currently do).
+- **Optional second pass:** re-run the same 10 papers on Opus / Sonnet and compare accuracy vs
+  cost — model then becomes a comparison axis (like biocurators in the recuration idea).
+
 ## Before you start (one-time)
 1. **Paper PDFs in place** — put the 10 paper PDFs in the literature folder
    (`../PHI-Canto-Literature/active/`, or wherever `PHI_LITERATURE_ROOT` points). phiweaver
