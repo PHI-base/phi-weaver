@@ -52,6 +52,25 @@ no-hallucination rule), more capable models generally help; roughly **Fable 5** 
    ```
    → one `*-scorecard-PREFILLED.xlsx` next to each draft.
 
+## Drafting multiple papers — isolate one paper per context
+Curating several papers in a single Claude context risks **entity bleed-through**: genes,
+hosts, strains, or figure numbers from one paper leaking into another's draft. Keeping paper
+text in scratchpad files controls context *size* but not this cross-contamination. The only
+hard guarantee is **isolation** — one paper per context so the others' entities are physically
+absent while drafting:
+- **Preferred: one sub-agent per paper.** Spawn a fresh agent per paper, given *only* that one
+  PDF + the pipeline; it drafts, validates every ID, writes the `.md` to `active/`, and returns
+  a summary. Zero jumbling; the main session stays lean. Run them **sequentially** (one lands
+  before the next starts) so drafts are checkpointed to disk as you go.
+- **Alternative: `/clear` between papers.** Same isolation, manual — but `/clear` also wipes the
+  session setup, so each restart needs a one-line re-brief.
+- **Cost note:** isolation is the heavier path — each cold agent re-reads the setup (skills,
+  template, ID rules), so total tokens and wall-clock are higher than one continuous pass. Worth
+  it when correctness matters (it usually does for curation); skippable only when the papers are
+  so different that confusion is implausible.
+- Keep a small `active/BATCH-PROGRESS.md` (done vs pending) so a reset or a new session can pick
+  up cleanly.
+
 ## Score by hand (the manual step)
 4. Open each `*-scorecard-PREFILLED.xlsx`. For every item pick **Correct / Needs improvement /
    Incorrect / Not applicable** from the dropdown by comparing phiweaver's draft to your
