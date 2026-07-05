@@ -1,0 +1,63 @@
+# Benchmark runbook — test run, 10 already-curated articles (2026-07-05)
+
+A short, concrete runbook for a **first benchmark**: curate 10 papers with phiweaver,
+score them by hand on the Excel scorecard, and produce a shareable report.
+
+- **Papers**: 10 articles you have **already curated in PHI-Canto** (the gold standards).
+- **Control set**: **none** for this run (option 1). The gold-standard example library is
+  small (5 examples), so retrieval-leakage risk is low. All 10 papers form a single group;
+  state in the report that no held-out control split was used. Add a control set later, once
+  the example library is bigger (see `docs/BACKLOG.md` and the `benchmark` skill).
+- Full reference: the **`benchmark`** skill and `07-Standards/curation-benchmarking/README.md`.
+
+## Before you start (one-time)
+1. **Paper PDFs in place** — put the 10 paper PDFs in the literature folder
+   (`../PHI-Canto-Literature/active/`, or wherever `PHI_LITERATURE_ROOT` points). phiweaver
+   needs the **papers**, not the PHI-Canto exports.
+2. **Sandbox ready** — the blind benchmark session needs `bubblewrap`
+   (`sudo apt-get install bubblewrap`). Without it the session refuses to start. (Backlog:
+   "Activate the benchmark sandbox allowlist" — confirm this is done.)
+3. **No leakage** — none of the 10 papers' **own** gold standards should be a retrievable file
+   in `07-Standards/curation-examples/`. If one is, move it out and rerun
+   `python3 -m phiweaver.curation_examples` before benchmarking that paper.
+
+## The run
+1. **Launch a blind, sandboxed session** (network limited to UniProt + EBI OLS; PHI-base /
+   PHI-Canto / GitHub unreachable):
+   ```
+   claude --settings 07-Standards/curation-benchmarking/benchmark-sandbox.settings.json
+   ```
+2. **Draft all 10** — in that session, invoke the **`benchmark`** skill with the 10 papers.
+   phiweaver drafts each one blind (paper + UniProt/OLS only, every ontology ID validated) and
+   writes a draft `.md` with the machine-readable `auto_check` block. Your PHI-Canto curations
+   are never given to it as input.
+3. **Prefill a scorecard per paper** (objective column auto-filled; reviewer column left blank):
+   ```
+   python3 07-Standards/curation-benchmarking/fill_scorecard.py active/*-phiweaver-DRAFT.md
+   ```
+   → one `*-scorecard-PREFILLED.xlsx` next to each draft.
+
+## Score by hand (the manual step)
+4. Open each `*-scorecard-PREFILLED.xlsx`. For every item pick **Correct / Needs improvement /
+   Incorrect / Not applicable** from the dropdown by comparing phiweaver's draft to your
+   known-correct PHI-Canto curation. Fill the **Completeness** block (curatable items in the
+   paper vs how many phiweaver captured). Accuracy and completeness % compute automatically.
+   **phiweaver does not score itself — the ratings are yours.**
+
+## Report
+5. Roll up and build the report:
+   ```
+   python3 -m phiweaver.batch_summary active/*-phiweaver-DRAFT.md --out BATCH-REVIEW.md --csv batch.csv
+   python3 07-Standards/curation-benchmarking/scorecards_to_csv.py active/*-scorecard-PREFILLED.xlsx --out scores.csv
+   python3 -m phiweaver.benchmark_report scores.csv --out benchmark-report.html
+   ```
+   `benchmark-report.html` is a self-contained page (headline accuracy + completeness, per-paper
+   bars, an item × paper heatmap, and "where to improve" per item) that opens in any browser —
+   the shareable result. With no control set, every paper is in the single `curated` group.
+
+## Gotchas
+- **Close each scorecard `.xlsx` in Excel** before re-running the fill/export scripts — an open
+  file is locked and the write fails.
+- The scoring in step 4 is the **only** manual part; everything else is a command.
+- `fill_scorecard.py`, `scorecards_to_csv.py`, and `benchmark_report` need `openpyxl`
+  (`pip install --user openpyxl`).
