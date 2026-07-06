@@ -58,6 +58,13 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
     grows over time) vs Excel Summary sheets. Second open decision: when a paper *is* in the
     gold-standard set, score phiweaver against it (Correct/Incorrect); otherwise stay a neutral diff.
 
+- [ ] **Submit drafts into PHI-Canto for biocurator review** (planning; no code yet) — get the
+  information from phiweaver drafts into the PHI-Canto web tool (<https://canto.phi-base.org/>).
+  No write API exists; `canto_load.pl` is server-side only. Three routes assessed (assisted-entry
+  worksheet / Canto session JSON + load / browser automation) with recommendation and open
+  questions in **`docs/CANTO-SUBMISSION-ROUTES.md`**. Pivotal decision pending: server/admin access
+  to canto.phi-base.org vs web login only.
+
 - [ ] **Activate the benchmark sandbox allowlist**: the airtight profile exists
   (`07-Standards/curation-benchmarking/benchmark-sandbox.settings.json`) — network allowlisted to
   UniProt + EBI OLS only, `failIfUnavailable: true`. Remaining: **install `bubblewrap`** (not on
