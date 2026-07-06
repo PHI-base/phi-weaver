@@ -57,6 +57,24 @@ dashboard. Flag categories: `needs_pmid`, `needs_accession`, `needs_term_choice`
 `needs_genotype_modelling`, `needs_evidence_code`, `scope_question`, `completeness_gap`, `other`.
 Triage: `in_scope` | `partial` | `scope_uncertain` | `needs_human_decision` | `out_of_scope`.
 
+The `canto` block is the **structured, machine-readable curation** that
+`phiweaver.canto.worksheet` renders into a PHI-Canto entry worksheet (Route 1; see
+`docs/CANTO-ROUTE1-BUILD-SPEC.md`). It mirrors Canto's entry order and controlled fields:
+- `genes` — `name`, `uniprot` (accession only, e.g. `K3V6Z9` — this **is** Canto's add-gene
+  identifier), `organism`, optional `locus`, `note`.
+- `alleles` — `name`, `gene`, `type` (deletion / point mutation / wild type / …), `expression`
+  (null / wild-type level / overexpression / …).
+- `genotypes` — `name`, `organism`, `alleles` (list of allele names; empty for wild type),
+  optional `role` (`control` | `experimental`). Host wild-type genotypes are listed here too.
+- `metagenotypes` — `name`, `pathogen_genotype`, `host_genotype` (genotype names), `role`
+  (`experimental` | `control` | `complementation_control`).
+- `annotations` — `feature_type` (`gene` | `genotype` | `metagenotype`), `feature` (its name),
+  `annotation_type` (a PHI-Canto type from `TAGS.md`), `term_id`, `term_name`, `evidence`,
+  `extensions` (list of `{relation, value}`, e.g. `infects_tissue`, `infective_ability`,
+  `compared_to_control`), `conditions` (free text), `figure`.
+Terms reuse the IDs already validated in `auto_check`; a missing term stays a `flags` entry, never
+invented (the worksheet surfaces it as a ⚠ to resolve before entry).
+
 ```json
 {
   "meta": {"date": "", "pmid": "", "paper": "", "system": "", "draft_by": "phiweaver", "model": ""},
@@ -78,6 +96,13 @@ Triage: `in_scope` | `partial` | `scope_uncertain` | `needs_human_decision` | `o
   },
   "flags": [
     {"category": "needs_pmid", "detail": "example — replace with the real flags for this paper"}
-  ]
+  ],
+  "canto": {
+    "genes": [{"name": "", "uniprot": "", "organism": "", "locus": "", "note": ""}],
+    "alleles": [{"name": "", "gene": "", "type": "", "expression": ""}],
+    "genotypes": [{"name": "", "organism": "", "alleles": [], "role": ""}],
+    "metagenotypes": [{"name": "", "pathogen_genotype": "", "host_genotype": "", "role": ""}],
+    "annotations": [{"feature_type": "", "feature": "", "annotation_type": "", "term_id": "", "term_name": "", "evidence": "", "extensions": [{"relation": "", "value": ""}], "conditions": "", "figure": ""}]
+  }
 }
 ```
