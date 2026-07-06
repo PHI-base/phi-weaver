@@ -52,6 +52,10 @@ python3 fill_scorecard.py active/*-phiweaver-DRAFT.md                  # a batch
 Needs openpyxl. Close the target `.xlsx` in Excel before rerunning (an open file is locked).
 The auto-check column reflects only the machine-checkable items (ID validity, term
 existence/obsolescence); the curator still fills every rating and the completeness block.
+The scorecard header carries a **Model** row (the drafting model, from the draft's `meta.model`,
+e.g. `Fable 5`) — `scorecards_to_csv.py` writes it as the CSV `model` column and
+`benchmark_report` shows it in the provenance footer (a `--model` flag still overrides). Model is
+part of what the benchmark measures, so record it and keep it constant across a run.
 
 ## Batch review dashboard
 For unattended batch drafting, phiweaver records what it can't resolve as **structured flags**
@@ -115,7 +119,8 @@ item × paper ratings heatmap, average accuracy per item ("where to improve"), a
 to share. Pure stdlib. See `sample-benchmark-scores.csv` for the input format and
 `sample-benchmark-report.html` for a synthetic preview.
 
-The scores CSV has one row per paper: `paper, group (curated|control), curatable, captured`, an
+The scores CSV has one row per paper: `paper, group (curated|control)`, an optional `model` column
+(the drafting model, e.g. `Fable 5`), `curatable, captured`, an
 optional `tokens` column (LLM tokens spent drafting that paper — **supplied, not measured** by
 phiweaver), then one column per scored item with its rating (Correct / Needs improvement /
 Incorrect / N/A). Score = Correct 1, Needs improvement 0.5, Incorrect 0, N/A excluded. The report

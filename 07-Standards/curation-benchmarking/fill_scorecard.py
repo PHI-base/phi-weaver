@@ -30,6 +30,7 @@ TEMPLATE_DEFAULT = Path(__file__).with_name("PHI-Weaver-Curation-Scorecard.xlsx"
 META_LABELS = {
     "date": "Date", "pmid": "PMID", "paper": "Paper title",
     "system": "Pathogen / host", "draft_by": "Draft produced by",
+    "model": "Model",
 }
 # auto_check key -> a substring of the scorecard Item label (matched in column B)
 KEY_TO_LABEL = {

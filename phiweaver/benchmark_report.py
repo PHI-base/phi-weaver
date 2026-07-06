@@ -8,12 +8,14 @@ heatmap of ratings, the item-level average accuracy ("where to improve"), a cura
 comparison, and a data table. Pure stdlib.
 
 CSV columns (one row per paper):
-    paper, group, curatable, captured, [tokens], <item1>, <item2>, ...
+    paper, group, [model], curatable, captured, [tokens], <item1>, <item2>, ...
     group    : "curated" (human-reviewed) or "control" (held-out gold standard)
+    model    : optional — drafting model (e.g. "Fable 5"); shown in the provenance footer
     tokens   : optional — LLM tokens spent drafting this paper (supplied, not measured here)
     ratings  : Correct | Needs improvement | Incorrect | N/A | (empty = not scored)
-Anything not in {paper, group, curatable, captured, tokens} is a scored item column. The report
-footer records the generation date, --model, source file, and total curation tokens (if given).
+Anything not in {paper, group, model, curatable, captured, tokens} is a scored item column. The
+report footer records the generation date, model (--model overrides the CSV `model` column),
+source file, and total curation tokens (if given).
 
 Score: Correct = 1, Needs improvement = 0.5, Incorrect = 0; N/A and empty are excluded.
 Accuracy = points / applicable items. Completeness = captured / curatable.
@@ -31,7 +33,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
 
-FIXED = {"paper", "group", "curatable", "captured", "tokens"}
+FIXED = {"paper", "group", "model", "curatable", "captured", "tokens"}
 POINTS = {"correct": 1.0, "needs improvement": 0.5, "incorrect": 0.0}
 # status palette: (label, fill, ink). Text label is always shown — never colour alone.
 RATING_STYLE = {
@@ -54,6 +56,7 @@ class Paper:
         self.name = (row.get("paper") or "").strip()
         self.group = (row.get("group") or "curated").strip().lower()
         self.ratings = {it: (row.get(it) or "").strip() for it in items}
+        self.model = (row.get("model") or "").strip() or None
         self.curatable = _int(row.get("curatable"))
         self.captured = _int(row.get("captured"))
         _tok = row.get("tokens")
@@ -184,6 +187,9 @@ def render_html(papers, items, title="Benchmark report", model=None, source=None
     control = [p for p in papers if p.group == "control"]
     has_tokens = any(p.tokens is not None for p in papers)
     total_tokens = sum(p.tokens for p in papers if p.tokens)
+    if not model:                       # fall back to the model recorded in the data
+        seen = sorted({p.model for p in papers if p.model})
+        model = seen[0] if len(seen) == 1 else (", ".join(seen) if seen else None)
     gen = generated or datetime.now().strftime("%Y-%m-%d %H:%M")
     prov = " · ".join(
         [f"generated {html.escape(gen)}"]

@@ -5,7 +5,7 @@ phiweaver.benchmark_report consumes.
 
 After a curator has filled a scorecard's **Reviewer-rating** column and the **completeness**
 block, this reads each `.xlsx` and writes one CSV row per paper:
-    paper, group, curatable, captured, <item>, <item>, ...
+    paper, group, model, curatable, captured, <item>, <item>, ...
 Curated papers are passed positionally; held-out control papers with --control. Ratings are read
 verbatim ("Not applicable" -> "N/A"); accuracy is computed downstream by benchmark_report.
 
@@ -25,6 +25,7 @@ import openpyxl
 
 ITEM_HEADER = "annotation level"          # col-A marker for the item-table header row
 PAPER_LABELS = ("paper title", "pmid")    # col-A labels to source the paper name from
+MODEL_LABEL = "model"                     # col-A label for the drafting-model provenance row
 COMPLETENESS = {"curatable items in the paper": "curatable",
                 "items captured in the draft": "captured"}
 RATING_NORM = {"not applicable": "N/A", "n/a": "N/A"}
@@ -56,6 +57,10 @@ def read_scorecard(path, group: str) -> dict:
     if not paper:
         paper = Path(path).stem
 
+    model = ""
+    if MODEL_LABEL in a_row:
+        model = str(s.cell(a_row[MODEL_LABEL], 2).value or "").strip()
+
     # item rows = the contiguous rows after the header that have a non-empty Item (col B)
     ratings, started = {}, False
     if header:
@@ -72,7 +77,7 @@ def read_scorecard(path, group: str) -> dict:
         if lbl in a_row:
             v = s.cell(a_row[lbl], 3).value                  # col C = value
             comp[key] = "" if v is None else v
-    return {"paper": paper, "group": group, "ratings": ratings, **comp}
+    return {"paper": paper, "group": group, "model": model, "ratings": ratings, **comp}
 
 
 def to_csv(records, out):
@@ -83,9 +88,10 @@ def to_csv(records, out):
                 items.append(it)
     with open(out, "w", newline="", encoding="utf-8") as fh:
         w = csv.writer(fh)
-        w.writerow(["paper", "group", "curatable", "captured"] + items)
+        w.writerow(["paper", "group", "model", "curatable", "captured"] + items)
         for rec in records:
-            w.writerow([rec["paper"], rec["group"], rec["curatable"], rec["captured"]]
+            w.writerow([rec["paper"], rec["group"], rec.get("model", ""),
+                        rec["curatable"], rec["captured"]]
                        + [rec["ratings"].get(it, "") for it in items])
 
 

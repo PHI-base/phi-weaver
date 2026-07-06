@@ -69,5 +69,35 @@ class RenderTests(unittest.TestCase):
             self.assertIn("21,000", out)                   # total curation tokens (12000+9000)
 
 
+class ModelColumnTests(unittest.TestCase):
+    CSV = ("paper,group,model,curatable,captured,ID\n"
+           "A,curated,Fable 5,4,4,Correct\n"
+           "B,curated,Fable 5,3,3,Correct\n")
+
+    def _load(self, tmp):
+        p = Path(tmp) / "m.csv"
+        p.write_text(self.CSV, encoding="utf-8")
+        return br.load(str(p))
+
+    def test_model_column_is_not_an_item(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            papers, items = self._load(tmp)
+            self.assertEqual(items, ["ID"])                # model is a reserved column
+            self.assertEqual(papers[0].model, "Fable 5")
+
+    def test_model_derived_from_csv_when_no_flag(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            papers, items = self._load(tmp)
+            out = br.render_html(papers, items)            # no explicit model=
+            self.assertIn("model Fable 5", out)
+
+    def test_explicit_model_overrides_csv(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            papers, items = self._load(tmp)
+            out = br.render_html(papers, items, model="Opus 4.8")
+            self.assertIn("model Opus 4.8", out)
+            self.assertNotIn("model Fable 5", out)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -59,7 +59,7 @@ Triage: `in_scope` | `partial` | `scope_uncertain` | `needs_human_decision` | `o
 
 ```json
 {
-  "meta": {"date": "", "pmid": "", "paper": "", "system": "", "draft_by": "phiweaver"},
+  "meta": {"date": "", "pmid": "", "paper": "", "system": "", "draft_by": "phiweaver", "model": ""},
   "triage": "in_scope",
   "auto_check": {
     "uniprot_id": "",
