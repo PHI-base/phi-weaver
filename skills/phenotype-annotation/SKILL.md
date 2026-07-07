@@ -29,7 +29,9 @@ annotation; choosing the PHIPO term itself is delegated to the phipo-mapping ski
 
 ## Workflow
 1. Decide the annotation type: single-species (pathogen or host alone), interaction
-   (pathogen–host together), or gene-for-gene.
+   (pathogen–host together), or gene-for-gene. For gene-for-gene / effector–host cases
+   (guard/decoy model, effector GO tagging, R-gene extensions, inverse/NETS), use the
+   `gene-for-gene` skill.
 2. Select the PHIPO term via the phipo-mapping skill
    (`python3 -m phiweaver.lookup.map_phenotype "<phenotype phrase>"`), reading definitions
    rather than names and preferring the most specific term. Verify the chosen ID with

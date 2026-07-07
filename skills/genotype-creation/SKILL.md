@@ -40,6 +40,26 @@ conventions live in `06-Training/Quick-Reference-Genotype-Creation.md`.
 6. Where the paper does not state a detail (e.g. expression level), mark it "not assayed"
    or flag the ambiguity — never invent an allele or level.
 
+## Controlled genotype labels
+Use standardized labels so genotype names read consistently across curations (from the
+PHI-base curator methodology, `06-Training/Gene-for-Gene-Curation-Methodology.md`). Applies to
+**both** pathogen and host genotypes:
+
+- Wild type — `WT`.
+- Deletion / disruption / knockdown — CRISPR-Cas9, RNAi, split-marker; gene silencing prefixes
+  the silenced gene with `si` (e.g. `siSec5`).
+- Complementation — `Complement (Ectopic)`.
+- Overexpression — `gene-OE`.
+- GFP fusion — `gene-GFP` (and overexpression + GFP tag combines the two).
+- Signal-peptide deletion — e.g. `Kwl1ΔSP`; domain deletion — e.g. `XopACΔLRR`.
+- Amino-acid substitution — e.g. `Ire1(aaS896A)[Ectopic]`.
+- Non-functional allele — e.g. `avrLm1(non-func)(unknown)[WT level]`.
+- Insertion / disruption line — e.g. `rlp23-1(disruption)[Null]`.
+
+Assign pathogen **strains** and host **cultivars** accurately — cultivar identity encodes
+R-gene presence/absence, which is critical for gene-for-gene cases (see the `gene-for-gene`
+skill).
+
 ## Expected outputs
 - Single- and/or multi-allele genotype(s), each allele with its type and expression level.
 - Complementation and control genotypes where the experiment uses them.
