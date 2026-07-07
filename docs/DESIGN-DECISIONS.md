@@ -129,6 +129,27 @@ a single overall score instead of per-item + completeness (rejected — hides mi
 scorecard + generator + prefill built (`07-Standards/curation-benchmarking/`); ratings and
 completeness stay manual by design.
 
+### D13 — Curator methodology as a skill; gene-for-gene conventions
+A biocurator supplied a gene-for-gene / effector–host curation methodology (H-Y Chang; reference
+in `06-Training/Gene-for-Gene-Curation-Methodology.md`). **Decision:** encode reusable curator
+knowledge as a **dedicated skill** (`skills/gene-for-gene/`) rather than inline notes, and split
+concerns by ownership — the cross-cutting **controlled genotype-label vocabulary** lives in
+`genotype-creation` (used by all curations), while the gene-for-gene-specific rules live in the
+new skill: state the recognition model (**direct vs guard/decoy**) and don't force one; tag *bona
+fide* effectors with an `effector-mediated …` GO term but **not** non-effector virulence genes
+(TFs/kinases); capture **R-gene presence/absence** and **delivery mechanism** as annotation
+extensions; assign **disease names only from the wild-type pathogen on its natural host**; handle
+inverse gene-for-gene (NETS). **Why:** one skill = one updatable home for a self-contained
+concern (smoke-enforced via the registry), while shared vocabulary stays where every curation
+finds it. Applying it to the avrPto/Pto draft immediately caught a real modelling error — a
+disease name annotated on an artificial multicopy-plasmid genotype — confirming the principle
+that **biocurator entry into PHI-Canto is the validation step** (`docs/CANTO-ROUTE1-BUILD-SPEC.md`):
+the drafts are suggestions, and a curator-authored rule, encoded once, corrects them at scale.
+**Alternatives:** inline the rules into `phenotype-annotation` (rejected — buries a distinct
+concern and bloats a general skill); a standalone doc only, no skill (rejected — not discoverable
+by the workflow or enforced by the registry). **Status:** done — skill + reference committed;
+avrPto/Pto worksheet revised against it.
+
 ### D11 — Deliberately deferred / not done
 - **Full vault renumbering** — low value; numbering gaps left cosmetic.
 - **JSON curation-record schema** — a machine consumer now exists (the benchmarking-scorecard
