@@ -55,6 +55,9 @@ invented: an annotation with no term, and every `flags` entry, is shown as a ⚠
 - Metagenotypes reference genotypes that appear earlier in the worksheet (the renderer preserves
   Canto's dependency order).
 - All draft `flags` appear in the flags-to-resolve list.
+- A **coverage lint** (`phiweaver.canto.coverage`) prints stderr advisories at generation time for
+  genotypes the block defines but barely uses (unused, or in no metagenotype) — catching a
+  metagenotype dropped when translating the paper's prose into the block.
 
 ## Human review
 - The biocurator's entry into PHI-Canto **is** the review — apply judgement per item, reconcile

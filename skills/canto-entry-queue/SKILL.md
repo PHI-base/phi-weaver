@@ -69,6 +69,9 @@ broken row into an entry table). With `--validate`, ontology IDs are checked onl
 - No annotation depends on a held gene; blank-term and interpretive-MF items are parked.
 - Table cells escape `|` and collapse newlines, so the output cannot corrupt into an unreadable
   table.
+- A **coverage lint** (`phiweaver.canto.coverage`) prints stderr advisories at generation time for
+  genotypes the block defines but barely uses — *unused* (referenced by nothing) or *in no
+  metagenotype* — the signal that catches a metagenotype dropped in the prose→block translation.
 
 ## Human review
 The queue is a transcription aid, not an authority: entering each row into PHI-Canto **is** the

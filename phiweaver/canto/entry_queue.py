@@ -35,6 +35,7 @@ from __future__ import annotations
 
 import argparse
 import re
+import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -394,6 +395,7 @@ def main(argv=None) -> int:
     if args.out and len(args.drafts) != 1:
         ap.error("--out is only valid with a single draft")
 
+    from phiweaver.canto.coverage import coverage_for_draft
     for d in args.drafts:
         md, counts = queue_for_draft(d, validate=args.validate)
         if args.stdout:
@@ -403,6 +405,8 @@ def main(argv=None) -> int:
             out.write_text(md, encoding="utf-8")
             print(f"wrote {out}  —  genes: {counts['genes_enter']} enter / {counts['genes_held']} held; "
                   f"annotations: {counts['annotations_enter']} enter; parked: {counts['parked']}")
+        for w in coverage_for_draft(d):
+            print(f"  ⚠ coverage [{Path(d).name}]: {w}", file=sys.stderr)
     return 0
 
 

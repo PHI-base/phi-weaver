@@ -28,6 +28,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import sys
 from pathlib import Path
 from typing import List
 
@@ -228,14 +229,17 @@ def main(argv=None) -> int:
     if args.out and len(args.drafts) != 1:
         ap.error("--out is only valid with a single draft")
 
+    from phiweaver.canto.coverage import coverage_for_draft
     for d in args.drafts:
         md = worksheet_for_draft(d)
         if args.stdout:
             print(md)
-            continue
-        out = Path(args.out) if args.out else default_out(d)
-        out.write_text(md, encoding="utf-8")
-        print("wrote", out)
+        else:
+            out = Path(args.out) if args.out else default_out(d)
+            out.write_text(md, encoding="utf-8")
+            print("wrote", out)
+        for w in coverage_for_draft(d):
+            print(f"  ⚠ coverage [{Path(d).name}]: {w}", file=sys.stderr)
     return 0
 
 
