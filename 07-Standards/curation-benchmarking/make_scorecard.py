@@ -114,7 +114,7 @@ s.row_dimensions[hr].height = 30
 items = [
     ("Entity", "UniProtKB ID correctness", "auto: format valid + accession exists"),
     ("Entity", "Species / strain / cultivar correctness", "— human judgement"),
-    ("Gene", "GO / gene annotation correctness (incl. effector GO:0140418)", "auto: GO term exists + current"),
+    ("Gene", "GO / gene annotation correctness", "auto: GO term exists + current"),
     ("Genotype", "Genotype correctness (allele type + expression level)", "— human judgement"),
     ("Genotype", "Metagenotype & control correctness", "— human judgement"),
     ("Phenotype", "Pathogen phenotype correctness", "auto: PHIPO term exists + current"),
