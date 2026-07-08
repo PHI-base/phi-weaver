@@ -76,6 +76,8 @@ def _annotation_line(a: dict) -> str:
         tail.append(f"ext: {ext}")
     if _s(a.get("conditions")):
         tail.append(_s(a.get("conditions")))
+    if _s(a.get("note")):
+        tail.append(f"note: {_s(a.get('note'))}")
     if _s(a.get("figure")):
         tail.append(_s(a.get("figure")))
     return f"- [ ] {head}" + ((" — " + " — ".join(tail)) if tail else "")

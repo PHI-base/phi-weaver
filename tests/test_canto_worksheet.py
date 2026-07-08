@@ -78,6 +78,13 @@ class RenderTests(unittest.TestCase):
         self.assertIn("[needs_accession]", self.md)
         self.assertIn("flag(s) to resolve", self.md)   # count line shown only when flags present
 
+    def test_annotation_note_shown_in_worksheet(self):
+        rec = {"meta": {"pmid": "1"}, "canto": {"annotations": [
+            {"feature_type": "genotype", "feature": "g", "annotation_type": "pathogen_phenotype",
+             "term_id": "PHIPO:0000015", "term_name": "reduced virulence", "evidence": "assay",
+             "extensions": [], "conditions": "PDA", "note": "curator caveat here", "figure": "F1"}]}}
+        self.assertIn("note: curator caveat here", ws.render_worksheet(rec))
+
 
 class MissingTermTests(unittest.TestCase):
     def test_annotation_without_term_is_flagged_inline(self):

@@ -71,7 +71,16 @@ The `canto` block is the **structured, machine-readable curation** that
 - `annotations` — `feature_type` (`gene` | `genotype` | `metagenotype`), `feature` (its name),
   `annotation_type` (a PHI-Canto type from `TAGS.md`), `term_id`, `term_name`, `evidence`,
   `extensions` (list of `{relation, value}`, e.g. `infects_tissue`, `infective_ability`,
-  `compared_to_control`), `conditions` (free text), `figure`.
+  `compared_to_control`), `conditions` (**short** experimental condition only — medium, temp,
+  chemical, tissue), `figure`, and two optional fields:
+  - `note` — curator caveats / term-choice / "confirm" prose. Kept **out** of the concise
+    entry-queue tables (`canto-entry-queue`); shown in the fuller `canto-worksheet`. Put long
+    prose here, not in `conditions`.
+  - `hold` (`true`/`false`) + `hold_reason` — an **explicit park signal**: mark an interpretive
+    or uncertain annotation (e.g. a molecular-function term inferred from rescue/genetics with no
+    direct assay) so the entry queue parks it by the curator's decision rather than by guessing
+    from the evidence prose. Absent `hold`, the queue falls back to a heuristic for interpretive
+    molecular-function terms.
 Terms reuse the IDs already validated in `auto_check`; a missing term stays a `flags` entry, never
 invented (the worksheet surfaces it as a ⚠ to resolve before entry).
 
@@ -102,7 +111,7 @@ invented (the worksheet surfaces it as a ⚠ to resolve before entry).
     "alleles": [{"name": "", "gene": "", "type": "", "expression": ""}],
     "genotypes": [{"name": "", "organism": "", "alleles": [], "role": ""}],
     "metagenotypes": [{"name": "", "pathogen_genotype": "", "host_genotype": "", "role": ""}],
-    "annotations": [{"feature_type": "", "feature": "", "annotation_type": "", "term_id": "", "term_name": "", "evidence": "", "extensions": [{"relation": "", "value": ""}], "conditions": "", "figure": ""}]
+    "annotations": [{"feature_type": "", "feature": "", "annotation_type": "", "term_id": "", "term_name": "", "evidence": "", "extensions": [{"relation": "", "value": ""}], "conditions": "", "note": "", "hold": false, "hold_reason": "", "figure": ""}]
   }
 }
 ```
