@@ -150,6 +150,29 @@ concern and bloats a general skill); a standalone doc only, no skill (rejected �
 by the workflow or enforced by the registry). **Status:** done — skill + reference committed;
 avrPto/Pto worksheet revised against it.
 
+### D14 — Two Route-1 outputs: worked worksheet + lean entry queue (deterministic, never a prompt)
+A curator found the entry worksheet (D-series Route 1) too verbose for **live** transcription into
+PHI-Canto and supplied a spec (as a ChatGPT prompt) for a concise "entry queue." **Decision:**
+implement it as a **second deterministic renderer** (`phiweaver/canto/entry_queue.py` + the
+`canto-entry-queue` skill), not a runtime LLM prompt — a table-driven click-list (setup A–E,
+annotation tables F1–F5, a **parked** safety section, summary counts) generated from the same
+`canto` block, keeping the fuller `canto-worksheet` as the worked record. The queue's core rule is
+a **held-gene cascade**: a gene with no UniProtKB accession is held, and its alleles / genotypes /
+metagenotypes / annotations all move to *parked* rather than any entry table — plus parking for
+dangling references (a referential-integrity check), term-less annotations, and interpretive
+molecular-function claims. Parking decisions key off **structured signals**: an optional annotation
+`hold`/`hold_reason` (explicit, curator-set) is preferred, with a prose heuristic only as fallback;
+an optional `note` field carries curator caveats **out** of the lean queue (shown in the worksheet).
+`--validate` is opt-in so the default stays offline/deterministic. **Why:** the same guarantee as
+the rest of the engine — a deterministic reformat can never invent an accession, term, or evidence
+code, and the parked section is a *safety filter* so nothing uncertain is entered by accident; a
+runtime prompt would reintroduce exactly that hallucination risk. Structured `hold` beats
+prose-sniffing (the "don't guess" principle, D4). **Alternatives:** a literal reusable prompt
+(rejected — non-reproducible, can invent IDs); folding it into `canto-worksheet` as a flag
+(rejected — a distinct output deserves its own skill/tests); prose-only interpretive-MF detection
+(kept only as a fallback). **Status:** done — module + skill + tests + `hold`/`note` schema in the
+template; entry queues generated for all 10 benchmark drafts.
+
 ### D11 — Deliberately deferred / not done
 - **Full vault renumbering** — low value; numbering gaps left cosmetic.
 - **JSON curation-record schema** — a machine consumer now exists (the benchmarking-scorecard
