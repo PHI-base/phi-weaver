@@ -41,7 +41,10 @@ disease name is assignable, PHIPO usage), so a lower score can mean any of:
 1. it caught a **real error** the curator is too close to see (the payoff);
 2. a **convention gap** — it penalised something correct-by-PHI-base-convention;
 3. a **hallucination / misread** — it invented an issue;
-4. **legitimate ambiguity**.
+4. **legitimate ambiguity**;
+5. the **reference itself is wrong** — the human gold standard / curator made a mistake and the judge
+   caught it (see the 2026-07-09 follow-up below — this bucket was added later; the original list
+   wrongly assumed the human reference is ground truth).
 These have opposite implications and are currently mixed into one number.
 
 ## ⚠️ The point to stress: the judge must itself be ground-truthed
@@ -61,6 +64,52 @@ buckets above. The ratio (mostly 1–2 = worth developing; mostly 3 = untrustwor
 LLM-as-judge is viable here — one afternoon's work, more informative than running ten more papers.
 Then, if it holds: anchor the judge with the scorecard rubric + PHI-base conventions, ground-truth it
 against gold standards, and report its scores **alongside** (never instead of) the human's.
+
+## Follow-up (2026-07-09): giving the judge the curation-example library
+A later question asked whether making the **curation-example library + registries** available to an
+external model (e.g. GPT-5.5) would make the judge easier to set up. It helps, but only with one of
+the four buckets. Supplying the examples + `TAGS.md` controlled vocabulary + `07-Standards` docs
+directly attacks the **convention-gap** bucket (#2) — it turns a naïve outsider into a
+convention-aware reviewer, which *is* the "anchor the judge with the scorecard rubric + PHI-base
+conventions" step named above. It's **cheap** precisely because the library is already portable
+markdown with structured frontmatter (OKF-shaped), so the files drop straight into the judge's
+context with no conversion. **But it does not**: (a) remove the ground-truthing requirement — a
+context-fed judge is better-calibrated, not validated, and its scores still can't be trusted until
+measured against human score-vs-gold; (b) fix hallucination/misread (#3) or legitimate ambiguity
+(#4); or (c) come free on **leakage** — the library *contains gold standards*, so never feed the
+judge the gold-standard example of the very paper under test; give it same-annotation-type/topic
+examples only. Net: library access moves the judge from *naïve* to *convention-aware*, not from
+*unvalidated* to *trusted*. Strongest for the low-bar pre-review-critic use; for a paper that has a
+gold standard, that gold standard is still a stronger anchor than the judge's reference-free opinion.
+
+## Follow-up (2026-07-09): the "gold standard" is a strong reference, not ground truth
+Curator's point: biocurators also make mistakes, so when the judge critiques a human gold standard,
+"the human was wrong" is a real possibility, not an edge case. This corrects a hidden assumption in
+this note — that gold = fixed external truth. It doesn't; "gold standard" means *best available
+human-expert reference*, and inter-curator agreement is known to be imperfect. Consequences:
+
+- **Adds bucket #5 above** (the reference itself is wrong), which applies whether the judge is grading
+  a *draft* or a *gold standard*. The human curator is another estimator with its own error profile,
+  not an oracle sitting outside the system.
+- **Corrects the calibration step.** Earlier framing ("run the judge on gold-standard papers and see
+  if it matches what we know is right") quietly assumes human = truth. The honest version: when judge
+  and human disagree, a person **adjudicates**, and we count how often *each* was right — the gold
+  standard is allowed to lose. So calibration measures a two-way disagreement, not judge-vs-oracle.
+- **Doubles the judge's value.** Besides QC-ing new drafts, it can **audit the existing gold-standard
+  library** — a judge-flagged error that turns out real *improves the reference set*. Repositions the
+  judge from "must prove itself against the human" to "an independent estimator whose disagreements
+  with the human are informative both ways." This strengthens the case for the tool.
+- **Keep the asymmetry (don't over-rotate).** Their errors are *different*, not equal. The human holds
+  PHI-base convention knowledge the LLM lacks, so on convention-heavy calls the human is usually still
+  the stronger signal; the LLM's edge is consistency/tirelessness — catching *omissions* and mechanical
+  slips a curator misses from being too close. Decorrelated errors are exactly why cross-checking works.
+- **Procedural rule, not a hierarchy.** When the judge flags a gold standard, neither auto-overrule the
+  human nor auto-dismiss the judge — a human adjudicates and the gold standard may lose. That is how the
+  library improves instead of ossifying around early errors.
+
+Deeper framing: there is no infallible ground truth in curation — every signal (drafting agent, human
+curator, second curator, LLM judge, deterministic checks) is an imperfect estimator. The sound move is
+to **triangulate** and investigate disagreements, not to crown one signal as truth.
 
 ## Two honest uses, different bars
 - **Pre-review critic** (flags candidate issues for the human): low bar — even ~60% precision saves
