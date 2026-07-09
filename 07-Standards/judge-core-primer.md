@@ -92,6 +92,29 @@ rubric. If those skills change, update this primer.
     - Flag **overreach** (a wrong / forced term, or a molecular readout dressed up as a
       phenotype), not **under-annotation**. When in doubt, prefer recording a candidate phenotype
       + term-request note over silently dropping it.
+12. **Evidence-based UniProtKB selection when the paper accession is missing or wrong.** Do not
+    require that the exact UniProt accession appears in the paper, and do not mark a selected
+    accession as an error **merely because it is inferred**. Do not penalize a UniProtKB accession
+    solely because it is not explicitly cited in the paper, or because the paper cites an erroneous,
+    duplicated, obsolete, or wrong-species accession. A selected UniProtKB accession is acceptable
+    when PHI-Weaver documents a **strong, reproducible evidence trail** showing that it is the best
+    available match for the paper's gene/protein, using anchors such as correct organism, reference
+    proteome, locus tag, gene/protein name, protein length, RefSeq/GenBank cross-reference,
+    conserved domain architecture, orthology, reciprocal BLAST/alignment, or synteny. Flag a
+    selected accession only when the evidence trail is **weak, ambiguous, or conflicts** with the
+    organism/protein described in the paper. Rate the UniProt ID as:
+    - **Correct** when the selected accession is from the correct organism / reference proteome and
+      the evidence trail is strong enough for normal PHI-base entry, **even if the paper itself did
+      not cite that accession**.
+    - **Needs improvement** only when the selected accession is plausible but the evidence trail is
+      incomplete or explicitly requires curator confirmation before entry.
+    - **Incorrect** only when the accession maps to the wrong organism, wrong gene family member /
+      paralog, wrong protein length / domain architecture, or otherwise conflicts with the paper's
+      gene/protein.
+
+    (Consistent with rule 2 — the UniProt lookup is authoritative for whether the accession exists
+    and matches the protein — and rule 9 — reference-proteome accessions are accepted PHI-base
+    practice.)
 
 ## 3. Rating scale (per scorecard row)
 Rate each item as one of: **Correct / Needs improvement / Incorrect / Not applicable**, each

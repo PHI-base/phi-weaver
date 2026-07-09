@@ -4,16 +4,15 @@ Concise "start here" pointer. Full history is the latest session log
 (`11-CLAUDE-AI/SESSION-LOGS/INDEX.md` → newest row) and `docs/DESIGN-DECISIONS.md`.
 
 ## Where things stand (2026-07-08)
-- **Phase 4 complete:** all **10 benchmark drafts** have a structured `canto` block, a
-  `*-canto-worksheet.md`, and a `*-phi-canto-entry-queue.md`. Work products live in external
+- **Phase 4 complete:** all **10 benchmark drafts** have a structured `canto` block and a
+  `*-phi-canto-entry-queue.md`. Work products live in external
   `/mnt/z/PHI-Canto-Literature/active/` (uncommitted by policy); tracker there is
   `PHASE4-CANTO-WORKSHEET-PROGRESS.md`.
-- **PHI-Canto submission = Route 1**, two deterministic renderers (run from repo root, stdlib-only):
-  `python3 -m phiweaver.canto.worksheet <draft.md>` (worked, ordered checklist) and
+- **PHI-Canto submission = Route 1**, one deterministic renderer (run from repo root, stdlib-only):
   `python3 -m phiweaver.canto.entry_queue <draft.md>` (lean table click-list; held-gene cascade +
   parked safety section; `--validate` opt-in ontology check). Biocurator entry into PHI-Canto **is**
   the validation step. A **coverage lint** (`phiweaver.canto.coverage`) warns (stderr) about block
-  genotypes in no metagenotype.
+  genotypes in no metagenotype. (The fuller `canto-worksheet` renderer was retired — see **D16**.)
 - **11 skills** (`skills/REGISTRY.md`); green gate: `python3 -m phiweaver.smoke` (7/7) +
   `python3 -m unittest discover -s tests` (134).
 
@@ -25,7 +24,7 @@ Concise "start here" pointer. Full history is the latest session log
 2. **Hand-score** the 10 benchmark scorecards (`07-Standards/curation-benchmarking/`) → then
    `scorecards_to_csv` → `benchmark_report`. phiweaver must not grade its own drafts.
 3. **Canto route decision**: if server access to canto.phi-base.org exists, Route 2
-   (`canto_load.pl`, server-side) vs the Route 1 worksheet/queue. See `docs/CANTO-SUBMISSION-ROUTES.md`.
+   (`canto_load.pl`, server-side) vs the Route 1 entry queue. See `docs/CANTO-SUBMISSION-ROUTES.md`.
 4. Ongoing depth work: more validated **gold-standard examples** (12/12 annotation-type breadth is
    already done; add depth). How-to below.
 
@@ -47,7 +46,7 @@ Concise "start here" pointer. Full history is the latest session log
 - Each change: branch → commit → `--ff-only` merge to `main` → push → delete branch (PR-free, solo
   repo). End commit messages with the Claude co-author trailer. The benign
   `chmod .git/config.lock failed` warning on the z: mount does not affect the merge/push.
-- Per-paper work products (PDFs, drafts, scorecards, worksheets, queues) stay in external
+- Per-paper work products (PDFs, drafts, scorecards, entry queues) stay in external
   `active/`, **not committed**; only engine/skills/docs + wrapped gold-standard `.md` go in the repo.
 
 ## Read at session start

@@ -58,7 +58,7 @@ dashboard. Flag categories: `needs_pmid`, `needs_accession`, `needs_term_choice`
 Triage: `in_scope` | `partial` | `scope_uncertain` | `needs_human_decision` | `out_of_scope`.
 
 The `canto` block is the **structured, machine-readable curation** that
-`phiweaver.canto.worksheet` renders into a PHI-Canto entry worksheet (Route 1; see
+`phiweaver.canto.entry_queue` renders into a PHI-Canto entry queue (Route 1; see
 `docs/CANTO-ROUTE1-BUILD-SPEC.md`). It mirrors Canto's entry order and controlled fields:
 - `genes` — `name`, `uniprot` (accession only, e.g. `K3V6Z9` — this **is** Canto's add-gene
   identifier), `organism`, optional `locus`, `note`.
@@ -74,7 +74,7 @@ The `canto` block is the **structured, machine-readable curation** that
   `compared_to_control`), `conditions` (**short** experimental condition only — medium, temp,
   chemical, tissue), `figure`, and two optional fields:
   - `note` — curator caveats / term-choice / "confirm" prose. Kept **out** of the concise
-    entry-queue tables (`canto-entry-queue`); shown in the fuller `canto-worksheet`. Put long
+    entry-queue tables (`canto-entry-queue`) — caveat context only, never an entry row. Put long
     prose here, not in `conditions`.
   - `hold` (`true`/`false`) + `hold_reason` — an **explicit park signal**: mark an interpretive
     or uncertain annotation (e.g. a molecular-function term inferred from rescue/genetics with no
@@ -82,7 +82,7 @@ The `canto` block is the **structured, machine-readable curation** that
     from the evidence prose. Absent `hold`, the queue falls back to a heuristic for interpretive
     molecular-function terms.
 Terms reuse the IDs already validated in `auto_check`; a missing term stays a `flags` entry, never
-invented (the worksheet surfaces it as a ⚠ to resolve before entry).
+invented (the entry queue parks it as an item to resolve before entry).
 
 ```json
 {

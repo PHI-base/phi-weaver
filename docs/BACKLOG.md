@@ -89,11 +89,12 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
 - [ ] **Submit drafts into PHI-Canto for biocurator review** (planning; no code yet) — get the
   information from phiweaver drafts into the PHI-Canto web tool (<https://canto.phi-base.org/>).
   No write API exists; `canto_load.pl` is server-side only. Three routes assessed (assisted-entry
-  worksheet / Canto session JSON + load / browser automation) with recommendation and open
+  queue / Canto session JSON + load / browser automation) with recommendation and open
   questions in **`docs/CANTO-SUBMISSION-ROUTES.md`**. Pivotal decision pending: server/admin access
-  to canto.phi-base.org vs web login only. Route 1 (assisted-entry worksheet) is scoped in
-  **`docs/CANTO-ROUTE1-BUILD-SPEC.md`** — biocurator entry into PHI-Canto *is* the validation step;
-  recommended build is a structured `canto` block in the draft + a deterministic `worksheet.py`.
+  to canto.phi-base.org vs web login only. Route 1 (assisted-entry queue) is built — a structured
+  `canto` block in the draft + a deterministic `entry_queue.py` (the single Route-1 output; the
+  earlier `worksheet.py` was retired, D16). Scope notes in **`docs/CANTO-ROUTE1-BUILD-SPEC.md`** —
+  biocurator entry into PHI-Canto *is* the validation step.
 
 - [ ] **Activate the benchmark sandbox allowlist**: the airtight profile exists
   (`07-Standards/curation-benchmarking/benchmark-sandbox.settings.json`) — network allowlisted to

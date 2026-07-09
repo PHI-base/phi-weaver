@@ -2,14 +2,13 @@
 """
 phiweaver.canto.entry_queue — render a phiweaver draft into a PHI-Canto **entry queue**.
 
-A concise, table-driven "click-list" companion to the worksheet renderer
-(``phiweaver.canto.worksheet``). Where the worksheet is an ordered narrative checklist, the
-entry queue strips prose to the minimum a biocurator needs while transcribing into
-canto.phi-base.org, and adds a **safety filter**: anything that must not be entered yet
-(unresolved accession, missing ontology term, interpretive molecular-function claim, or an
-item that depends on a held gene) is moved to a *parked* section instead of an entry table.
+A concise, table-driven "click-list": the single Route-1 output. It strips a draft's `canto`
+block to the minimum a biocurator needs while transcribing into canto.phi-base.org, and adds a
+**safety filter**: anything that must not be entered yet (unresolved accession, missing ontology
+term, interpretive molecular-function claim, or an item that depends on a held gene) is moved to a
+*parked* section instead of an entry table.
 
-Same input as the worksheet: the draft's ```json ``canto`` block (genes / alleles / genotypes /
+Input: the draft's ```json ``canto`` block (genes / alleles / genotypes /
 metagenotypes / annotations). Deterministic — same block in, same queue out; nothing is invented.
 Spec: ``PHI-Canto-Literature/active/Worksheet prompt-2026-07-08.md`` (curator request).
 
@@ -40,7 +39,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 from phiweaver.common import provenance_line
-from phiweaver.canto.worksheet import extract_record, _s, _fmt_extensions
+from phiweaver.canto.record import extract_record, _s, _fmt_extensions
 
 _STATUS_RE = re.compile(r"^status:\s*(.+?)\s*$", re.MULTILINE)
 

@@ -16,7 +16,7 @@ phenotypes and no metagenotype):
   single-species phenotype) but in no metagenotype. Confirm it is single-species-only, not a
   dropped interaction (this is the class that hid the complementation-control omissions).
 
-Surfaced to stderr by the worksheet / entry-queue CLIs at generation time. Pure stdlib.
+Surfaced to stderr by the entry-queue CLI at generation time. Pure stdlib.
 """
 
 from __future__ import annotations
@@ -24,7 +24,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import List
 
-from phiweaver.canto.worksheet import _s, extract_record
+from phiweaver.canto.record import _s, extract_record
 
 
 def coverage_warnings(canto: dict) -> List[str]:

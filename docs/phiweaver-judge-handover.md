@@ -154,6 +154,29 @@ rubric. If those skills change, update this primer.
     - Flag **overreach** (a wrong / forced term, or a molecular readout dressed up as a
       phenotype), not **under-annotation**. When in doubt, prefer recording a candidate phenotype
       + term-request note over silently dropping it.
+12. **Evidence-based UniProtKB selection when the paper accession is missing or wrong.** Do not
+    require that the exact UniProt accession appears in the paper, and do not mark a selected
+    accession as an error **merely because it is inferred**. Do not penalize a UniProtKB accession
+    solely because it is not explicitly cited in the paper, or because the paper cites an erroneous,
+    duplicated, obsolete, or wrong-species accession. A selected UniProtKB accession is acceptable
+    when PHI-Weaver documents a **strong, reproducible evidence trail** showing that it is the best
+    available match for the paper's gene/protein, using anchors such as correct organism, reference
+    proteome, locus tag, gene/protein name, protein length, RefSeq/GenBank cross-reference,
+    conserved domain architecture, orthology, reciprocal BLAST/alignment, or synteny. Flag a
+    selected accession only when the evidence trail is **weak, ambiguous, or conflicts** with the
+    organism/protein described in the paper. Rate the UniProt ID as:
+    - **Correct** when the selected accession is from the correct organism / reference proteome and
+      the evidence trail is strong enough for normal PHI-base entry, **even if the paper itself did
+      not cite that accession**.
+    - **Needs improvement** only when the selected accession is plausible but the evidence trail is
+      incomplete or explicitly requires curator confirmation before entry.
+    - **Incorrect** only when the accession maps to the wrong organism, wrong gene family member /
+      paralog, wrong protein length / domain architecture, or otherwise conflicts with the paper's
+      gene/protein.
+
+    (Consistent with rule 2 — the UniProt lookup is authoritative for whether the accession exists
+    and matches the protein — and rule 9 — reference-proteome accessions are accepted PHI-base
+    practice.)
 
 ## 3. Rating scale (per scorecard row)
 Rate each item as one of: **Correct / Needs improvement / Incorrect / Not applicable**, each
@@ -555,7 +578,7 @@ dashboard. Flag categories: `needs_pmid`, `needs_accession`, `needs_term_choice`
 Triage: `in_scope` | `partial` | `scope_uncertain` | `needs_human_decision` | `out_of_scope`.
 
 The `canto` block is the **structured, machine-readable curation** that
-`phiweaver.canto.worksheet` renders into a PHI-Canto entry worksheet (Route 1; see
+`phiweaver.canto.entry_queue` renders into a PHI-Canto entry queue (Route 1; see
 `docs/CANTO-ROUTE1-BUILD-SPEC.md`). It mirrors Canto's entry order and controlled fields:
 - `genes` — `name`, `uniprot` (accession only, e.g. `K3V6Z9` — this **is** Canto's add-gene
   identifier), `organism`, optional `locus`, `note`.
@@ -571,7 +594,7 @@ The `canto` block is the **structured, machine-readable curation** that
   `compared_to_control`), `conditions` (**short** experimental condition only — medium, temp,
   chemical, tissue), `figure`, and two optional fields:
   - `note` — curator caveats / term-choice / "confirm" prose. Kept **out** of the concise
-    entry-queue tables (`canto-entry-queue`); shown in the fuller `canto-worksheet`. Put long
+    entry-queue tables (`canto-entry-queue`) — caveat context only, never an entry row. Put long
     prose here, not in `conditions`.
   - `hold` (`true`/`false`) + `hold_reason` — an **explicit park signal**: mark an interpretive
     or uncertain annotation (e.g. a molecular-function term inferred from rescue/genetics with no
@@ -579,7 +602,7 @@ The `canto` block is the **structured, machine-readable curation** that
     from the evidence prose. Absent `hold`, the queue falls back to a heuristic for interpretive
     molecular-function terms.
 Terms reuse the IDs already validated in `auto_check`; a missing term stays a `flags` entry, never
-invented (the worksheet surfaces it as a ⚠ to resolve before entry).
+invented (the entry queue parks it as an item to resolve before entry).
 
 ```json
 {
@@ -1396,8 +1419,7 @@ Enumerable index of the reusable curation modules. Each is a skill (`skills/<nam
 | Skill | When to use | Backing tool(s) | Tests |
 | --- | --- | --- | --- |
 | `benchmark` | Benchmark phiweaver's curation quality against already-curated papers (gold standards), blind and leakage-free, and produce team-reportable results. Use to score phiweaver on papers you have curated in PHI-Canto. | `07-Standards/curation-benchmarking/fill_scorecard.py`<br>`phiweaver/batch_summary.py` | `tests/test_batch_summary.py` |
-| `canto-entry-queue` | Turn a phiweaver curation draft into a concise, table-driven PHI-Canto "entry queue" — a click-list a biocurator works through top to bottom in canto.phi-base.org, with uncertain items parked so they can't be entered by accident. Use when a curator wants the practical entry format rather than the fuller worksheet. | `phiweaver/canto/entry_queue.py` | `tests/test_entry_queue.py` |
-| `canto-worksheet` | Turn a phiweaver curation draft into an ordered PHI-Canto entry worksheet a biocurator transcribes into canto.phi-base.org to submit the paper for review. Use when a draft is ready for a curator to enter into PHI-Canto. | `phiweaver/canto/worksheet.py` | `tests/test_canto_worksheet.py` |
+| `canto-entry-queue` | Turn a phiweaver curation draft into a concise, table-driven PHI-Canto "entry queue" — a click-list a biocurator works through top to bottom in canto.phi-base.org, with uncertain items parked so they can't be entered by accident. This is the single Route-1 output; use when a draft's `canto` block is ready for a curator to enter into PHI-Canto. | `phiweaver/canto/entry_queue.py` | `tests/test_entry_queue.py` |
 | `curation-qc` | Quality-check a draft curation for completeness, accuracy, and provenance before human review. Use before marking any curation ready for a curator. | `phiweaver/lookup/validate_ontology_ids.py`<br>`phiweaver/lookup/query_uniprot.py` | `tests/test_validate_ontology_ids.py` |
 | `gene-for-gene` | Curate gene-for-gene and effector–host interactions (guard/decoy vs direct recognition, effector GO tagging, R-gene extensions, inverse gene-for-gene/NETS). Use when a paper reports an avirulence/effector gene recognised by a host resistance gene, or an effector acting on a host target. | _(reasoning-only)_ | — |
 | `genotype-creation` | Create pathogen or host genotypes (alleles, complementation, multi-allele, expression levels) for a PHI-Canto curation, following PHI-base conventions. Use when a paper's mutants/strains need genotypes before phenotype annotation. | _(reasoning-only)_ | — |

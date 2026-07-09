@@ -170,14 +170,17 @@ runtime prompt would reintroduce exactly that hallucination risk. Structured `ho
 prose-sniffing (the "don't guess" principle, D4). **Alternatives:** a literal reusable prompt
 (rejected — non-reproducible, can invent IDs); folding it into `canto-worksheet` as a flag
 (rejected — a distinct output deserves its own skill/tests); prose-only interpretive-MF detection
-(kept only as a fallback). **Status:** done — module + skill + tests + `hold`/`note` schema in the
-template; entry queues generated for all 10 benchmark drafts.
+(kept only as a fallback). **Status:** superseded by **D16** — the two-output split was retired.
+In practice the worksheet and the entry queue duplicated each other and the curator only worked
+from the queue; the worksheet renderer/skill/tests were removed and the entry queue is now the
+sole Route-1 output. (Originally: module + skill + tests + `hold`/`note` schema in the template;
+entry queues generated for all 10 benchmark drafts.)
 
 ### D15 — Provenance footer stamps the framework commit, not a version number
 Generated outputs need to be reproducible: given an output, you must be able to reconstruct what
 produced it. A date alone can't do this (it pins neither the model nor the exact rules/examples),
 and a hand-maintained semantic version would drift out of sync with the code. **Decision:** every
-generated output (worksheet, entry queue, benchmark report) carries a one-line provenance footer —
+generated output (entry queue, benchmark report) carries a one-line provenance footer —
 `phiweaver · <model> · commit <hash> · date <YYYY-MM-DD>` — built by a single shared helper
 (`phiweaver.common.provenance_line` + `git_commit`). The **git commit is the version number**: one
 token that pins the rules and examples behind the output; the model name comes from the draft's
@@ -188,6 +191,24 @@ desync. **Alternatives:** date only (rejected — not reconstructible); semantic
 (rejected — manual, drifts; mint one only if the tool is published to outside curators); per-output
 config snapshots (rejected — the commit already references all of it). **Status:** done — helper +
 footers on all three output types; tests + smoke green.
+
+### D16 — One Route-1 output: retire the worksheet, keep the entry queue
+D14 shipped two deterministic Route-1 renderers from the same `canto` block — the fuller
+`canto-worksheet` (an ordered narrative checklist) and the lean `canto-entry-queue` (a
+table-driven click-list with a parked-items safety filter). **Decision:** retire the worksheet.
+A curator working live found the two outputs duplicated each other — every draft generated both a
+`*-canto-worksheet.md` and a `*-phi-canto-entry-queue.md`, and the queue was the one actually used
+at the keyboard. Removed `phiweaver/canto/worksheet.py`, the `canto-worksheet` skill, and
+`tests/test_canto_worksheet.py`; the three renderer-agnostic helpers the queue and coverage lint
+shared (`extract_record`, `_s`, `_fmt_extensions`) moved to a new `phiweaver/canto/record.py` so
+nothing depends on the deleted module. **Why:** the queue is a strict superset for live entry — it
+carries the same setup + annotation tables *plus* the held-gene cascade and parked-items safety
+section — so the worksheet added a second file to maintain and reconcile for no workflow gain.
+**Alternatives:** keep both (rejected — the duplication was the reported problem); keep the
+worksheet and drop the queue (rejected — the queue has the safety filter the curator relies on);
+make the worksheet an opt-in flag on the queue (rejected — no one asked for the verbose form, and a
+dormant renderer still needs tests and doc upkeep). **Status:** done — module/skill/test removed,
+shared helpers relocated, registry + docs updated, entry-queue tests green.
 
 ### D11 — Deliberately deferred / not done
 - **Full vault renumbering** — low value; numbering gaps left cosmetic.

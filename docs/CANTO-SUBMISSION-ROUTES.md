@@ -31,11 +31,12 @@ evidence code, and conditions/extensions. The biology structuring is done; what 
 
 ## Three routes
 
-### Route 1 — Assisted-entry worksheet  ⭐ recommended first step
-A script turns each draft into an ordered checklist matching Canto's exact click-path: PMID → gene
-list (organism + identifier) → each allele (name/type/expression) → genotypes → metagenotypes
+### Route 1 — Assisted-entry queue  ⭐ recommended first step
+A script turns each draft into a table-driven click-list matching Canto's exact click-path: PMID →
+gene list (organism + identifier) → each allele (name/type/expression) → genotypes → metagenotypes
 (controls flagged) → one row per annotation (feature → term ID + name → evidence → extensions →
-figure). Curator opens Canto + worksheet side by side and enters it, ticking as they go.
+figure), with uncertain items parked in a safety section so they can't be entered by accident.
+Curator opens Canto + entry queue side by side and enters it, ticking as they go.
 - **Works with:** web login only. **Effort:** small. **Robustness:** high (a human does the clicks).
 - **Pros:** works today; can't corrupt anything; keeps the curator's judgment on every AI-drafted
   item before submission; low build + maintenance; reuses existing draft structure.
@@ -74,7 +75,7 @@ naturally.
 
 1. **Server access** to canto.phi-base.org: shell/admin, or web login only? (Decides Route 1 vs 2.)
 2. **Volume / cadence** of submissions (a few papers vs. many) — affects whether the manual
-   worksheet is enough or the JSON pipeline is worth the investment.
+   entry queue is enough or the JSON pipeline is worth the investment.
 3. If Route 2: who administers the instance and can run `canto_load.pl` / provide a staging server?
 4. Relationship to the backlog **recuration-comparison** workflow and the longer-term
    plug-in/ROGER direction — is Canto submission a standalone tool or part of that.

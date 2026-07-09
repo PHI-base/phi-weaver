@@ -1,7 +1,14 @@
-# Build spec — Route 1: PHI-Canto assisted-entry worksheet
+# Build spec — Route 1: PHI-Canto assisted-entry queue
 
-**Status:** scoped, not built (2026-07-06). Route 1 of [[CANTO-SUBMISSION-ROUTES]] (recommended
-first step). Works with a curator web login only — no server access or write API needed.
+**Status:** built, then simplified. Route 1 of [[CANTO-SUBMISSION-ROUTES]] (recommended first
+step). Works with a curator web login only — no server access or write API needed.
+
+> **Superseded detail (2026-07-09, D16).** This spec was written for a *worksheet* renderer
+> (`worksheet.py` + `canto-worksheet`), which shipped and was later retired. Route 1 now produces a
+> **single** output — the lean, table-driven **entry queue** (`phiweaver/canto/entry_queue.py` +
+> the `canto-entry-queue` skill) — which does everything the worksheet did *plus* a held-gene
+> cascade and a parked-items safety section. Read "worksheet" below as "entry queue"; the entry
+> model, gating decision, and gotchas still apply. See **D14 → D16** in `docs/DESIGN-DECISIONS.md`.
 
 **Goal:** turn each phiweaver draft (`/mnt/z/PHI-Canto-Literature/active/*-phiweaver-DRAFT.md`)
 into an ordered checklist that a biocurator enters into <https://canto.phi-base.org/>, submitting
@@ -83,12 +90,13 @@ body-convergence work.
 
 ## Components (package + skill layout)
 
-- `phiweaver/canto/worksheet.py` — `draft.md → Markdown worksheet`; reads the `canto` block, emits
-  the ordered checklist, surfaces flags at the top.
-- `tests/test_canto_worksheet.py` — network-free unit tests (block → expected worksheet). Edge
-  cases: no metagenotypes, missing UniProt, control-only paper, a flagged missing term.
-- `skills/canto-worksheet/SKILL.md` — "when to use" + frontmatter naming `worksheet.py` + the test;
-  registered in `skills/REGISTRY.md` (smoke's 7th check enforces this).
+- `phiweaver/canto/entry_queue.py` — `draft.md → Markdown entry queue`; reads the `canto` block,
+  emits the setup + annotation tables, and parks uncertain items in a safety section.
+  (Shared block-parsing helpers live in `phiweaver/canto/record.py`.)
+- `tests/test_entry_queue.py` — network-free unit tests (block → expected queue). Edge cases: no
+  metagenotypes, missing UniProt (held-gene cascade), control-only paper, a flagged missing term.
+- `skills/canto-entry-queue/SKILL.md` — "when to use" + frontmatter naming `entry_queue.py` + the
+  test; registered in `skills/REGISTRY.md` (smoke's 7th check enforces this).
 - `_TEMPLATE.md` — add the `canto` block to the schema + document it.
 - Small addition to the drafting workflow so future drafts fill the block.
 

@@ -1,6 +1,6 @@
 ---
 name: canto-entry-queue
-description: Turn a phiweaver curation draft into a concise, table-driven PHI-Canto "entry queue" — a click-list a biocurator works through top to bottom in canto.phi-base.org, with uncertain items parked so they can't be entered by accident. Use when a curator wants the practical entry format rather than the fuller worksheet.
+description: Turn a phiweaver curation draft into a concise, table-driven PHI-Canto "entry queue" — a click-list a biocurator works through top to bottom in canto.phi-base.org, with uncertain items parked so they can't be entered by accident. This is the single Route-1 output; use when a draft's `canto` block is ready for a curator to enter into PHI-Canto.
 backing_script:
   - phiweaver/canto/entry_queue.py
 tests:
@@ -14,21 +14,18 @@ outputs:
 # Canto entry queue
 
 ## Purpose
-A concise companion to the `canto-worksheet` skill for **live** curation. Where the worksheet is
-an ordered narrative checklist, the entry queue strips prose to the minimum a biocurator needs
-while transcribing into **PHI-Canto** (<https://canto.phi-base.org/>): short tables, `enter` /
-`hold` status, `☐` tick boxes, and one row per PHI-Canto entry action. It is **Route 1** of the
-submission plan (`docs/CANTO-ROUTE1-BUILD-SPEC.md`), same input as the worksheet — the draft's
-structured `canto` block — but optimised for speed and safety at the keyboard.
+The single **Route 1** output (`docs/CANTO-ROUTE1-BUILD-SPEC.md`) for **live** curation. The entry
+queue strips a draft's structured `canto` block to the minimum a biocurator needs while
+transcribing into **PHI-Canto** (<https://canto.phi-base.org/>): short tables, `enter` / `hold`
+status, `☐` tick boxes, and one row per PHI-Canto entry action — optimised for speed and safety at
+the keyboard.
 
 Deterministic: the same `canto` block always renders the same queue; nothing is invented. Spec:
 `PHI-Canto-Literature/active/Worksheet prompt-2026-07-08.md` (curator request).
 
 ## When to use
-- A draft's `canto` block is populated and a curator wants the practical entry format to work
-  through during a live PHI-Canto session (rather than the fuller `canto-worksheet` output).
-- Both outputs can coexist for the same draft — the worksheet as the worked record, the queue as
-  the click-list.
+- A draft's `canto` block is populated and a curator is ready to enter it into PHI-Canto during a
+  live session — the queue is the click-list they work through at the keyboard.
 
 ## The held-gene cascade (the core rule)
 A gene with **no `uniprot` accession is held** (`hold`), because PHI-Canto's add-gene step needs
