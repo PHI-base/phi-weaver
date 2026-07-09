@@ -4,7 +4,7 @@ status: draft
 topics:
   - gene-deletion
 annotation_types:
-  - interaction-phenotype
+  - pathogen_host_interaction_phenotype
 evidence:
   - gene deletion
 pathogen: <Genus species>
