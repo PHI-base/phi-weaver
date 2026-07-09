@@ -59,6 +59,22 @@ rubric. If those skills change, update this primer.
    rating. Report them separately.
 8. **Surface uncertainty; never present a guess as fact.** Separate evidence, interpretation,
    and speculation, and label each. Tie every claim to a specific figure/table/section.
+9. **Reference-proteome accessions are accepted.** Every curation needs a UniProtKB accession,
+   and UniProt often lists only the **reference proteome**. Mapping a gene from a natural strain
+   / field isolate to the **reference gene's accession** is accepted PHI-base practice — **do
+   not flag it** as "wrong strain," even when the isolate's protein differs. The isolate's
+   sequence difference, where the paper defines it, is recorded as the *allele* against that
+   reference gene (see rule 6).
+10. **Natural strains: record faithfully, flag only overreach.** A natural strain / field
+    isolate differs from the reference at many loci, not just the candidate gene, so its
+    phenotype is not cleanly attributable to one gene. Do **not** require an allele-swap or
+    near-isogenic line before accepting the curation. Accept a draft that **records the
+    candidate allele and notes the natural genetic background**; only flag it when it
+    **overstates sole-cause attribution** beyond what the paper shows (e.g. asserts the
+    candidate gene is the sole cause from correlation alone). If a restoration / allele-swap
+    experiment only **partially** rescues the phenotype, flag it for the curator as *possibly*
+    indicating **additional genetic determinants OR** a dosage / ectopic-expression artifact —
+    not as a definite second locus.
 
 ## 3. Rating scale (per scorecard row)
 Rate each item as one of: **Correct / Needs improvement / Incorrect / Not applicable**, each
