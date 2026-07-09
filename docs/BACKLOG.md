@@ -74,6 +74,18 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
   disagreements on the one paper already run, item by item, to decide viability. Distinct from the
   **Recuration-comparison** item below (that's a neutral biocurator-vs-phiweaver diff, not a judge).
 
+- [ ] **PHI-Canto GitHub issues tracker — mine, don't ingest** (2026-07-09). Suggested as a
+  biocuration knowledge source. Decision: it can contain useful convention decisions and ontology
+  term-request threads, but must **not** be bulk-ingested into PHI-Weaver context — (a) issues are
+  discussion (rejected/superseded/unresolved), so raw ingestion imports wrong conventions; (b) it
+  lives on GitHub, already a **benchmark-leakage** source (see the sandbox-allowlist item) and must
+  stay excluded from blind/scored runs. Pattern: mine **resolved/closed** convention decisions →
+  write into the owning skill/standard/FAQ in our words with a `See:` issue-number pointer for
+  provenance → the pipeline reads the curated convention, never the raw issue. To do: get the
+  tracker URL, survey signal-to-noise (curation convention vs software bugs), then add it as a
+  "sources to mine" reference (not context). FAQ: *"Can the PHI-Canto issues tracker feed
+  PHI-Weaver's knowledge?"*.
+
 - [ ] **Submit drafts into PHI-Canto for biocurator review** (planning; no code yet) — get the
   information from phiweaver drafts into the PHI-Canto web tool (<https://canto.phi-base.org/>).
   No write API exists; `canto_load.pl` is server-side only. Three routes assessed (assisted-entry

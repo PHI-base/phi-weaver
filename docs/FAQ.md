@@ -1,5 +1,7 @@
 # PHI-Weaver FAQ
 
+* A human-facing record only*
+
 Question-shaped lookup for recurring questions about PHI-base/PHI-Canto **curation
 conventions** and about the **PHI-Weaver project & tooling**. Meant to be skimmable by a new
 curator or collaborator, and to let us look up "what did we decide about X" later.
@@ -78,3 +80,12 @@ library when scoring that paper. An optional network-sandbox allowlist makes thi
 Current solo workflow commits **directly to `main`** rather than using feature branches + pull
 requests. Pushing to `main` can trip an agent safety guardrail; the curator authorises the push
 (e.g. `! git push origin main`). Revisit if collaborators need review-before-merge.
+
+### Can the PHI-Canto issues tracker feed PHI-Weaver's knowledge?
+**Mine it, don't ingest it.** The tracker holds useful convention decisions and ontology
+term-request threads, but bulk-loading it would contaminate context two ways: (a) issues are
+*discussion* — rejected, superseded, or unresolved — so raw ingestion imports wrong conventions;
+and (b) it lives on GitHub, already a **benchmark-leakage** source, so it must stay excluded from
+blind/scored runs. Instead: mine a **resolved** decision → write it into the owning
+skill/standard/FAQ with a `See:` issue-number pointer → the pipeline reads the curated convention,
+never the raw issue. *(This FAQ + `docs/BACKLOG.md` are the record for this decision.)*
