@@ -1,6 +1,6 @@
 # Proposed judge rules — PENDING CURATOR REVIEW (not yet authoritative)
 
-These three rules were suggested for the LLM-judge core primer (from a ChatGPT review of the
+These rules were suggested for the LLM-judge core primer (from a ChatGPT review of the
 handover bundle). They encode **biological-judgement / scope conventions**, so — per the
 LLM-judge design note (`11-CLAUDE-AI/SESSION-LOGS/2026-07-09-llm-as-judge-discussion.md`) — a
 wrong rule baked into the primer would make the judge *systematically* wrong (the
@@ -28,17 +28,10 @@ single benchmark paper (PMID:41229162). Treat them as hypotheses to confirm acro
 - Is "partial rescue ⇒ flag additional determinants" always right, or are there accepted cases
   (e.g. dosage) where partial rescue is expected and not a red flag?
 
-## Proposed rule 6 — Allele consequence vs expression level
-> **Expression level** should only describe transcript/protein abundance or construct-driven
-> expression. Do **not** use expression fields to describe **protein consequence**. Frameshift,
-> nonsense mutation, truncation, domain loss, amino-acid substitution, insertion, deletion, or
-> fusion are **allele / protein consequences**, not expression levels.
-
-**Status / questions for Martin:**
-- This is standard PHI-Canto genotype modelling (see `genotype-creation`) and I'm fairly
-  confident it's correct as stated. Included here only because it's a judgement rule.
-- Confirm the field vocabulary the judge should name (does PHI-Canto's UI call these "expression
-  level" and "allele type" exactly?). If confirmed, this can likely move straight into the core.
+## Proposed rule 6 — Allele consequence vs expression level — ✅ APPROVED 2026-07-09, moved to core
+> Field labels confirmed by Martin ("Expression" = abundance; "Allele type" = consequence).
+> Now authoritative in `07-Standards/judge-core-primer.md` (operating rule 6). Retained here
+> only as a record; no longer pending.
 
 ## Proposed rule 7 — Mechanistic side phenotypes (⚠ needs the most calibration)
 > Motility, biofilm, growth, toxin level, c-di-GMP level, enzyme activity, expression change,

@@ -110,10 +110,16 @@ rubric. If those skills change, update this primer.
    including tagging **GO:0140418** or applying gene-for-gene recognition logic — unless the
    paper demonstrates the gene product is an effector, or the case is explicitly an
    effector / gene-for-gene case.
-6. **Separate the automated check from the reviewer rating.** Distinguish what PHI-Weaver's
+6. **Allele consequence is not expression level.** In a genotype, the **"Expression"** field
+   captures **abundance only** (e.g. Wild type product level, Overexpression, Knockdown, Null,
+   Not assayed). A mutation's **consequence** — frameshift, nonsense mutation, truncation,
+   domain loss, amino-acid substitution, insertion, deletion, fusion — belongs in the
+   **"Allele type"** field, never in "Expression." Flag any draft that records a consequence as
+   an expression level (or vice versa).
+7. **Separate the automated check from the reviewer rating.** Distinguish what PHI-Weaver's
    deterministic QC can verify (ID validity, accession match) from your biological-judgement
    rating. Report them separately.
-7. **Surface uncertainty; never present a guess as fact.** Separate evidence, interpretation,
+8. **Surface uncertainty; never present a guess as fact.** Separate evidence, interpretation,
    and speculation, and label each. Tie every claim to a specific figure/table/section.
 
 ## 3. Rating scale (per scorecard row)
