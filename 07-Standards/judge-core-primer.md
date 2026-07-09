@@ -75,6 +75,22 @@ rubric. If those skills change, update this primer.
     experiment only **partially** rescues the phenotype, flag it for the curator as *possibly*
     indicating **additional genetic determinants OR** a dosage / ectopic-expression artifact —
     not as a definite second locus.
+11. **Phenotype observations: don't force entry, and "no term yet" is a valid outcome.** A paper
+    reports many observations (motility, biofilm, growth, toxin / secondary-metabolite level,
+    c-di-GMP level, enzyme activity, expression change, microscopy signal). Rate them so:
+    - If it is a pathogen / host / interaction **phenotype** and a suitable PHIPO term exists →
+      it should be annotated with that term.
+    - If it is a phenotype but **no suitable PHIPO term exists**, a **valid curation records it
+      with a note that a new PHIPO term should possibly be requested**. **Accept this as valid —
+      do not flag it as an error or as a missing annotation.**
+    - If it is a purely **mechanistic / molecular readout used as evidence** (not an
+      organism-level phenotype) → it may stay a supporting note; do not force an ill-fitting term
+      onto it. *(This phenotype-vs-molecular-readout boundary is a working default — curator to
+      confirm which readouts, e.g. c-di-GMP level or in-vitro enzyme activity, are out of PHIPO
+      scope.)*
+    - Flag **overreach** (a wrong / forced term, or a molecular readout dressed up as a
+      phenotype), not **under-annotation**. When in doubt, prefer recording a candidate phenotype
+      + term-request note over silently dropping it.
 
 ## 3. Rating scale (per scorecard row)
 Rate each item as one of: **Correct / Needs improvement / Incorrect / Not applicable**, each

@@ -55,17 +55,20 @@ rule, pending Martin's OK on placement.
 > Now authoritative in `07-Standards/judge-core-primer.md` (operating rule 6). Retained here
 > only as a record; no longer pending.
 
-## Proposed rule 7 — Mechanistic side phenotypes (⚠ needs the most calibration)
+## Proposed rule 7 — Phenotype observations / term requests — ✅ APPROVED 2026-07-09 (one default to confirm), moved to core
+Curator decision (2026-07-09): reject the "sweep to supporting notes" framing. Faithful
+recording instead — **if no suitable PHIPO term exists, a valid curation records the phenotype
+with a note that a new PHIPO term should possibly be requested**; the judge must accept that as
+valid, not flag it as an error or omission. Now core operating rule 11.
+
+**One default still to confirm:** rule 11 keeps a *phenotype vs purely-molecular-readout*
+boundary — e.g. c-di-GMP level or in-vitro enzyme activity may be evidence rather than a PHIPO
+phenotype, so they can stay supporting notes. If you'd rather the judge treat **every** unmatched
+observation as a candidate phenotype + term-request (no molecular-readout carve-out), say so and
+I'll drop that clause.
+
+Original proposed wording (superseded):
 > Motility, biofilm, growth, toxin level, c-di-GMP level, enzyme activity, expression change,
 > microscopy signal, and similar mechanistic observations should **not automatically** become
 > PHI-Canto entry items. Enter them only if a suitable **annotation type and ontology term are
 > confirmed**; otherwise keep them as **supporting notes**.
-
-**Status / questions for Martin — I'd push back on the wording:**
-- Several items in that list — **reduced/altered growth, virulence, mycotoxin / toxin
-  production** — genuinely **are** curatable pathogen phenotypes with PHIPO terms. As written,
-  this rule risks the judge wrongly demoting *legitimate* annotations to "supporting notes."
-- Please redraw the line: which of {motility, biofilm, growth, toxin level, c-di-GMP, enzyme
-  activity, expression change, microscopy} are **curatable phenotypes** in PHI-Canto vs which
-  are genuinely **mechanistic side assays** that should stay as supporting notes? The rule
-  should name the curatable ones as *in scope*, not sweep them all out.
