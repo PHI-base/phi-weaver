@@ -58,6 +58,22 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
     grows over time) vs Excel Summary sheets. Second open decision: when a paper *is* in the
     gold-standard set, score phiweaver against it (Correct/Incorrect); otherwise stay a neutral diff.
 
+- [ ] **LLM-as-judge / independent reviewer for benchmarking** (parked 2026-07-09; discussion only,
+  see `11-CLAUDE-AI/SESSION-LOGS/2026-07-09-llm-as-judge-discussion.md`). Idea: use a *different* model
+  (e.g. GPT-5.5) as an independent scorer/critic so phiweaver never self-validates (extends D12's
+  "independent scorer" slot; does **not** replace the human validation gate, D13). Trigger: GPT-5.5,
+  given the paper + phiweaver draft + entry queue + scorecard, suggested improvements and scored lower
+  than the curator. **Critical caveat: the judge must itself be ground-truthed** — validated against
+  papers with a trusted human score-vs-gold (a confusion matrix) before any of its scores are trusted
+  or reported; an un-calibrated LLM judge lacks PHI-base conventions and produces ambiguous low scores
+  (real miss vs convention gap vs hallucination vs ambiguity). What was run was **reference-free**
+  judging (judge invents its own ground truth), which is weaker than the gold-standard benchmark. Two
+  uses at different bars: pre-review **critic** (low bar, adoptable) vs **benchmark scorer** reported
+  to a team (high bar — ground-truth first, report alongside not instead of human scores; record the
+  judge's model id in provenance, D7). Next step when resumed: adjudicate the GPT-vs-curator
+  disagreements on the one paper already run, item by item, to decide viability. Distinct from the
+  **Recuration-comparison** item below (that's a neutral biocurator-vs-phiweaver diff, not a judge).
+
 - [ ] **Submit drafts into PHI-Canto for biocurator review** (planning; no code yet) — get the
   information from phiweaver drafts into the PHI-Canto web tool (<https://canto.phi-base.org/>).
   No write API exists; `canto_load.pl` is server-side only. Three routes assessed (assisted-entry
