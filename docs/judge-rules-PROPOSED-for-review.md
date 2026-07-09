@@ -61,11 +61,11 @@ recording instead — **if no suitable PHIPO term exists, a valid curation recor
 with a note that a new PHIPO term should possibly be requested**; the judge must accept that as
 valid, not flag it as an error or omission. Now core operating rule 11.
 
-**One default still to confirm:** rule 11 keeps a *phenotype vs purely-molecular-readout*
-boundary — e.g. c-di-GMP level or in-vitro enzyme activity may be evidence rather than a PHIPO
-phenotype, so they can stay supporting notes. If you'd rather the judge treat **every** unmatched
-observation as a candidate phenotype + term-request (no molecular-readout carve-out), say so and
-I'll drop that clause.
+**Resolved 2026-07-09:** purely molecular readouts (e.g. c-di-GMP level, in-vitro enzyme
+activity, localisation-only microscopy) are modelled as an **annotation extension / qualifier or
+condition** on the phenotype annotation they inform — not a standalone phenotype and not a PHIPO
+term request. If they inform no annotation, they are supporting evidence. Rule 11 in the core
+primer now reflects this; nothing left pending.
 
 Original proposed wording (superseded):
 > Motility, biofilm, growth, toxin level, c-di-GMP level, enzyme activity, expression change,

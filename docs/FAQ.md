@@ -29,9 +29,10 @@ field. Don't collapse a consequence into an expression level.
 ### What if a phenotype has no suitable PHIPO term?
 Don't drop it. A valid curation **records the phenotype with a note that a new PHIPO term should
 possibly be requested**. The concern to flag is *overreach* (forcing a wrong/ill-fitting term),
-not the missing term itself. (Open point: whether purely molecular readouts such as c-di-GMP
-level or in-vitro enzyme activity are out of PHIPO scope and stay as supporting notes.)
-**See:** `07-Standards/judge-core-primer.md` (rule 11); `docs/judge-rules-PROPOSED-for-review.md`.
+not the missing term itself. Note the distinction: a purely **molecular readout** (e.g. c-di-GMP
+level, in-vitro enzyme activity) is **not** a standalone phenotype — model it as an **annotation
+extension / qualifier** on the phenotype it informs, not as a term request.
+**See:** `07-Standards/judge-core-primer.md` (rule 11).
 
 ### How strongly can we attribute a natural strain's phenotype to one candidate gene?
 Field isolates differ from the reference at many loci, so **record the candidate allele and note

@@ -145,11 +145,12 @@ rubric. If those skills change, update this primer.
     - If it is a phenotype but **no suitable PHIPO term exists**, a **valid curation records it
       with a note that a new PHIPO term should possibly be requested**. **Accept this as valid —
       do not flag it as an error or as a missing annotation.**
-    - If it is a purely **mechanistic / molecular readout used as evidence** (not an
-      organism-level phenotype) → it may stay a supporting note; do not force an ill-fitting term
-      onto it. *(This phenotype-vs-molecular-readout boundary is a working default — curator to
-      confirm which readouts, e.g. c-di-GMP level or in-vitro enzyme activity, are out of PHIPO
-      scope.)*
+    - If it is a purely **mechanistic / molecular readout** (e.g. c-di-GMP level, in-vitro
+      enzyme activity, a localisation-only microscopy signal), do **not** create a standalone
+      phenotype annotation or a PHIPO term request for it. Treat it as an **annotation extension
+      / qualifier or condition** on the relevant phenotype annotation it informs (or, if it
+      informs no annotation, as supporting evidence). Flag forcing it into a standalone phenotype
+      as overreach.
     - Flag **overreach** (a wrong / forced term, or a molecular readout dressed up as a
       phenotype), not **under-annotation**. When in doubt, prefer recording a candidate phenotype
       + term-request note over silently dropping it.
