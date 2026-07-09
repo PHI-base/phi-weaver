@@ -39,6 +39,7 @@ import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
+from phiweaver.common import provenance_line
 from phiweaver.canto.worksheet import extract_record, _s, _fmt_extensions
 
 _STATUS_RE = re.compile(r"^status:\s*(.+?)\s*$", re.MULTILINE)
@@ -351,6 +352,10 @@ def render_entry_queue(rec: dict, status: Optional[str] = None,
             ("- Unresolved blockers (held genes): " + (", ".join(blockers) if blockers else "none")),
             "", "> Park = safety filter: resolve each parked item before entering it. "
             "Nothing here invents an accession, term, or evidence code.", ""]
+
+    # Provenance footer — pins the framework commit + model + date behind this output.
+    out += ["---", "",
+            f"_{provenance_line(_s(meta.get('model')) or None, _s(meta.get('date')) or None)}_"]
 
     return "\n".join(out).rstrip() + "\n", counts
 

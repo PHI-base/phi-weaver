@@ -173,6 +173,22 @@ prose-sniffing (the "don't guess" principle, D4). **Alternatives:** a literal re
 (kept only as a fallback). **Status:** done — module + skill + tests + `hold`/`note` schema in the
 template; entry queues generated for all 10 benchmark drafts.
 
+### D15 — Provenance footer stamps the framework commit, not a version number
+Generated outputs need to be reproducible: given an output, you must be able to reconstruct what
+produced it. A date alone can't do this (it pins neither the model nor the exact rules/examples),
+and a hand-maintained semantic version would drift out of sync with the code. **Decision:** every
+generated output (worksheet, entry queue, benchmark report) carries a one-line provenance footer —
+`phiweaver · <model> · commit <hash> · date <YYYY-MM-DD>` — built by a single shared helper
+(`phiweaver.common.provenance_line` + `git_commit`). The **git commit is the version number**: one
+token that pins the rules and examples behind the output; the model name comes from the draft's
+`meta` (git can't know it); the date is a human convenience, not the identifier. **Why:** for a
+curation tool reproducibility and auditability are non-negotiable (echoing the model-identity
+requirement in `PLUGIN-ARCHITECTURE.md`), and the commit gives it for free — no bookkeeping, can't
+desync. **Alternatives:** date only (rejected — not reconstructible); semantic version numbers
+(rejected — manual, drifts; mint one only if the tool is published to outside curators); per-output
+config snapshots (rejected — the commit already references all of it). **Status:** done — helper +
+footers on all three output types; tests + smoke green.
+
 ### D11 — Deliberately deferred / not done
 - **Full vault renumbering** — low value; numbering gaps left cosmetic.
 - **JSON curation-record schema** — a machine consumer now exists (the benchmarking-scorecard

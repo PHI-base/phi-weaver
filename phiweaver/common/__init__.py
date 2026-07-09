@@ -15,16 +15,48 @@ from __future__ import annotations
 
 import json
 import sqlite3
+import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable, Optional
 
-__all__ = ["utc_now", "make_getter", "ResponseCache"]
+__all__ = ["utc_now", "git_commit", "provenance_line", "make_getter", "ResponseCache"]
 
 
 def utc_now() -> str:
     """An ISO-8601 UTC timestamp (seconds precision) for provenance stamps."""
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
+def git_commit() -> Optional[str]:
+    """The framework's current short git revision, or ``None`` if unavailable.
+
+    This is phiweaver's real *version number*: one token that pins the rules and examples
+    that produced an output (reproduce by checking out this commit + rerunning the model).
+    Resolved against the package's own repo, so it is correct regardless of the caller's cwd.
+    """
+    repo = Path(__file__).resolve().parents[2]   # phiweaver/common/__init__.py -> repo root
+    try:
+        r = subprocess.run(["git", "-C", str(repo), "rev-parse", "--short", "HEAD"],
+                           capture_output=True, text=True, timeout=5)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return r.stdout.strip() or None if r.returncode == 0 else None
+
+
+def provenance_line(model: Optional[str] = None, date: Optional[str] = None) -> str:
+    """One-line provenance stamp for a generated output: tool + model · commit · date.
+
+    ``model`` and ``date`` come from the draft's ``meta`` when present; the commit is the
+    framework's current revision. Missing pieces are simply omitted — the stamp never invents
+    a value. ``date`` falls back to today (render date) only when the draft carries none.
+    """
+    parts = [f"phiweaver · {model}" if model else "phiweaver"]
+    commit = git_commit()
+    if commit:
+        parts.append(f"commit {commit}")
+    parts.append(f"date {date}" if date else f"date {utc_now()[:10]}")
+    return " · ".join(parts)
 
 
 def make_getter(user_agent: str, accept: str = "application/json",

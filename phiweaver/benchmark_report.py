@@ -33,6 +33,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
 
+from phiweaver.common import git_commit
+
 FIXED = {"paper", "group", "model", "curatable", "captured", "tokens"}
 POINTS = {"correct": 1.0, "needs improvement": 0.5, "incorrect": 0.0}
 # status palette: (label, fill, ink). Text label is always shown — never colour alone.
@@ -191,9 +193,11 @@ def render_html(papers, items, title="Benchmark report", model=None, source=None
         seen = sorted({p.model for p in papers if p.model})
         model = seen[0] if len(seen) == 1 else (", ".join(seen) if seen else None)
     gen = generated or datetime.now().strftime("%Y-%m-%d %H:%M")
+    commit = git_commit()
     prov = " · ".join(
         [f"generated {html.escape(gen)}"]
         + ([f"model {html.escape(model)}"] if model else [])
+        + ([f"commit {html.escape(commit)}"] if commit else [])
         + ([f"source {html.escape(source)}"] if source else [])
         + ([f"{total_tokens:,} curation tokens"] if has_tokens else []))
     tiles = [

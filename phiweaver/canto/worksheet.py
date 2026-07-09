@@ -32,6 +32,8 @@ import sys
 from pathlib import Path
 from typing import List
 
+from phiweaver.common import provenance_line
+
 _JSON_BLOCK = re.compile(r"```json\s*(.*?)```", re.DOTALL)
 
 
@@ -198,6 +200,10 @@ def render_worksheet(rec: dict) -> str:
         for f in flags:
             out.append(f"- **[{_s(f.get('category')) or 'other'}]** {_s(f.get('detail'))}")
         out.append("")
+
+    # Provenance footer — pins the framework commit + model + date behind this output.
+    out += ["---", "",
+            f"_{provenance_line(_s(meta.get('model')) or None, _s(meta.get('date')) or None)}_"]
 
     return "\n".join(out).rstrip() + "\n"
 
