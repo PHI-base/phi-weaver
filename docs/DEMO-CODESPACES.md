@@ -89,6 +89,22 @@ Open the Claude Code panel (the Anthropic extension) and ask it to analyse the c
 markdown — extract genes/organisms, suggest UniProtKB IDs and PHIPO/GO terms, and draft
 the annotation records. This is the same assisted-curation workflow used locally.
 
+### Curating several papers at once
+
+You **can** stage a whole batch up front — drop all 10 PDFs into `demo-literature/active/`
+(or `auto-process` each one), then ask Claude to curate them. But **curation must run
+sequentially, one paper at a time** — do not curate papers in parallel.
+
+- Claude drafts **one paper per subagent, and each draft lands to disk before the next
+  starts.** This keeps each paper's context isolated (no genes/hosts/strains/figures
+  bleeding between papers) and means an interrupted or timed-out Codespace keeps every
+  draft already completed.
+- So the workflow is: **batch the PDFs in → ask for curation → drafting runs sequentially**,
+  writing each paper's `-phiweaver-DRAFT.md`, `-phi-canto-entry-queue.md`, and
+  `-scorecard-PREFILLED.xlsx` into `active/` as it goes.
+- Running papers in parallel is discouraged: it risks entity bleed-through, contends on the
+  shared SQLite tracking DB, and burns concurrent rate limit and cost for no reliability gain.
+
 ## 6. Finish
 
 ```bash
