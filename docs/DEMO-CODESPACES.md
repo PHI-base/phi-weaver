@@ -29,10 +29,41 @@ tracking DB builds, and the tests pass. All green means you're good to go.
 ## 2. Storage is already configured
 
 Because `PHI_CURATION_ENV=codespace` is set, the pipeline automatically uses
-**`demo-literature/`** inside the workspace — you'll see the folders appear in the file
-explorer as you go. **No configuration needed.**
+**`demo-literature/`** inside the workspace instead of a local `PHI-Canto-Literature/`
+folder — so you don't need any of your local storage. The folders appear in the VS Code
+file explorer as you go. **No configuration needed.**
 
-(To use a different location instead: `export PHI_LITERATURE_ROOT=/some/path`.)
+Everything reads from and writes to three sub-folders under `demo-literature/`
+(at `/workspaces/phi-weaver/demo-literature/`):
+
+| What | Path in the Codespace |
+|------|-----------------------|
+| **Put articles here (input)** | `demo-literature/active/` |
+| Converted markdown + drafts   | `demo-literature/active/` |
+| **Finished curations (output)** | `demo-literature/completed/` |
+| Extracted figures / images    | `demo-literature/media/` |
+
+When phiweaver drafts a paper it writes three artifacts **next to the draft** in
+`demo-literature/active/` (their location follows the draft, not the storage root):
+
+| File | What it is |
+|------|-----------|
+| `<paper>-phiweaver-DRAFT.md` | the curation draft (the anchor file) |
+| `<paper>-phi-canto-entry-queue.md` | the PHI-Canto entry queue (the click-list to enter in Canto) |
+| `<paper>-scorecard-PREFILLED.xlsx` | the benchmarking scorecard, header + auto-check pre-filled |
+
+These are working artifacts, so they stay in `active/` — they are not the finished
+curation. `complete-paper` moves the PDF and notes into `completed/`; move these three
+yourself if you want them filed there too.
+
+> ⚠️ **`demo-literature/` is gitignored and lives only inside this Codespace** — it is
+> never pushed to GitHub or synced back to your local `PHI-Canto-Literature/`. **Download
+> anything you want to keep before deleting the Codespace** (in the file explorer,
+> right-click a file or the `demo-literature/` folder → **Download**; folders come down as
+> a zip). See *Persistence* under Notes & limitations below.
+
+(To use a different location instead: `export PHI_LITERATURE_ROOT=/some/path` — the
+pipeline creates `active/`, `completed/`, and `media/` underneath it.)
 
 ## 3. Get an open-access PDF into the Codespace
 
