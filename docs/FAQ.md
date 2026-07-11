@@ -88,6 +88,17 @@ any single paper — a naive per-article sum overstates cost. The benchmark skil
 `BATCH-TOKENS.md` for the session log.
 **See:** `phiweaver/article_tokens.py`; `skills/benchmark/SKILL.md` (step 7).
 
+### What's the difference between a "package" and a "module"?
+A **module** is a single `.py` file you can import; a **package** is a *directory* of modules
+with an `__init__.py` that makes the folder importable as a namespace (so it groups related
+modules under one name). In this repo: `phiweaver/` is the top-level **package**,
+`phiweaver/tracking/` is a **sub-package**, and `phiweaver/tracking/session_logger.py` is a
+**module**. You run a module with `python3 -m phiweaver.tracking.session_logger` — the dots walk
+packages left-to-right; the last name is the module. (So "the token reporter is a module, not a
+loose script" means it lives as `phiweaver.article_tokens` inside the package, not as a
+standalone file in `scripts/`.) Today phiweaver has 7 packages holding ~25 modules.
+**See:** `phiweaver/README.md`; `phiweaver/__init__.py` (subpackage list).
+
 ### How does this repo handle git commits?
 Current solo workflow commits **directly to `main`** rather than using feature branches + pull
 requests. Pushing to `main` can trip an agent safety guardrail; the curator authorises the push
