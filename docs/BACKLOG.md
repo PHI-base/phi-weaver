@@ -17,9 +17,10 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
   (equal 1/N, or `--weight-by-direct`), joining First-author/Year/Title from the tracking DB. Reads
   batch PMIDs from the draft `meta` blocks and segments turns by the per-paper draft references
   already in the transcript (no new marker discipline). Cache-read is counted wholly as shared
-  overhead (session-cumulative, not attributable to one paper). Follow-ups: (1) wire it as a final
-  step in the batch skill so each batch auto-emits its token table into the session log; (2) confirm
-  the tracking-DB filename so `--db` auto-detects instead of needing an explicit path.
+  overhead (session-cumulative, not attributable to one paper). Follow-ups: (1) ~~wire it into the
+  batch skill~~ **done 2026-07-11** — `benchmark` SKILL step 7 emits `BATCH-TOKENS.md` for the
+  session log; (2) confirm the tracking-DB filename so `--db` auto-detects instead of needing an
+  explicit path.
 
 ## Curation workflow
 - [ ] **Format convergence** — phiweaver *drafts* use the example-template body shape while *gold

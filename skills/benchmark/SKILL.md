@@ -4,14 +4,17 @@ description: Benchmark phiweaver's curation quality against already-curated pape
 backing_script:
   - 07-Standards/curation-benchmarking/fill_scorecard.py
   - phiweaver/batch_summary.py
+  - phiweaver/article_tokens.py
 tests:
   - tests/test_batch_summary.py
+  - tests/test_article_tokens.py
 inputs:
   - a set of already-curated papers (each with a gold-standard PHI-Canto curation) to score
   - the curation-example library (checked so a paper's own gold standard is not retrievable)
 outputs:
   - one prefilled, human-scored scorecard per paper
   - a batch review dashboard + CSV (accuracy, completeness, flags)
+  - a per-article token table (tokens per PMID + shared-overhead split), for the session log
   - a report comparing the curated papers against a held-out gold-standard control set
 ---
 
@@ -47,13 +50,23 @@ independent human scoring** — see `07-Standards/curation-benchmarking/README.m
    completeness block (curatable items vs captured). **phiweaver does not score its own draft.**
 6. **Roll up the batch:**
    `python3 -m phiweaver.batch_summary <drafts> --out BATCH-REVIEW.md --csv batch.csv`.
-7. **Report** the human-reviewed curated papers alongside a **held-out gold-standard control set**
+7. **Record per-article token cost:**
+   `python3 -m phiweaver.article_tokens --drafts <drafts> --cost --out BATCH-TOKENS.md`
+   (any batch of drafts, not only benchmarks). It reads the batch PMIDs from the draft `meta`
+   blocks, attributes each turn to a paper via the per-paper draft/PMID references already in the
+   session transcript, and splits the shared setup + context re-read as overhead (equal `1/N`, or
+   `--weight-by-direct`). Paste the resulting table into the session log so each batch records
+   which model curated it and what each paper cost. (Cache-read is session-cumulative, so it is
+   counted as shared overhead, not charged to one paper.)
+8. **Report** the human-reviewed curated papers alongside a **held-out gold-standard control set**
    (papers whose gold standard was never in the library), so the team can see how the numbers
    hold on unseen truth.
 
 ## Expected outputs
 - One prefilled, human-scored scorecard per paper.
 - A batch review dashboard + CSV (accuracy, completeness, flags by category).
+- A per-article token table (tokens per PMID + shared-overhead split + model), pasted into the
+  session log.
 - A benchmark report: curated papers vs the held-out control set.
 
 ## Quality-control checks
