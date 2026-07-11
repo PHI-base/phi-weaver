@@ -76,6 +76,18 @@ no PHI-base access, and **exclude a paper's own gold standard** from the retriev
 library when scoring that paper. An optional network-sandbox allowlist makes this airtight.
 **See:** `07-Standards/curation-benchmarking/README.md`; `skills/benchmark/SKILL.md`.
 
+### Can we tell how many tokens (and which model) each curated article cost?
+Yes. Batch several papers in one session so they share the warm context cache, then run
+`python3 -m phiweaver.article_tokens --drafts <drafts>` to get a table of **tokens per PMID**
+(First author-Year, Title, model) plus the **shared overhead** split across the batch — equal
+`1/N`, or `--weight-by-direct`. Attribution is automatic: turns are matched to a paper by the
+per-paper draft/PMID references already in the session transcript, so no extra marker discipline
+is needed. One honesty caveat baked in: **cache-read tokens are session-cumulative** (each turn
+re-reads the whole accumulated context), so they're counted as shared overhead, not charged to
+any single paper — a naive per-article sum overstates cost. The benchmark skill emits this as
+`BATCH-TOKENS.md` for the session log.
+**See:** `phiweaver/article_tokens.py`; `skills/benchmark/SKILL.md` (step 7).
+
 ### How does this repo handle git commits?
 Current solo workflow commits **directly to `main`** rather than using feature branches + pull
 requests. Pushing to `main` can trip an agent safety guardrail; the curator authorises the push
