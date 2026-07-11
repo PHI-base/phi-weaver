@@ -85,8 +85,21 @@ per-paper draft/PMID references already in the session transcript, so no extra m
 is needed. One honesty caveat baked in: **cache-read tokens are session-cumulative** (each turn
 re-reads the whole accumulated context), so they're counted as shared overhead, not charged to
 any single paper — a naive per-article sum overstates cost. The benchmark skill emits this as
-`BATCH-TOKENS.md` for the session log.
+`BATCH-TOKENS.md` for the session log. Add `--record` to persist the **raw** numbers (per-paper
+direct tokens + session overhead + `N`, never the allocated total) to the tracking DB for
+trend analysis.
 **See:** `phiweaver/article_tokens.py`; `skills/benchmark/SKILL.md` (step 7).
+
+### What happens if I recurate the same article with a different model?
+You get a **new row**, not an overwrite. `--record` keys each measurement by
+`(pmid, session_id, model)`, so a fresh curation session — including one on a different model —
+is stored alongside the earlier one, and `python3 -m phiweaver.article_tokens --history <PMID>`
+lists them side by side for a like-for-like cost comparison (direct tokens are each model's own
+work; the overhead share is the equal split within that session's batch). Re-running the reporter
+on the *same* transcript just upserts the same row, so it never double-counts. Only the raw
+components are stored, so the `1/N` split is recomputed on read and old rows stay valid even if
+the allocation policy changes.
+**See:** `phiweaver/article_tokens.py` (`record_to_db`, `token_history`).
 
 ### What's the difference between a "package" and a "module"?
 A **module** is a single `.py` file you can import; a **package** is a *directory* of modules

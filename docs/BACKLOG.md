@@ -19,8 +19,19 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
   already in the transcript (no new marker discipline). Cache-read is counted wholly as shared
   overhead (session-cumulative, not attributable to one paper). Follow-ups: (1) ~~wire it into the
   batch skill~~ **done 2026-07-11** — `benchmark` SKILL step 7 emits `BATCH-TOKENS.md` for the
-  session log; (2) confirm the tracking-DB filename so `--db` auto-detects instead of needing an
-  explicit path.
+  session log; (2) ~~confirm the tracking-DB filename so `--db` auto-detects~~ **done 2026-07-11**
+  — defaults to the canonical `11-CLAUDE-AI/db/phi_canto_tracking.db`.
+- [ ] **Persisted token history + recuration comparison** (landed 2026-07-11) — `--record` writes
+  the **raw** per-article numbers (direct tokens + session `overhead_total` + `n_articles`, never
+  the allocated `1/N` total) to the tracking DB via an `article_tokens`-namespaced migration
+  (`article_token_costs` table). Keyed by `(pmid, session_id, model)`: re-running on one transcript
+  upserts (no double-count); **recurating a paper in a new session — e.g. a different model — is a
+  new row**, so `--history <PMID>` compares models like-for-like. The `1/N` split is derived on
+  read, so old rows survive an allocation-policy change. Follow-ups: (a) surface the history in the
+  Article-Registry dashboard / a `daily_curation` view once a few real batches exist; (b) optional
+  per-bucket cost pricing (store input/output/cache split, not just total tokens) if $ trends
+  matter. Ties into the **Recuration-comparison workflow** item below (same "DB is the aggregation
+  home, grows over time, neutral diff" shape).
 
 ## Curation workflow
 - [ ] **Format convergence** — phiweaver *drafts* use the example-template body shape while *gold

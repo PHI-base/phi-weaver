@@ -51,13 +51,16 @@ independent human scoring** — see `07-Standards/curation-benchmarking/README.m
 6. **Roll up the batch:**
    `python3 -m phiweaver.batch_summary <drafts> --out BATCH-REVIEW.md --csv batch.csv`.
 7. **Record per-article token cost:**
-   `python3 -m phiweaver.article_tokens --drafts <drafts> --cost --out BATCH-TOKENS.md`
+   `python3 -m phiweaver.article_tokens --drafts <drafts> --cost --record --out BATCH-TOKENS.md`
    (any batch of drafts, not only benchmarks). It reads the batch PMIDs from the draft `meta`
    blocks, attributes each turn to a paper via the per-paper draft/PMID references already in the
    session transcript, and splits the shared setup + context re-read as overhead (equal `1/N`, or
    `--weight-by-direct`). Paste the resulting table into the session log so each batch records
    which model curated it and what each paper cost. (Cache-read is session-cumulative, so it is
-   counted as shared overhead, not charged to one paper.)
+   counted as shared overhead, not charged to one paper.) `--record` persists the **raw**
+   numbers to the tracking DB keyed by `(pmid, session, model)`, so recurating a paper later
+   (e.g. with another model) adds a new row rather than overwriting; compare them with
+   `python3 -m phiweaver.article_tokens --history <PMID>`.
 8. **Report** the human-reviewed curated papers alongside a **held-out gold-standard control set**
    (papers whose gold standard was never in the library), so the team can see how the numbers
    hold on unseen truth.

@@ -42,6 +42,20 @@ Usage (from the repo root):
 
     # explicit transcript + explicit PMIDs, write a CSV too
     python3 -m phiweaver.article_tokens session.jsonl --pmid 38234567 --pmid 37123456 --csv out.csv
+
+    # persist the raw per-article numbers to the tracking DB (for trends over time)
+    python3 -m phiweaver.article_tokens --drafts active/*-phiweaver-DRAFT.md --record
+
+    # what did recurating one paper cost across sessions / models?
+    python3 -m phiweaver.article_tokens --history 38234567
+
+Persistence (``--record``): only the **raw** components are stored — per-article
+``direct_tokens`` plus the session-level ``overhead_total`` + ``n_articles`` — never the
+allocated ``1/N`` total, which stays a query so the split policy can change without
+invalidating history. Each measurement is keyed by ``(pmid, session_id, model)``: re-running
+the reporter on the same transcript upserts the same row (no double-count), while **recurating
+a paper in a new session — e.g. with a different model — writes a NEW row**, so both curations
+are preserved side by side for cost-vs-model comparison (see ``--history``).
 """
 
 from __future__ import annotations
@@ -65,6 +79,41 @@ _PMID_RE = re.compile(r"\b\d{6,9}\b")
 # Rough Anthropic list price for Opus-class models, US$ per 1M tokens. Only used for the
 # optional cost estimate; override with --price-in / --price-out. Labelled "est." in output.
 _DEFAULT_PRICE = {"input": 15.0, "output": 75.0, "cache_write": 18.75, "cache_read": 1.5}
+
+# Bumped when the stored schema/meaning changes, so old rows stay interpretable.
+TOOL_VERSION = "article_tokens/1"
+# Canonical tracking DB (mirrors phiweaver.tracking.phi_canto_sqlite.DEFAULT_DB_PATH).
+CANONICAL_DB = "11-CLAUDE-AI/db/phi_canto_tracking.db"
+
+# Module-owned migration (its own namespace, per phiweaver.tracking.migrations). We store the
+# RAW components only — never the allocated 1/N total — so the split policy stays a query.
+# (pmid, session_id, model) is unique: same transcript re-run upserts; a recuration in a new
+# session (e.g. a different model) is a new row.
+_TOKENS_TABLE_SQL = """
+CREATE TABLE IF NOT EXISTS article_token_costs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    pmid TEXT,
+    session_id TEXT NOT NULL,
+    model TEXT,
+    direct_tokens INTEGER DEFAULT 0,
+    overhead_total INTEGER DEFAULT 0,
+    n_articles INTEGER DEFAULT 0,
+    first_author_year TEXT,
+    title TEXT,
+    tool_version TEXT,
+    transcript_path TEXT,
+    computed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(pmid, session_id, model)
+);
+CREATE INDEX IF NOT EXISTS idx_article_token_costs_pmid ON article_token_costs(pmid);
+"""
+
+
+def _register_migration() -> None:
+    """Register this module's schema migration once (idempotent)."""
+    from phiweaver.tracking import migrations
+    migrations.register_migrations("article_tokens",
+                                   [("v1 article_token_costs table", _TOKENS_TABLE_SQL)])
 
 
 # --------------------------------------------------------------------------- articles
@@ -152,14 +201,117 @@ def enrich_from_db(articles: Sequence[Article], db_path: Optional[Path]) -> None
         a.first_author = re.split(r"[ ,]", authors)[0] if authors else a.first_author
 
 
-def default_db_path() -> Optional[Path]:
-    """Best-effort location of the tracking SQLite DB; None if not found."""
+def default_db_path(must_exist: bool = True) -> Optional[Path]:
+    """The canonical tracking SQLite DB under the repo root.
+
+    With ``must_exist`` (the default, for enrichment reads) return it only if present, else a
+    legacy fallback, else None. With ``must_exist=False`` (for ``--record``) always return the
+    canonical path so a first write can create it.
+    """
+    canonical = repo_root() / CANONICAL_DB
+    if not must_exist or canonical.exists():
+        return canonical
     for cand in ("phi_canto.db", "phi_canto.sqlite", "tracking.db"):
         p = repo_root() / cand
         if p.exists():
             return p
     hits = list(repo_root().glob("**/*.db"))
     return hits[0] if hits else None
+
+
+# --------------------------------------------------------------------------- persistence
+
+def session_id_of(transcript: Path) -> str:
+    """Stable per-session key: the transcript's filename stem (Claude Code's session id)."""
+    return Path(transcript).stem
+
+
+def record_to_db(rows: Sequence["Row"], attr: "Attribution", db_path: Path,
+                 transcript: Path) -> int:
+    """Persist the raw per-article numbers, keyed by (pmid, session_id, model).
+
+    Idempotent per transcript (re-runs upsert the same rows); a recuration in a *new* session
+    lands as new rows. Returns the number of rows written. Creates the schema if needed.
+    """
+    from phiweaver.tracking import migrations
+    _register_migration()
+    sid = session_id_of(transcript)
+    Path(db_path).parent.mkdir(parents=True, exist_ok=True)
+    con = sqlite3.connect(str(db_path))
+    try:
+        migrations.run_migrations(con)  # applies core baseline + this table if missing
+        for r in rows:
+            con.execute(
+                "INSERT INTO article_token_costs"
+                " (pmid, session_id, model, direct_tokens, overhead_total, n_articles,"
+                "  first_author_year, title, tool_version, transcript_path)"
+                " VALUES (?,?,?,?,?,?,?,?,?,?)"
+                " ON CONFLICT(pmid, session_id, model) DO UPDATE SET"
+                "  direct_tokens=excluded.direct_tokens,"
+                "  overhead_total=excluded.overhead_total,"
+                "  n_articles=excluded.n_articles,"
+                "  first_author_year=excluded.first_author_year,"
+                "  title=excluded.title,"
+                "  tool_version=excluded.tool_version,"
+                "  transcript_path=excluded.transcript_path,"
+                "  computed_at=CURRENT_TIMESTAMP",
+                (r.article.pmid, sid, r.model, r.direct, attr.overhead, len(rows),
+                 r.article.citation, r.article.title or r.article.label,
+                 TOOL_VERSION, str(transcript)))
+        con.commit()
+        return len(rows)
+    finally:
+        con.close()
+
+
+def token_history(db_path: Path, pmid: Optional[str] = None) -> List[dict]:
+    """All stored measurements (optionally for one PMID), newest first, with the equal-split
+    allocated overhead derived on read (not stored)."""
+    from phiweaver.tracking import migrations
+    _register_migration()
+    con = sqlite3.connect(str(db_path))
+    con.row_factory = sqlite3.Row
+    try:
+        migrations.run_migrations(con)
+        sql = ("SELECT pmid, session_id, model, direct_tokens, overhead_total, n_articles,"
+               " first_author_year, title, computed_at FROM article_token_costs")
+        args: tuple = ()
+        if pmid:
+            sql += " WHERE pmid = ?"
+            args = (pmid,)
+        sql += " ORDER BY computed_at DESC, pmid"
+        out = []
+        for r in con.execute(sql, args):
+            n = r["n_articles"] or 1
+            share = round((r["overhead_total"] or 0) / n)
+            out.append({**dict(r), "overhead_share": share,
+                        "total_tokens": (r["direct_tokens"] or 0) + share})
+        return out
+    finally:
+        con.close()
+
+
+def render_history(hist: Sequence[dict], pmid: Optional[str]) -> str:
+    title = f"# Token history — PMID {pmid}" if pmid else "# Token history — all articles"
+    lines = [title, ""]
+    if not hist:
+        return title + "\n\n_No stored measurements yet (run with --record first)._"
+    lines += [
+        "| PMID | First author-Year | Model | Session | Direct | Overhead share | Total | When |",
+        "|------|-------------------|-------|---------|-------:|---------------:|------:|------|",
+    ]
+    for h in hist:
+        sid = (h["session_id"] or "")[:8]
+        when = (h["computed_at"] or "")[:10]
+        lines.append(
+            f"| {h['pmid'] or '—'} | {h['first_author_year'] or ''} | {h['model'] or '?'} "
+            f"| {sid} | {h['direct_tokens']:,} | {h['overhead_share']:,} "
+            f"| {h['total_tokens']:,} | {when} |")
+    if pmid and len({h['model'] for h in hist}) > 1:
+        lines += ["", "_Same paper curated by more than one model — rows are directly "
+                  "comparable (direct tokens are the model's own work; overhead share is the "
+                  "equal split within each session's batch)._"]
+    return "\n".join(lines)
 
 
 # --------------------------------------------------------------------------- transcript
@@ -398,12 +550,23 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     ap.add_argument("--pmid", action="append", help="extra PMID(s) to attribute")
     ap.add_argument("--weight-by-direct", action="store_true",
                     help="split overhead proportionally to direct work, not equally")
-    ap.add_argument("--db", help="tracking SQLite DB (default: auto-detect)")
+    ap.add_argument("--db", help="tracking SQLite DB (default: canonical repo DB)")
     ap.add_argument("--csv", help="also write a CSV to this path")
     ap.add_argument("--json", action="store_true", help="emit JSON instead of markdown")
     ap.add_argument("--cost", action="store_true", help="include a rough $ estimate")
+    ap.add_argument("--record", action="store_true",
+                    help="persist the raw per-article numbers to the tracking DB")
+    ap.add_argument("--history", nargs="?", const="", metavar="PMID",
+                    help="show stored measurements (optionally for one PMID) and exit")
     ap.add_argument("--out", help="write markdown to this path instead of stdout")
     args = ap.parse_args(argv)
+
+    # --history is a standalone read: no transcript / drafts needed.
+    if args.history is not None:
+        db = Path(args.db) if args.db else default_db_path(must_exist=False)
+        hist = token_history(db, args.history or None)
+        print(render_history(hist, args.history or None))
+        return 0
 
     articles = build_articles(args)
     if not articles:
@@ -419,6 +582,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     turns = load_turns(Path(tpath))
     attr = attribute(turns, articles)
     rows = build_rows(attr, weight_by_direct=args.weight_by_direct)
+
+    if args.record:
+        rec_db = Path(args.db) if args.db else default_db_path(must_exist=False)
+        written = record_to_db(rows, attr, rec_db, Path(tpath))
+        print(f"recorded {written} article(s) to {rec_db} "
+              f"(session {session_id_of(tpath)[:8]})")
 
     if args.csv:
         write_csv(rows, attr, Path(args.csv))
