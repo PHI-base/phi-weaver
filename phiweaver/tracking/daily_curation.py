@@ -113,6 +113,61 @@ def show_completed():
     db.get_completion_metrics()
     db.disconnect()
 
+def format_token_costs(hist, pmid=None):
+    """Build the terminal report for recorded token costs (pure; hist is a list of dicts
+    from phiweaver.article_tokens.token_history). Returns the text to print."""
+    scope = f" for PMID {pmid}" if pmid else ""
+    lines = [f"\n💰 Token Costs{scope}", "=" * 40]
+    if not hist:
+        lines.append("No token measurements recorded yet.")
+        lines.append("Record a batch with: "
+                     "python3 -m phiweaver.article_tokens --drafts <drafts> --record")
+        return "\n".join(lines)
+
+    by_model = {}
+    for h in hist:
+        agg = by_model.setdefault(h.get("model") or "?", {"n": 0, "cost": 0.0})
+        agg["n"] += 1
+        agg["cost"] += h.get("cost_usd") or 0.0
+    lines.append("By model:")
+    for model, agg in sorted(by_model.items()):
+        lines.append(f"   • {model}: {agg['n']} run(s), ~${agg['cost']:.2f}")
+
+    lines.append("\nPer article (newest first):")
+    for h in hist[:15]:
+        when = (h.get("computed_at") or "")[:10]
+        cost = h.get("cost_usd")
+        cost_str = f"${cost:.2f}" if cost is not None else "—"
+        cite = h.get("first_author_year") or ""
+        lines.append(f"   {when} | PMID {h.get('pmid') or '—'} ({cite}) | "
+                     f"{h.get('model') or '?'} | {h.get('total_tokens') or 0:,} tok | {cost_str}")
+    if len(hist) > 15:
+        lines.append(f"   … showing 15 of {len(hist)} measurements")
+    lines.append("\n(Direct work + equal 1/N share of shared overhead; each bucket priced at "
+                 "the model's list rate — an estimate.)")
+    return "\n".join(lines)
+
+
+def show_token_costs(pmid=None):
+    """Show recorded per-article token costs (optionally for one PMID).
+
+    Terminal counterpart to the dashboard's Token Costs section: reads
+    phiweaver.article_tokens.token_history so each row carries the derived overhead
+    split and per-model $ estimate.
+    """
+    from pathlib import Path
+    from phiweaver.article_tokens import token_history
+
+    db = PHICantoSQLite()
+    if not db.connect():
+        return
+    try:
+        hist = token_history(Path(db.db_path), pmid)
+    finally:
+        db.disconnect()
+    print(format_token_costs(hist, pmid))
+
+
 def find_gaps():
     """Find proteins and articles that need attention"""
     db = PHICantoSQLite()
@@ -157,6 +212,7 @@ def show_help():
     print("python3 daily_curation.py status 12345 curated   - Update article status")
     print("python3 daily_curation.py progress               - Show progress summary")
     print("python3 daily_curation.py completed              - Show completion metrics per curated article")
+    print("python3 daily_curation.py tokens [12345]         - Show recorded token costs (optionally one PMID)")
     print("python3 daily_curation.py gaps                   - Find data gaps")
     print("python3 daily_curation.py help                   - Show this help")
     print()
@@ -193,6 +249,10 @@ if __name__ == "__main__":
 
     elif command == "completed":
         show_completed()
+
+    elif command == "tokens":
+        pmid = sys.argv[2] if len(sys.argv) > 2 else None
+        show_token_costs(pmid)
 
     elif command == "gaps":
         find_gaps()

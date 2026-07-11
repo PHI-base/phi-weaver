@@ -29,8 +29,9 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
   new row**, so `--history <PMID>` compares models like-for-like. The `1/N` split is derived on
   read, so old rows survive an allocation-policy change. Follow-ups: (a) ~~surface the history in the
   Article-Registry dashboard~~ **done 2026-07-11** — `generate_article_registry` adds a "💰 Token
-  Costs" section (per-model roll-up + per-paper rows with $ estimate) when any batch was recorded; a
-  `daily_curation` view is still open; (b) ~~per-bucket
+  Costs" section (per-model roll-up + per-paper rows with $ estimate) when any batch was recorded,
+  and `python3 -m phiweaver.tracking.daily_curation tokens [PMID]` prints the same as a terminal
+  report (**both done 2026-07-11**); (b) ~~per-bucket
   cost pricing~~ **done 2026-07-11** — the four token buckets are stored + priced separately at each
   row's model rate (`PRICES` table), so `--cost`/`--history` show a per-paper `$` estimate and the
   same paper costs less on a cheaper model (recomputed on read; a rate change doesn't invalidate
