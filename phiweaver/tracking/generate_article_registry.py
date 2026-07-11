@@ -30,9 +30,11 @@ class ArticleRegistryGenerator:
             articles = self._get_articles_data()
             statistics = self._get_statistics()
             recent_activity = self._get_recent_activity()
+            token_costs = self._get_token_costs()
 
             # Generate markdown content
-            content = self._generate_dashboard_content(articles, statistics, recent_activity)
+            content = self._generate_dashboard_content(
+                articles, statistics, recent_activity, token_costs)
 
             # Write to file
             with open(self.registry_path, 'w', encoding='utf-8') as f:
@@ -139,8 +141,23 @@ class ArticleRegistryGenerator:
 
         return self.db.cursor.fetchall()
 
-    def _generate_dashboard_content(self, articles, statistics, recent_activity):
+    def _get_token_costs(self):
+        """Stored per-article token measurements (newest first), or [] if none/absent.
+
+        Reads via phiweaver.article_tokens so each row carries the derived overhead split
+        and per-model $ estimate. Safe when the table was never created (no batch recorded
+        with --record yet) — token_history creates it empty and returns [].
+        """
+        try:
+            from phiweaver.article_tokens import token_history
+            return token_history(Path(self.db.db_path))
+        except Exception:
+            return []
+
+    def _generate_dashboard_content(self, articles, statistics, recent_activity,
+                                    token_costs=None):
         """Generate the markdown content for the dashboard"""
+        token_costs = token_costs or []
 
         content = f"""---
 created: {date.today()}
@@ -229,6 +246,43 @@ last_updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
             content += f"{activity['proteins_curated']} proteins, {activity['interactions_added']} interactions\n"
             if activity['notes']:
                 content += f"  *{activity['notes'][:80]}...*\n"
+
+        # Token-cost section (only when at least one batch was recorded with --record)
+        if token_costs:
+            content += "\n## 💰 Token Costs (per curated article)\n\n"
+
+            # Per-model roll-up: how many measurements and total estimated $ each.
+            by_model = {}
+            for h in token_costs:
+                m = h.get('model') or '?'
+                agg = by_model.setdefault(m, {'n': 0, 'cost': 0.0})
+                agg['n'] += 1
+                agg['cost'] += h.get('cost_usd') or 0.0
+            content += "**By model** (all stored measurements): "
+            content += "; ".join(
+                f"{m} — {a['n']} run(s), ~${a['cost']:.2f}"
+                for m, a in sorted(by_model.items())) + "\n\n"
+
+            content += "| PMID | First author-Year | Model | Total tokens | Est. $ | When |\n"
+            content += "|------|-------------------|-------|-------------:|-------:|------|\n"
+            for h in token_costs[:15]:
+                pmid = h.get('pmid') or '—'
+                pmid_link = (f"[{pmid}](https://pubmed.ncbi.nlm.nih.gov/{pmid})"
+                             if pmid and pmid != '—' else '—')
+                cite = h.get('first_author_year') or ''
+                model = h.get('model') or '?'
+                total = h.get('total_tokens') or 0
+                cost = h.get('cost_usd')
+                cost_str = f"${cost:.2f}" if cost is not None else "—"
+                when = (h.get('computed_at') or '')[:10]
+                content += (f"| {pmid_link} | {cite} | {model} | {total:,} "
+                            f"| {cost_str} | {when} |\n")
+            if len(token_costs) > 15:
+                content += f"\n*Showing 15 of {len(token_costs)} measurements.*\n"
+            content += ("\n*Direct work + an equal (1/N) share of the batch's shared overhead; "
+                        "each bucket priced at its model's list rate (an estimate). Recurations "
+                        "on a different model appear as separate rows. "
+                        "Source: `phiweaver.article_tokens` (`--record`).*\n")
 
         # Quick actions section
         content += f"\n## 🚀 Quick Actions\n\n"

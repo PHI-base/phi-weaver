@@ -102,8 +102,11 @@ the allocation policy changes. `--cost` / `--history` also show a per-paper **$ 
 four token buckets (input / output / cache-write / cache-read) are stored and priced separately at
 each row's *model* list rate, so recurating a paper on a cheaper model shows a lower cost for the
 same token profile (e.g. the same paper is ~$0.45 on Opus 4.8 vs ~$0.09 on Haiku 4.5). Prices are
-estimates recomputed on read, so a rate change never invalidates stored rows.
-**See:** `phiweaver/article_tokens.py` (`record_to_db`, `token_history`, `PRICES`).
+estimates recomputed on read, so a rate change never invalidates stored rows. Recorded costs also
+surface in the **Article-Registry dashboard** — `generate_article_registry` adds a "💰 Token Costs"
+section (per-model roll-up + per-paper rows) once at least one batch has been recorded.
+**See:** `phiweaver/article_tokens.py` (`record_to_db`, `token_history`, `PRICES`);
+`phiweaver/tracking/generate_article_registry.py`.
 
 ### What's the difference between a "package" and a "module"?
 A **module** is a single `.py` file you can import; a **package** is a *directory* of modules
