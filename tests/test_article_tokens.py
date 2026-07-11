@@ -177,5 +177,59 @@ class PersistenceTest(unittest.TestCase):
         self.assertIn("No stored measurements", at.render_history([], None))
 
 
+class PricingTest(unittest.TestCase):
+    def test_buckets_cost_prices_each_bucket_separately(self):
+        b = at.Buckets(inp=1_000_000, out=1_000_000, cache_write=1_000_000,
+                       cache_read=1_000_000)
+        # opus-4-8: 5 + 25 + 6.25 + 0.5 = 36.75 for 1M of each bucket
+        self.assertAlmostEqual(b.cost("claude-opus-4-8"), 36.75, places=6)
+        # fable-5 is 2x input/output: 10 + 50 + 12.5 + 1.0 = 73.5
+        self.assertAlmostEqual(b.cost("claude-fable-5"), 73.5, places=6)
+
+    def test_unknown_model_falls_back_to_default(self):
+        b = at.Buckets(out=1_000_000)
+        self.assertEqual(b.cost("mystery"), b.cost("claude-opus-4-8"))
+
+    def test_row_cost_sums_direct_and_overhead_share(self):
+        articles = [at.Article(pmid="111", label="A"), at.Article(pmid="222", label="B")]
+        d = tempfile.mkdtemp()
+        p = Path(d) / "s.jsonl"
+        p.write_text("\n".join([
+            _asst("claude-opus-4-8", _usage(out=1_000_000, cr=1_000_000), "setup"),
+            _asst("claude-opus-4-8", _usage(out=1_000_000), "PMID 111 work"),
+            _asst("claude-opus-4-8", _usage(out=1_000_000), "PMID 222 work"),
+        ]), encoding="utf-8")
+        attr = at.attribute(at.load_turns(p), articles)
+        rows = {r.article.pmid: r for r in at.build_rows(attr)}
+        r = rows["111"]
+        # direct: 1M output @ $25 = $25; overhead = 1M shared output + 1M cache-read,
+        # split 1/2 -> 0.5M output ($12.5) + 0.5M cache-read ($0.25) = $12.75
+        self.assertAlmostEqual(r.cost(), 25.0 + 12.75, places=4)
+
+    def test_history_carries_cost_and_differs_by_model(self):
+        db = Path(tempfile.mkdtemp()) / "t.db"
+        arts = [at.Article(pmid="111", label="A"), at.Article(pmid="222", label="B")]
+
+        def batch(model, session):
+            f = Path(tempfile.mkdtemp()) / f"{session}.jsonl"
+            f.write_text("\n".join([
+                _asst(model, _usage(out=1_000_000, cr=1_000_000), "setup"),
+                _asst(model, _usage(out=1_000_000), "PMID 111 work"),
+                _asst(model, _usage(out=1_000_000), "PMID 222 work"),
+            ]), encoding="utf-8")
+            attr = at.attribute(at.load_turns(f), arts)
+            return at.build_rows(attr), attr, f
+
+        r1, a1, f1 = batch("claude-opus-4-8", "sessOPUS")
+        at.record_to_db(r1, a1, db, f1)
+        r2, a2, f2 = batch("claude-haiku-4-5", "sessHAIKU")
+        at.record_to_db(r2, a2, db, f2)
+        hist = {h["model"]: h for h in at.token_history(db, "111")}
+        self.assertIn("cost_usd", hist["claude-opus-4-8"])
+        # identical token profile, cheaper model -> lower $ (haiku output is 1/5 of opus)
+        self.assertLess(hist["claude-haiku-4-5"]["cost_usd"],
+                        hist["claude-opus-4-8"]["cost_usd"])
+
+
 if __name__ == "__main__":
     unittest.main()

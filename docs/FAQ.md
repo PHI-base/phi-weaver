@@ -98,8 +98,12 @@ lists them side by side for a like-for-like cost comparison (direct tokens are e
 work; the overhead share is the equal split within that session's batch). Re-running the reporter
 on the *same* transcript just upserts the same row, so it never double-counts. Only the raw
 components are stored, so the `1/N` split is recomputed on read and old rows stay valid even if
-the allocation policy changes.
-**See:** `phiweaver/article_tokens.py` (`record_to_db`, `token_history`).
+the allocation policy changes. `--cost` / `--history` also show a per-paper **$ estimate**: the
+four token buckets (input / output / cache-write / cache-read) are stored and priced separately at
+each row's *model* list rate, so recurating a paper on a cheaper model shows a lower cost for the
+same token profile (e.g. the same paper is ~$0.45 on Opus 4.8 vs ~$0.09 on Haiku 4.5). Prices are
+estimates recomputed on read, so a rate change never invalidates stored rows.
+**See:** `phiweaver/article_tokens.py` (`record_to_db`, `token_history`, `PRICES`).
 
 ### What's the difference between a "package" and a "module"?
 A **module** is a single `.py` file you can import; a **package** is a *directory* of modules

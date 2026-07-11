@@ -56,6 +56,11 @@ invalidating history. Each measurement is keyed by ``(pmid, session_id, model)``
 the reporter on the same transcript upserts the same row (no double-count), while **recurating
 a paper in a new session — e.g. with a different model — writes a NEW row**, so both curations
 are preserved side by side for cost-vs-model comparison (see ``--history``).
+
+Dollar cost (``--cost``, ``--history``): the four token buckets (input / output / cache-write /
+cache-read) are stored separately and priced separately at each row's **model** list rate (see
+``PRICES``), so recurating a paper on a cheaper model shows a lower ``$`` for the same token
+profile. Prices are estimates recomputed on read, so a rate change never invalidates stored rows.
 """
 
 from __future__ import annotations
@@ -76,12 +81,8 @@ from phiweaver import repo_root
 _JSON_BLOCK = re.compile(r"```json\s*(.*?)```", re.DOTALL)
 _PMID_RE = re.compile(r"\b\d{6,9}\b")
 
-# Rough Anthropic list price for Opus-class models, US$ per 1M tokens. Only used for the
-# optional cost estimate; override with --price-in / --price-out. Labelled "est." in output.
-_DEFAULT_PRICE = {"input": 15.0, "output": 75.0, "cache_write": 18.75, "cache_read": 1.5}
-
 # Bumped when the stored schema/meaning changes, so old rows stay interpretable.
-TOOL_VERSION = "article_tokens/1"
+TOOL_VERSION = "article_tokens/2"
 # Canonical tracking DB (mirrors phiweaver.tracking.phi_canto_sqlite.DEFAULT_DB_PATH).
 CANONICAL_DB = "11-CLAUDE-AI/db/phi_canto_tracking.db"
 
@@ -108,12 +109,27 @@ CREATE TABLE IF NOT EXISTS article_token_costs (
 CREATE INDEX IF NOT EXISTS idx_article_token_costs_pmid ON article_token_costs(pmid);
 """
 
+# v2 adds the per-bucket token counts, so dollar cost can be computed per model on read
+# (input/output/cache-write/cache-read priced separately). direct_tokens (v1) stays as the
+# article's own work total; the bucket columns break it down and split the overhead too.
+_TOKENS_TABLE_V2_SQL = """
+ALTER TABLE article_token_costs ADD COLUMN direct_input INTEGER DEFAULT 0;
+ALTER TABLE article_token_costs ADD COLUMN direct_output INTEGER DEFAULT 0;
+ALTER TABLE article_token_costs ADD COLUMN direct_cache_write INTEGER DEFAULT 0;
+ALTER TABLE article_token_costs ADD COLUMN overhead_input INTEGER DEFAULT 0;
+ALTER TABLE article_token_costs ADD COLUMN overhead_output INTEGER DEFAULT 0;
+ALTER TABLE article_token_costs ADD COLUMN overhead_cache_write INTEGER DEFAULT 0;
+ALTER TABLE article_token_costs ADD COLUMN overhead_cache_read INTEGER DEFAULT 0;
+"""
+
 
 def _register_migration() -> None:
-    """Register this module's schema migration once (idempotent)."""
+    """Register this module's schema migrations once (idempotent)."""
     from phiweaver.tracking import migrations
-    migrations.register_migrations("article_tokens",
-                                   [("v1 article_token_costs table", _TOKENS_TABLE_SQL)])
+    migrations.register_migrations("article_tokens", [
+        ("v1 article_token_costs table", _TOKENS_TABLE_SQL),
+        ("v2 per-bucket token columns", _TOKENS_TABLE_V2_SQL),
+    ])
 
 
 # --------------------------------------------------------------------------- articles
@@ -240,12 +256,16 @@ def record_to_db(rows: Sequence["Row"], attr: "Attribution", db_path: Path,
     con = sqlite3.connect(str(db_path))
     try:
         migrations.run_migrations(con)  # applies core baseline + this table if missing
+        ov = attr.overhead_buckets
         for r in rows:
+            d = r.direct_buckets
             con.execute(
                 "INSERT INTO article_token_costs"
                 " (pmid, session_id, model, direct_tokens, overhead_total, n_articles,"
-                "  first_author_year, title, tool_version, transcript_path)"
-                " VALUES (?,?,?,?,?,?,?,?,?,?)"
+                "  first_author_year, title, tool_version, transcript_path,"
+                "  direct_input, direct_output, direct_cache_write,"
+                "  overhead_input, overhead_output, overhead_cache_write, overhead_cache_read)"
+                " VALUES (?,?,?,?,?,?,?,?,?,?, ?,?,?, ?,?,?,?)"
                 " ON CONFLICT(pmid, session_id, model) DO UPDATE SET"
                 "  direct_tokens=excluded.direct_tokens,"
                 "  overhead_total=excluded.overhead_total,"
@@ -254,10 +274,19 @@ def record_to_db(rows: Sequence["Row"], attr: "Attribution", db_path: Path,
                 "  title=excluded.title,"
                 "  tool_version=excluded.tool_version,"
                 "  transcript_path=excluded.transcript_path,"
+                "  direct_input=excluded.direct_input,"
+                "  direct_output=excluded.direct_output,"
+                "  direct_cache_write=excluded.direct_cache_write,"
+                "  overhead_input=excluded.overhead_input,"
+                "  overhead_output=excluded.overhead_output,"
+                "  overhead_cache_write=excluded.overhead_cache_write,"
+                "  overhead_cache_read=excluded.overhead_cache_read,"
                 "  computed_at=CURRENT_TIMESTAMP",
                 (r.article.pmid, sid, r.model, r.direct, attr.overhead, len(rows),
                  r.article.citation, r.article.title or r.article.label,
-                 TOOL_VERSION, str(transcript)))
+                 TOOL_VERSION, str(transcript),
+                 d.inp, d.out, d.cache_write,
+                 ov.inp, ov.out, ov.cache_write, ov.cache_read))
         con.commit()
         return len(rows)
     finally:
@@ -273,8 +302,7 @@ def token_history(db_path: Path, pmid: Optional[str] = None) -> List[dict]:
     con.row_factory = sqlite3.Row
     try:
         migrations.run_migrations(con)
-        sql = ("SELECT pmid, session_id, model, direct_tokens, overhead_total, n_articles,"
-               " first_author_year, title, computed_at FROM article_token_costs")
+        sql = "SELECT * FROM article_token_costs"
         args: tuple = ()
         if pmid:
             sql += " WHERE pmid = ?"
@@ -284,8 +312,17 @@ def token_history(db_path: Path, pmid: Optional[str] = None) -> List[dict]:
         for r in con.execute(sql, args):
             n = r["n_articles"] or 1
             share = round((r["overhead_total"] or 0) / n)
+            model = r["model"] or "?"
+            # Reconstruct the per-bucket vectors to price each row (equal split on read).
+            direct = Buckets(r["direct_input"] or 0, r["direct_output"] or 0,
+                             r["direct_cache_write"] or 0)
+            ov_share = Buckets(r["overhead_input"] or 0, r["overhead_output"] or 0,
+                               r["overhead_cache_write"] or 0,
+                               r["overhead_cache_read"] or 0).scaled(1 / n)
+            cost = direct.cost(model) + ov_share.cost(model)
             out.append({**dict(r), "overhead_share": share,
-                        "total_tokens": (r["direct_tokens"] or 0) + share})
+                        "total_tokens": (r["direct_tokens"] or 0) + share,
+                        "cost_usd": cost})
         return out
     finally:
         con.close()
@@ -297,20 +334,22 @@ def render_history(hist: Sequence[dict], pmid: Optional[str]) -> str:
     if not hist:
         return title + "\n\n_No stored measurements yet (run with --record first)._"
     lines += [
-        "| PMID | First author-Year | Model | Session | Direct | Overhead share | Total | When |",
-        "|------|-------------------|-------|---------|-------:|---------------:|------:|------|",
+        "| PMID | First author-Year | Model | Session | Direct | Overhead share | Total | Est. $ | When |",
+        "|------|-------------------|-------|---------|-------:|---------------:|------:|-------:|------|",
     ]
     for h in hist:
         sid = (h["session_id"] or "")[:8]
         when = (h["computed_at"] or "")[:10]
+        cost = f"${h.get('cost_usd', 0):.2f}" if h.get("cost_usd") is not None else "—"
         lines.append(
             f"| {h['pmid'] or '—'} | {h['first_author_year'] or ''} | {h['model'] or '?'} "
             f"| {sid} | {h['direct_tokens']:,} | {h['overhead_share']:,} "
-            f"| {h['total_tokens']:,} | {when} |")
+            f"| {h['total_tokens']:,} | {cost} | {when} |")
     if pmid and len({h['model'] for h in hist}) > 1:
         lines += ["", "_Same paper curated by more than one model — rows are directly "
-                  "comparable (direct tokens are the model's own work; overhead share is the "
-                  "equal split within each session's batch)._"]
+                  "comparable. Direct tokens are the model's own work; overhead share is the "
+                  "equal split within each session's batch; est. $ prices each bucket at that "
+                  "model's list rate (an estimate)._"]
     return "\n".join(lines)
 
 
@@ -373,92 +412,156 @@ def latest_transcript(slug: Optional[str] = None) -> Optional[Path]:
     return files[0] if files else None
 
 
+# --------------------------------------------------------------------------- pricing
+
+# Anthropic list price, US$ per 1M tokens. input/output are published rates; cache-write is
+# 1.25x input (5-min TTL) and cache-read is 0.1x input (see the claude-api reference). These
+# are estimates for reporting — override with --prices <json>. Keyed by model id; "default"
+# is used for unknown / "?" models. Source: claude-api skill, 2026-06 model table.
+PRICES: Dict[str, dict] = {
+    "claude-opus-4-8": {"input": 5.0, "output": 25.0, "cache_write": 6.25, "cache_read": 0.5},
+    "claude-fable-5": {"input": 10.0, "output": 50.0, "cache_write": 12.5, "cache_read": 1.0},
+    "claude-sonnet-5": {"input": 3.0, "output": 15.0, "cache_write": 3.75, "cache_read": 0.3},
+    "claude-haiku-4-5": {"input": 1.0, "output": 5.0, "cache_write": 1.25, "cache_read": 0.1},
+}
+PRICES["default"] = PRICES["claude-opus-4-8"]
+
+
+def price_for(model: str, table: Optional[dict] = None) -> dict:
+    table = table or PRICES
+    return table.get(model) or table.get("default") or PRICES["default"]
+
+
 # --------------------------------------------------------------------------- attribution
 
-_WORK_KEYS = ("input_tokens", "output_tokens", "cache_creation_input_tokens")
+@dataclass
+class Buckets:
+    """Token counts split by billing bucket (the four Anthropic usage fields)."""
+    inp: int = 0            # fresh input_tokens
+    out: int = 0            # output_tokens
+    cache_write: int = 0    # cache_creation_input_tokens
+    cache_read: int = 0     # cache_read_input_tokens (session-cumulative; overhead only)
 
+    def add_work(self, usage: dict) -> None:
+        """Accumulate the three 'work' buckets from a usage dict (not cache-read)."""
+        self.inp += int(usage.get("input_tokens", 0) or 0)
+        self.out += int(usage.get("output_tokens", 0) or 0)
+        self.cache_write += int(usage.get("cache_creation_input_tokens", 0) or 0)
 
-def _work(usage: dict) -> int:
-    return sum(int(usage.get(k, 0) or 0) for k in _WORK_KEYS)
+    @property
+    def work(self) -> int:
+        return self.inp + self.out + self.cache_write
 
+    @property
+    def total(self) -> int:
+        return self.work + self.cache_read
 
-def _reread(usage: dict) -> int:
-    return int(usage.get("cache_read_input_tokens", 0) or 0)
+    def scaled(self, factor: float) -> "Buckets":
+        return Buckets(round(self.inp * factor), round(self.out * factor),
+                       round(self.cache_write * factor), round(self.cache_read * factor))
+
+    def cost(self, model: str, table: Optional[dict] = None) -> float:
+        """US$ estimate for these tokens at the given model's per-bucket rate."""
+        p = price_for(model, table)
+        return (self.inp * p["input"] + self.out * p["output"]
+                + self.cache_write * p["cache_write"]
+                + self.cache_read * p["cache_read"]) / 1e6
 
 
 @dataclass
 class Attribution:
     articles: List[Article]
-    direct: Dict[str, int]          # pmid -> direct work tokens
-    models: Dict[str, set]          # pmid -> models seen on its turns
-    shared_work: int
-    reread_total: int
+    direct_buckets: Dict[str, Buckets]   # pmid -> that paper's own work (cache_read stays 0)
+    models: Dict[str, set]               # pmid -> models seen on its turns
+    overhead_buckets: Buckets            # shared work + ALL cache-read
     unmatched_turns: int
     matched_turns: int
 
+    # Backward-compatible scalar views (tokens, not $).
+    @property
+    def direct(self) -> Dict[str, int]:
+        return {p: b.work for p, b in self.direct_buckets.items()}
+
+    @property
+    def shared_work(self) -> int:
+        return self.overhead_buckets.work
+
+    @property
+    def reread_total(self) -> int:
+        return self.overhead_buckets.cache_read
+
     @property
     def overhead(self) -> int:
-        return self.shared_work + self.reread_total
+        return self.overhead_buckets.total
 
 
 def attribute(turns: Sequence[Turn], articles: Sequence[Article]) -> Attribution:
-    """Assign each turn to one article (direct) or to shared overhead."""
-    direct = {a.pmid: 0 for a in articles}
+    """Assign each turn to one article (direct) or to shared overhead, per bucket."""
+    direct = {a.pmid: Buckets() for a in articles}
     models: Dict[str, set] = {a.pmid: set() for a in articles}
-    shared_work = reread_total = matched = unmatched = 0
+    overhead = Buckets()
+    matched = unmatched = 0
 
     for t in turns:
-        reread_total += _reread(t.usage)          # re-read is always overhead
+        overhead.cache_read += int(t.usage.get("cache_read_input_tokens", 0) or 0)  # always overhead
         owners = [a for a in articles if any(k and k.lower() in t.blob for k in a.keys)]
         if len(owners) == 1:
             a = owners[0]
-            direct[a.pmid] += _work(t.usage)
+            direct[a.pmid].add_work(t.usage)
             models[a.pmid].add(t.model)
             matched += 1
         else:                                     # 0 or >1 article referenced -> shared
-            shared_work += _work(t.usage)
+            overhead.add_work(t.usage)
             unmatched += 1
 
-    return Attribution(list(articles), direct, models, shared_work,
-                       reread_total, unmatched, matched)
+    return Attribution(list(articles), direct, models, overhead, unmatched, matched)
 
 
 @dataclass
 class Row:
     article: Article
-    direct: int
-    overhead_share: int
+    direct_buckets: Buckets
+    overhead_share_buckets: Buckets
     model: str
+
+    @property
+    def direct(self) -> int:
+        return self.direct_buckets.work
+
+    @property
+    def overhead_share(self) -> int:
+        return self.overhead_share_buckets.total
 
     @property
     def total(self) -> int:
         return self.direct + self.overhead_share
 
+    def cost(self, table: Optional[dict] = None) -> float:
+        return (self.direct_buckets.cost(self.model, table)
+                + self.overhead_share_buckets.cost(self.model, table))
+
 
 def build_rows(attr: Attribution, weight_by_direct: bool = False) -> List[Row]:
     """Split overhead across articles and produce one output row each."""
     n = len(attr.articles)
-    overhead = attr.overhead
-    total_direct = sum(attr.direct.values()) or 1
+    total_direct = sum(b.work for b in attr.direct_buckets.values()) or 1
     rows: List[Row] = []
     for a in attr.articles:
         if weight_by_direct:
-            share = round(overhead * attr.direct[a.pmid] / total_direct)
+            factor = attr.direct_buckets[a.pmid].work / total_direct
         else:
-            share = round(overhead / n) if n else 0
+            factor = 1 / n if n else 0
+        share = attr.overhead_buckets.scaled(factor)
         seen = {m for m in attr.models[a.pmid] if m and m != "?"}
         model = a.model or (sorted(seen)[0] if seen else "?")
-        rows.append(Row(a, attr.direct[a.pmid], share, model))
+        rows.append(Row(a, attr.direct_buckets[a.pmid], share, model))
     return rows
 
 
-def estimate_cost(attr: Attribution, price: dict) -> float:
-    """Very rough US$ estimate for the whole batch (all buckets, whole session)."""
-    # Only re-read is tracked whole-session here; direct/shared split work tokens but the
-    # per-bucket breakdown isn't retained, so this uses aggregate work vs read at blended
-    # rates for a balpark figure only.
-    work = sum(attr.direct.values()) + attr.shared_work
-    return work * price["output"] / 1e6 + attr.reread_total * price["cache_read"] / 1e6
+def estimate_cost(attr: Attribution, price: Optional[dict] = None,
+                  weight_by_direct: bool = False, table: Optional[dict] = None) -> float:
+    """US$ estimate for the whole batch, per-bucket at each article's own model rate."""
+    return sum(r.cost(table) for r in build_rows(attr, weight_by_direct))
 
 
 # --------------------------------------------------------------------------- rendering
@@ -478,21 +581,22 @@ def render_markdown(rows: Sequence[Row], attr: Attribution, weighted: bool,
         f"- Turns attributed directly: {attr.matched_turns} / "
         f"{attr.matched_turns + attr.unmatched_turns}",
         "",
-        "| PMID | First author-Year | Title | Model | Direct | Overhead share | Total |",
-        "|------|-------------------|-------|-------|-------:|---------------:|------:|",
+        "| PMID | First author-Year | Title | Model | Direct | Overhead share | Total | Est. $ |",
+        "|------|-------------------|-------|-------|-------:|---------------:|------:|-------:|",
     ]
     for r in rows:
         title = (r.article.title or r.article.label or "")[:60]
         lines.append(
             f"| {r.article.pmid or '—'} | {r.article.citation} | {title} | {r.model} "
-            f"| {r.direct:,} | {r.overhead_share:,} | {r.total:,} |")
+            f"| {r.direct:,} | {r.overhead_share:,} | {r.total:,} | ${r.cost():.2f} |")
     if cost is not None:
         lines += ["", f"_Rough batch cost estimate: **~US${cost:,.2f}** "
-                  "(list price, whole session; per-article split not priced separately)._"]
+                  "(each bucket priced at its model's list rate — an estimate)._"]
     lines += ["",
               "_Direct = fresh input + output + cache-creation on this paper's turns. "
               "Context re-read (cache-read) is session-cumulative, so it is counted as "
-              "shared overhead, not charged to any single paper._"]
+              "shared overhead, not charged to any single paper. Est. $ prices the four "
+              "buckets separately at the row's model rate._"]
     return "\n".join(lines)
 
 
@@ -500,12 +604,12 @@ def write_csv(rows: Sequence[Row], attr: Attribution, path: Path) -> None:
     with open(path, "w", newline="", encoding="utf-8") as fh:
         w = csv.writer(fh)
         w.writerow(["pmid", "first_author_year", "title", "model",
-                    "direct_tokens", "overhead_share", "total_tokens",
+                    "direct_tokens", "overhead_share", "total_tokens", "est_cost_usd",
                     "n_articles", "overhead_total"])
         for r in rows:
             w.writerow([r.article.pmid, r.article.citation,
                         r.article.title or r.article.label, r.model,
-                        r.direct, r.overhead_share, r.total,
+                        r.direct, r.overhead_share, r.total, round(r.cost(), 4),
                         len(rows), attr.overhead])
 
 
@@ -523,6 +627,7 @@ def rows_to_json(rows: Sequence[Row], attr: Attribution) -> dict:
             "direct_tokens": r.direct,
             "overhead_share": r.overhead_share,
             "total_tokens": r.total,
+            "est_cost_usd": round(r.cost(), 4),
         } for r in rows],
     }
 
@@ -595,7 +700,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         print(json.dumps(rows_to_json(rows, attr), indent=2))
         return 0
 
-    cost = estimate_cost(attr, _DEFAULT_PRICE) if args.cost else None
+    cost = estimate_cost(attr, weight_by_direct=args.weight_by_direct) if args.cost else None
     md = render_markdown(rows, attr, args.weight_by_direct, cost)
     if args.out:
         Path(args.out).write_text(md + "\n", encoding="utf-8")

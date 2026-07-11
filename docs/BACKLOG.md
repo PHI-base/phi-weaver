@@ -28,9 +28,11 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
   upserts (no double-count); **recurating a paper in a new session — e.g. a different model — is a
   new row**, so `--history <PMID>` compares models like-for-like. The `1/N` split is derived on
   read, so old rows survive an allocation-policy change. Follow-ups: (a) surface the history in the
-  Article-Registry dashboard / a `daily_curation` view once a few real batches exist; (b) optional
-  per-bucket cost pricing (store input/output/cache split, not just total tokens) if $ trends
-  matter. Ties into the **Recuration-comparison workflow** item below (same "DB is the aggregation
+  Article-Registry dashboard / a `daily_curation` view once a few real batches exist; (b) ~~per-bucket
+  cost pricing~~ **done 2026-07-11** — the four token buckets are stored + priced separately at each
+  row's model rate (`PRICES` table), so `--cost`/`--history` show a per-paper `$` estimate and the
+  same paper costs less on a cheaper model (recomputed on read; a rate change doesn't invalidate
+  rows). Ties into the **Recuration-comparison workflow** item below (same "DB is the aggregation
   home, grows over time, neutral diff" shape).
 
 ## Curation workflow
