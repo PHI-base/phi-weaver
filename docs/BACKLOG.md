@@ -12,6 +12,14 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
   **offline** against it — existence + obsolescence, no network. GO/PHIPO still use OLS.
   Refresh instructions: `phiweaver/lookup/data/README.md`. Surfaced 2026-07-03 curating
   PMID:26177154 (PHIDO:0000164 Fusarium wilt), which now validates 7/7.
+- [ ] **Per-article token attribution** (tool landed 2026-07-11) — `phiweaver/article_tokens.py`
+  attributes a batch session's token spend to each curated paper (PMID) + a shared-overhead split
+  (equal 1/N, or `--weight-by-direct`), joining First-author/Year/Title from the tracking DB. Reads
+  batch PMIDs from the draft `meta` blocks and segments turns by the per-paper draft references
+  already in the transcript (no new marker discipline). Cache-read is counted wholly as shared
+  overhead (session-cumulative, not attributable to one paper). Follow-ups: (1) wire it as a final
+  step in the batch skill so each batch auto-emits its token table into the session log; (2) confirm
+  the tracking-DB filename so `--db` auto-detects instead of needing an explicit path.
 
 ## Curation workflow
 - [ ] **Format convergence** — phiweaver *drafts* use the example-template body shape while *gold
