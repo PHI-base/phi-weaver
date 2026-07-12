@@ -1,0 +1,125 @@
+# PHI-Weaver: An AI-Assisted Biocuration Toolkit for Pathogen–Host Interaction Databases
+
+*A descriptive overview: what the system is, why it exists, how it was built, and what it consumes and produces.*
+
+---
+
+## 1. What PHI-Weaver is
+
+PHI-Weaver is an AI-assisted biocuration toolkit for the PHI-base and PHI-Canto pathogen–host interaction (PHI) databases. Its function is narrow and well defined: it converts published scientific papers into structured, PHI-Canto-ready annotation *drafts*, and it tracks the progress of curation work over time. The word "drafts" carries the whole design philosophy. Every output is draft curator assistance. Nothing the system produces is treated as a finished annotation until a human expert has reviewed and validated it, and the curator retains sole ownership of the final decision and of any submission to PHI-base.
+
+The problem PHI-Weaver addresses sits at the intersection of two facts. First, the scientific literature on how pathogens interact with their hosts grows faster than expert curators can read and encode it. Second, encoding that literature correctly is demanding, structured work: a single paper yields genes that must be resolved to database accessions, alleles and genotypes that must be described in a controlled vocabulary, phenotypes that must be mapped to specific ontology terms, and disease and interaction relationships that must be assigned with the correct evidence codes. PHI-Weaver automates the mechanical and lookup-heavy parts of that pipeline so that scarce curator time is spent on judgement rather than on retrieval and formatting.
+
+The system is deliberately not an autonomous curator. It is a set of tools and reusable workflows that draft, check, and organise, always surfacing uncertainty rather than concealing it. When the system cannot resolve a gene to an accession, or cannot find an ontology term that matches a described phenotype, it says so explicitly instead of inventing an answer. This constraint — never present a guess as a fact — is the central commitment that makes the drafts trustworthy enough to be worth a curator's review.
+
+Architecturally, PHI-Weaver separates a portable software engine from the human-facing content it operates on. The engine is an importable Python package, `phiweaver/`, that runs from the repository root using only the Python standard library, with no mandatory installation step. The content — protocols, training material, standards notes, and a growing library of worked curation examples — lives in a set of numbered folders that double as an Obsidian vault for the human curator. The literature itself (the copyrighted PDFs and their converted text) lives outside the repository entirely, in external storage configured through an environment variable. This layering keeps the engine lean and reusable while keeping curation content and copyrighted material where they belong.
+
+The toolkit is tool-agnostic. It was built to be driven by an LLM coding agent, and it is used most often through Claude Code, but the instructions and workflows are written so that any compatible agent (for example, OpenCode) can read the same source of truth and run the same workflows. The reusable workflows themselves are packaged as *skills*: self-contained folders, each describing when to use it and how, covering paper triage, gene and protein lookup, genotype creation, phenotype annotation and ontology mapping, quality control, gene-for-gene curation, benchmarking, and the assembly of PHI-Canto entry queues.
+
+---
+
+## 2. Why PHI-Weaver is needed
+
+### The curation bottleneck
+
+PHI-base is a curated database of genes experimentally shown to affect the outcome of pathogen–host interactions, and PHI-Canto is the community curation tool through which annotations are created and submitted. Both depend on expert biocurators reading primary literature and encoding it against a formal data model and a set of controlled ontologies. This is high-skill work, and it does not parallelise easily: the expertise required to judge whether a paper contains curatable PHI content, and to encode it correctly, is exactly the expertise that is in short supply. The result is a persistent backlog in which relevant papers accumulate faster than they can be curated.
+
+Much of a curator's time in this pipeline is not spent on the judgements only an expert can make. It is spent on retrieval and transcription: finding the UniProtKB accession for a gene named in a paper, confirming that a candidate ontology term exists and is not obsolete, transcribing allele and genotype descriptions into the exact form the curation tool expects, and re-checking that nothing was mistyped. These tasks are mechanical, rule-bound, and error-prone precisely because they are repetitive. They are also the tasks a well-constrained software system can do quickly and consistently. Shifting them off the curator's desk is the primary justification for the toolkit.
+
+### Why an LLM, and why the guardrails
+
+The reasoning stages of curation — deciding whether a paper is in scope, extracting phenotype descriptions from prose, proposing a phenotype-to-ontology mapping — are not reducible to deterministic scripts. They require reading comprehension over scientific text, which is what large language models do well. This is the reason PHI-Weaver is built around an LLM rather than around pattern matching alone.
+
+The same capability creates the central risk. A language model asked for a gene accession or an ontology term will, if unconstrained, produce a plausible-looking identifier whether or not it is correct. In a curation context a confidently wrong annotation is worse than a missing one, because it can propagate into a shared community database and mislead downstream users. PHI-Weaver's design answers this risk directly. The scientific-accuracy rules that govern every workflow forbid inventing references, PMIDs, DOIs, UniProtKB accessions, gene names, gene or protein functions, and ontology mappings. Identifiers are resolved against authoritative sources, not generated; ontology terms are verified to exist and to be non-obsolete before they are used; a phenotype phrase is mapped only to a real PHIPO term, and if none fits, the result is an explicit `no_match` rather than an approximation. Evidence, interpretation, and speculation are labelled separately, and each claim is tied to a specific figure, table, or section of the source paper.
+
+### Why not fully automate submission
+
+A reasonable question is why the system stops at drafts rather than submitting annotations directly. The answer is partly technical and partly a matter of scientific responsibility. Technically, PHI-Canto has no public write API; curation is performed through a multi-step web interface, and bulk loading is a server-side administrative operation rather than a curator-facing feature. More importantly, the drafts are AI-generated and carry explicit curator flags such as "no PHIPO term found." Pushing unreviewed drafts into the biocurator review queue at volume would shift the burden rather than reduce it, and would risk polluting a shared resource. The draft-then-validate workflow builds the human checkpoint in by design, which is both the safer and the more useful arrangement.
+
+### Who it is for
+
+The toolkit is maintained by a domain scientist — a biocurator — rather than by a software engineering team. This shaped the requirements as much as the science did. The core had to run with minimal setup, depend only on the standard library, and avoid infrastructure that would need specialist support to operate. Heavy dependencies and speculative infrastructure were pushed to the margins or deferred entirely, so that the working system a single scientist can run and understand is never held hostage to machinery that a single scientist cannot maintain.
+
+---
+
+## 3. How PHI-Weaver was built
+
+### The two-layer structure
+
+The foundational design decision is the separation of the software engine from the content it operates on. The repository mixes a tool engine with Obsidian curation notes, and rather than let these intertwine, the build keeps them as two clean layers. The engine is the importable `phiweaver/` package: testable, portable, and reusable against different content. The content vault is a set of numbered folders holding protocols, training material, standards, and worked examples for the human curator. Literature and media are externalised out of the repository entirely. This separation exists because the engine and the data evolve independently, and because the engine must be able to run headless — on a server or compute cluster with no vault present at all.
+
+The engine package is organised by concern. The `lookup/` subpackage resolves genes and proteins to UniProtKB accessions, validates ontology identifiers, and maps phenotype phrases to PHIPO terms. The `tracking/` subpackage owns the SQLite tracking database, its versioned migrations, and the code that reads and writes curation progress. The `pipeline/` subpackage orchestrates the stages. The `pdf/` subpackage converts papers. A `common/` subpackage defines the shared result structure that every tool returns, and a small registry and example-index module round out the package. Everything runs from the repository root as, for example, `python3 -m phiweaver.lookup.query_uniprot`, and installation with `pip` is optional rather than required — a decision that matters because some managed Python environments block user installs, and a domain scientist should not have to fight the environment to run the tool.
+
+### The module contract and the shared envelope
+
+New capabilities plug into the engine through a single, predictable contract. A module is a skill (the human- or agent-facing workflow) plus an optional deterministic tool plus tests, wired together by machine-readable metadata and a generated registry so that capabilities are discoverable. Every deterministic tool returns a structured result carrying a `status`, a payload, and provenance; it offers machine-readable JSON output; it exits with a conventional success or failure code; and its inputs and outputs are injectable so that tests run offline without network access. This uniform result structure — referred to as the envelope — is what allows the parts of the system to be tested and evolved independently, and it is the seam along which future modules will attach.
+
+### The workflows, packaged as skills
+
+The reusable curation workflows live in `skills/`, one folder per workflow, each with a `SKILL.md` that states when to use it and how. The core sequence runs from paper triage, through gene and protein lookup, into genotype creation, phenotype annotation by way of PHIPO mapping, and finally quality control. Around this core sit additional skills for gene-for-gene and effector–host curation methodology, for importing a completed PHI-Canto session as a validated example, for benchmarking curation quality against gold standards, and for assembling a PHI-Canto entry queue. Because the skills are tool-agnostic, the same workflow definitions serve any compatible agent, and the registry keeps them enumerated and enforced so that a skill cannot silently fall out of the system.
+
+### The data model the drafts already match
+
+A design consequence worth emphasising is that a completed draft is not free-form text. It already contains PHI-Canto's data model in the correct order: genes with UniProtKB identifiers, then genotypes described by allele type and expression level, then metagenotypes pairing pathogen against host with controls marked, then annotations — pathogen phenotype, pathogen–host interaction phenotype, disease name, and Gene Ontology (GO) terms — each carrying a term identifier, an evidence code, and any conditions or extensions. The biological structuring is done inside the draft. What remains between a draft and a submitted annotation is transport into the curation tool plus a curator's review, not a further round of structuring.
+
+### Guardrails as a build principle, not an afterthought
+
+The "never guess" rule is enforced structurally rather than merely encouraged. Ambiguity and "not found" are explicit result statuses, not silent gaps. UniProtKB accessions are resolved by querying the authoritative source. Ontology identifiers across PHIPO (phenotype), GO, PHIDO (disease), and related vocabularies are validated for format, existence, and non-obsolescence — using the EBI Ontology Lookup Service for the online vocabularies and a bundled ontology file for PHIDO. Phenotype phrases are mapped only to real PHIPO terms. Interaction counts reported in the tracking database are derived only from explicit structure in the curation notes, never inferred loosely. Each of these is a deliberate refusal to let plausibility substitute for correctness.
+
+### Provenance and reproducibility
+
+Because the output of a curation tool must be auditable, every generated artefact carries a one-line provenance footer of the form `phiweaver · <model> · commit <hash> · date <date>`. The git commit hash serves as the version number: a single token that pins the exact rules and examples behind an output, with no separate version bookkeeping to drift out of sync. The model name is recorded because the git history cannot know which model produced a given draft, and the date is included as a human convenience rather than as the identifier. This discipline exists so that, given any output, one can reconstruct what produced it — a requirement for scientific reproducibility, not a nicety.
+
+### The safety net
+
+Every change to the engine is gated by two automated checks: a smoke test of the toolkit's health and a suite of network-free unit tests. The smoke test confirms a fresh checkout or cloud workspace is functional; the unit suite exercises the individual tools offline and deterministically. Both run automatically when the cloud development environment is built. Their purpose is to let the parts of the system be updated with confidence, which is what makes the modular structure worth having in the first place.
+
+### The design decisions that shaped it
+
+Several recorded decisions explain why the system looks as it does. The engine and content were kept as two layers so each could evolve independently and the engine could be reused (D1). A single module contract with a shared envelope gave every capability the same testable, discoverable shape (D2). The core was kept standard-library-only and runnable from the repository root so a domain scientist could run it without environment friction, with heavy dependencies pushed to a plug-in boundary rather than into the core (D3). The prohibition on guessing was made central to trust in both the drafts and the example library (D4). The tracking database was given one canonical location and a namespaced migration system so that every consumer reads and writes the same store and modules can extend the schema cleanly (D5).
+
+Two decisions concern how curator expertise enters the system. Worked curations are kept as a validated, tag-classified example library that the system retrieves from when drafting a similar case — retrieval of in-context references, explicitly not model training, with a validated-status gate because a wrong example would propagate its mistakes (D10). Curator methodology, such as gene-for-gene and effector–host conventions, is encoded as a dedicated skill rather than as inline notes, so that a self-contained body of knowledge has one updatable home (D13). Applying the gene-for-gene skill to a real draft immediately caught a genuine modelling error — a disease name annotated on an artificial multicopy-plasmid genotype — which confirmed the underlying principle: the drafts are suggestions, and a curator-authored rule, encoded once, corrects them at scale.
+
+A further decision governs benchmarking. Curation quality is scored item by item on an Excel scorecard with a defined rubric, measuring completeness (recall) alongside correctness (precision). The system pre-fills the objective column — identifier validity and ontology-term existence — while a human fills the judgement ratings. Critically, the system must never score its own drafts, because a tool grading its own work is a circular and meaningless benchmark; the scorer must be independent (D12). This is why the benchmark is designed so that the objective, mechanical checks are automated but the evaluative judgement stays with a person.
+
+Finally, several decisions record deliberate restraint. The team started simple and deferred heavy infrastructure — containers, cluster deployment, a plug-in framework — treating them as a destination rather than a first step, because premature infrastructure is cost without payoff for a solo domain-scientist maintainer (D8). Where two overlapping outputs existed, the redundant one was retired: an earlier design produced both a verbose worked worksheet and a lean entry queue from the same data, and when a curator found in live use that the queue was a strict superset actually used at the keyboard, the worksheet renderer, skill, and tests were removed (D14 superseded by D16). Most recently, the curation conventions that the PHI-base team settled only through discussion — the rules a paper never states and an AI draft gets wrong without being told — were mined from the project's PHI-Canto how closed issue tracker into a single cited standards note and wired into the skills that apply them, with every rule citing its source issue (D17).
+
+---
+
+## 4. Input and output
+
+### What goes in
+
+The primary input is a scientific paper, supplied as a PDF. Everything downstream flows from that document. The literature does not live in the repository; it is read from external storage whose location is configured through an environment variable, which keeps copyrighted material out of version control and lets each installation point at its own store. In a zero-setup cloud demonstration, a small bundled set of open-access articles stands in for a curator's literature store.
+
+Alongside the paper, the system draws on reference inputs it does not generate. It queries UniProtKB for gene and protein identity and function. It queries the EBI Ontology Lookup Service to validate GO, PHIPO, and related ontology terms, and it consults a bundled ontology file for PHIDO disease terms. It retrieves matching worked examples from the validated curation-example library to use as in-context references when drafting a similar case. For progress tracking, it reads and writes a SQLite tracking database at a fixed canonical location.
+
+### The processing stages
+
+Between input and output the paper passes through an ordered sequence. It is first converted from PDF into clean markdown, with figures extracted and their captions and tables preserved, because those captions are where much of the curatable phenotype description lives. The converted text is triaged to decide whether the paper contains curatable PHI content and to surface candidate items. Genes and proteins named in the paper are resolved to UniProtKB accessions with evidence-backed functions. Genotypes are constructed using the controlled allele-type and expression-level vocabulary. Phenotypes are extracted and mapped to real PHIPO terms, with the mappings validated for existence and non-obsolescence. Phenotype annotations are then assembled with their evidence codes, conditions, and extensions. The assembled draft passes a quality-control check before any human sees it, and the tracking database is updated with completion metrics — protein and interaction counts derived only from explicit structure in the notes. In the simplest mode of use, a curator runs these stages by hand, one at a time, checking the output of each before running the next; automation of the full chain is treated as something to add only once the manual version has proven its worth.
+
+### What comes out
+
+The principal output is a structured curation draft for a paper, expressed in PHI-Canto's data model. As described above, the draft holds genes with UniProtKB identifiers, genotypes with allele types and expression levels, metagenotypes pairing pathogen and host with controls marked, and annotations for pathogen phenotype, pathogen–host interaction phenotype, disease name, and GO, each with its term identifier, evidence code, and any conditions or extensions. Uncertain items are not silently dropped or guessed; they are flagged, so a curator can see exactly where the system stopped short.
+
+From a draft, the system generates a PHI-Canto entry queue: a table-driven click-list that mirrors the exact sequence a curator follows in the web tool, from PMID to gene list to alleles, genotypes, metagenotypes, and one row per annotation. The distinctive feature of the entry queue is its safety filter. Items that cannot be entered responsibly are moved into a parked section rather than into any entry table. The governing rule is a held-gene cascade: a gene with no UniProtKB accession is held, and every allele, genotype, metagenotype, and annotation that depends on it is parked rather than presented for entry. Dangling references, annotations lacking a term, and interpretive molecular-function claims are parked on the same principle. A curator opens PHI-Canto and the entry queue side by side and enters the annotations, ticking them off, confident that nothing uncertain will be entered by accident. Because this reformatting is deterministic, it can never invent an accession, a term, or an evidence code — which is precisely why it was built as a deterministic renderer rather than as a runtime language-model prompt.
+
+The system produces several further outputs. It maintains a validated, tag-classified library of worked curation examples, each a draft until a curator marks it validated, retrieved as references for future drafting. It produces benchmark scorecards and a shareable report that score curation quality — blind and against gold standards — with the mechanical checks pre-filled and the judgement ratings left to a human. It records session logs and a development timeline, and it maintains the SQLite tracking database of curation status and completion metrics. Every generated output carries the provenance footer that pins the model, the commit, and the date behind it.
+
+### The boundary of the output
+
+The output stops, deliberately, at the point of curator review. The drafts and entry queues are inputs to a human's judgement, not submissions. A curator reviews each AI-drafted item, corrects it, and enters it into PHI-Canto, at which point it joins the biocurator review queue like any other curation. The final annotation in PHI-base is the product of a person's decision. The system's contribution is to have done the retrieval, the formatting, the validation, and the safety-checking that would otherwise have consumed that person's time.
+
+---
+
+## 5. Current status and direction
+
+As built, PHI-Weaver is a functional toolkit. The structural modularity work is complete: the importable engine package, the module contract and registry, co-located tests, the separation of operational material from the engine, the database migration layer, and the links from skills to their backing tools all exist. The curation-example library is scaffolded, with its generator, template, tagging, and index in place; the next step is to produce the first worked examples by curating real papers and having a curator validate them. The safety net of smoke and unit tests gates every change.
+
+The longer-term direction is recorded but deliberately not yet built. The intended destination is for PHI-Weaver to become a plug-in host: a small, dependency-light core into which independently developed curation modules — a figure-to-phenotype vision module, a phenotype-to-PHIPO module — plug in by honouring one contract, run out of process so that their heavy and conflicting dependencies never contaminate the stdlib-only core, and are gated by a conformance harness before incorporation. In that topology the light core orchestrates heavy GPU work, including a local AI model, on a compute cluster, while running the deterministic stages itself. The reasoning stages would then call a pluggable inference backend, with model identity recorded in provenance for every draft so that batch runs remain reproducible.
+
+None of this is a prerequisite for using the toolkit today, and that ordering is intentional. The plug-in host, the local model, and the cluster deployment are the destination; the simplest workflow that produces validated drafts is the working system. The direction exists to keep the door open, not to gate present usefulness behind future infrastructure.
+
+---
+
+*This document describes PHI-Weaver as recorded in `AGENTS.md`, `docs/OVERVIEW.md`, `docs/DESIGN-DECISIONS.md`, `docs/PLUGIN-ARCHITECTURE.md`, and `docs/CANTO-SUBMISSION-ROUTES.md`. For the authoritative, continuously updated record, consult those sources.*

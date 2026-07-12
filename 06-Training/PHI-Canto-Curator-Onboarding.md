@@ -232,6 +232,7 @@ PHI-Canto is the community curation platform for **PHI-base** (Pathogen-Host Int
 - GO documentation: <http://geneontology.org/>
 
 ### Training Materials in This Vault
+- [[Reviewing-PHI-Weaver-Drafts]]: How to review AI-generated PHI-Weaver drafts and enter them into PHI-Canto — start here if you receive drafts to curate
 - [[PHI-Canto-Complete-Curation-Protocol]]: Detailed step-by-step procedures
 - [[UniProtKB-Gene-Identification-Guide]]: Detailed gene lookup procedures
 - [[Ontology-Terms-Reference]]: Quick reference for common terms
