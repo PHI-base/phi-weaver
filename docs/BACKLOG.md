@@ -121,6 +121,12 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
   confirm it exists. To close it we'd need the PHIPO_EXT / FYPO_EXT term list as a file to vendor
   (mirror PHIDO/PECO). Low priority — gene-for-gene / penetrance / severity extensions are not in
   current drafts, and their gate roots are already known.
+  - *Partial answer (Cuzick et al. 2023, Appendix 1 — see [[07-Standards/PHI-Canto-Framework-Cuzick2023]]):*
+    the gene-for-gene PHIPO_EXT **value labels** are now known (~11 compound "compatibility / effector
+    status / R-gene status" strings), as are the `extent of infectivity` values (loss/unaffected
+    pathogenicity, reduced/increased virulence, mutualism present/absent/loss). Still missing: the
+    term **IDs** for those labels — a vendored PHIPO_EXT term file would let us map label→ID and
+    existence-check.
 
 ## Ontology coverage gaps (PHIPO term requests)
 _Curatable phenotypes seen in papers that have **no** PHIPO term — captured and flagged in the draft,
