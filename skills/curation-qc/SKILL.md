@@ -32,7 +32,26 @@ clean, provenance-complete draft.
 4. Check pathogen and host organisms/strains are specified.
 5. Check provenance is recorded: input file, commands, assumptions, outputs, uncertainties.
 6. Check evidence / interpretation / speculation are separated and labelled.
-7. Compile a QC report: pass items, issues, and open questions.
+7. Check team-settled convention violations (see
+   `07-Standards/PHI-Canto-Curation-Conventions.md`; source: PHI-base/curation closed issues,
+   collected 2026-07-12):
+   - **No PHIPO_EXT term used as a primary annotation term** — PHIPO_EXT is extension-only, in
+     the `gene_for_gene_interaction` extension; the primary term must be a PHIPO term. Using it
+     as a primary term is a curation error. (`#249`)
+   - **No `Unknown` expression level** on any allele — must be `not assayed` / `overexpression` /
+     a real level. (`#70`)
+   - **No `ISS` evidence code** on GO annotations (rejected by the team; use experimental codes
+     or TAS). (`#246`, `#245`)
+   - **Disease name only on natural host + visible disease** — not on non-natural hosts or where
+     no disease is observed. (`#49`)
+   - **Growth-secondary phenotypes are justified or flagged** — for any phenotype annotated on a
+     genotype that is also severely growth-/fitness-impaired, check it is either shown to be
+     growth-independent (mutant grows normally, readout biomass-normalised, or complementation
+     rescues) or carries an explicit "may be pleiotropic / growth-secondary" comment and a flag;
+     and that no specific GO function is asserted from a growth-confounded phenotype alone.
+     (phiweaver working convention, pending team confirmation — see the "Phenotype interpretation"
+     section of the conventions doc.)
+8. Compile a QC report: pass items, issues, and open questions.
 
 ## Expected outputs
 - QC report listing each check as pass / fail / needs-attention.

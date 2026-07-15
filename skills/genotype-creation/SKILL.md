@@ -60,6 +60,26 @@ Assign pathogen **strains** and host **cultivars** accurately — cultivar ident
 R-gene presence/absence, which is critical for gene-for-gene cases (see the `gene-for-gene`
 skill).
 
+## Team-settled allele conventions
+From `07-Standards/PHI-Canto-Curation-Conventions.md` (source: PHI-base/curation closed
+issues, collected 2026-07-12):
+
+- **`transformant` is decided by ORIGIN, not method.** Use allele type `transformant` only when
+  an allele comes from **strain A and is introduced into strain B**. A same-strain
+  mutate-and-reintroduce is *not* a transformant — use the mutation-based type, or
+  `ectopic expression` for random/plasmid integration. (`#157`)
+- **Transformant naming:** name `<gene> transformant` (auto-filled by PHI-Canto); description
+  `<strain>-<gene>(<allele>)` (give the AA change if known, not for a plain WT transgene); and
+  **record the endogenous copy's status in the background field** — `endogenous <gene> present`,
+  `endogenous <gene> absent` (naturally absent), or `<gene>delta` (deleted by researchers).
+  (`#157`)
+- **Deletion + substitution in one allele** → allele type `partial deletion and amino acid
+  change`. (`#16`)
+- **Never emit `Unknown` expression level** — it was retired; use `not assayed` or
+  `overexpression` as the paper supports. (`#70`)
+- **Do not push signal-peptide removal to background** — the assay still targets the processed
+  WT protein. (`#77`)
+
 ## Expected outputs
 - Single- and/or multi-allele genotype(s), each allele with its type and expression level.
 - Complementation and control genotypes where the experiment uses them.

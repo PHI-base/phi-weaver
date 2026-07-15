@@ -210,6 +210,30 @@ make the worksheet an opt-in flag on the queue (rejected — no one asked for th
 dormant renderer still needs tests and doc upkeep). **Status:** done — module/skill/test removed,
 shared helpers relocated, registry + docs updated, entry-queue tests green.
 
+### D17 — Curation conventions mined from the PHI-base/curation issue tracker
+phiweaver's skills encoded curation *mechanics* but not the many *convention* decisions the
+PHI-base team reached only through discussion — the things a paper never states and an AI draft
+gets wrong without being told. **Decision:** mine the **PHI-base/curation** closed GitHub issues
+(collected **2026-07-12**) for durable rules, land them in one cited standards note
+(`07-Standards/PHI-Canto-Curation-Conventions.md`), and wire the actionable ones into the skills
+that apply them — `paper-triage` (scope exclusions), `genotype-creation` (allele conventions),
+`curation-qc` (violation checks). Notable "why" rulings captured: **ISS is rejected** as a GO
+evidence code (too predictive/in-silico) while **TAS is enabled for all curators** (`#246`,
+`#245`); **PHIPO_EXT terms are extension-only, never primary** — using one as a primary term is a
+curation error that breaks the PHI-base 5 display (`#249`); **`transformant` allele type is
+decided by origin, not method**, with the endogenous copy's status recorded in the background
+(`#157`); **chemistry scope excludes natural-variant-only and interspecies-complementation
+papers** (`#115`, `#117`); **`Unknown` expression level is retired** (`#70`). **Why:** these are
+load-bearing, hard-won, and not re-derivable from the code or a paper; a single cited home keeps
+them auditable and lets the skills reference rather than restate them. **Provenance:** every rule
+cites its issue number (`#<n>` → `https://github.com/PHI-base/curation/issues/<n>`); some were
+reversed at least once before settling, so the note flags open threads (diploid-mode display,
+genetic crosses) and says to re-verify against the live tracker. **Status:** done — standards note
+written, three skills updated; not a code change, so no tests. **Alternatives:** inline the rules
+into each skill only (rejected — no single auditable source, provenance scattered); leave them
+tacit in the examples library (rejected — the exclusions and evidence-code rules never surface in
+a worked example).
+
 ### D11 — Deliberately deferred / not done
 - **Full vault renumbering** — low value; numbering gaps left cosmetic.
 - **JSON curation-record schema** — a machine consumer now exists (the benchmarking-scorecard

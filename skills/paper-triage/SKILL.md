@@ -34,6 +34,20 @@ content, so curator time goes to high-value papers.
 6. List candidate curation items (genes, phenotypes, metagenotypes) — as candidates,
    not confirmed annotations.
 
+## Scope rules — what we do NOT curate
+Team-settled exclusions (see `07-Standards/PHI-Canto-Curation-Conventions.md`; source:
+PHI-base/curation closed issues, collected 2026-07-12):
+- **Natural-variant-only papers** — no engineered gene modification and no clear WT control to
+  compare against (out of scope even for chemistry). (`#115`, `#181`)
+- **Interspecies complementation** — a pathogen genotype cannot hold two species, so expressing
+  one species' variant in another (e.g. Mg CYP51 in *S. cerevisiae*) is not curatable. (`#117`)
+- **Non-pathogenic model organisms** as the sole subject (e.g. *S. cerevisiae* chemistry
+  phenotypes with no pathogen). (`#115`)
+- **Chemistry papers** are in scope only when they contain **lab-engineered** gene modification
+  (substitution, overexpression); keep them Tier-1 (title's take-home message). (`#115`)
+- **Papers with no gene-specific data are still approved** (as an empty session) so they aren't
+  re-triaged for curation later — flag as "approve, no annotations", not "uncuratable". (`#112`)
+
 ## Expected outputs
 - Scope verdict + reason.
 - Pathogen/host list with organisms.
