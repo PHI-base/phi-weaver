@@ -62,6 +62,7 @@ def check_imports():
     from phiweaver.tracking import session_logger          # noqa: F401
     from phiweaver.lookup import query_uniprot             # noqa: F401
     from phiweaver.lookup import validate_ontology_ids     # noqa: F401
+    from phiweaver.export import docx                      # noqa: F401
 
 
 def check_pipeline_root_and_storage():

@@ -393,11 +393,17 @@ def main(argv=None) -> int:
     ap.add_argument("drafts", nargs="+", help="draft .md file(s) with a ```json `canto` block")
     ap.add_argument("--out", help="output path (single draft only)")
     ap.add_argument("--stdout", action="store_true", help="print to stdout instead of writing files")
+    ap.add_argument("--no-docx", action="store_true",
+                    help="do not write the Word .docx (produce only the .md)")
+    ap.add_argument("--no-md", action="store_true",
+                    help="do not write the .md (produce only the .docx)")
     ap.add_argument("--validate", action="store_true",
                     help="check ontology IDs online and park obsolete/not-found terms (needs network)")
     args = ap.parse_args(argv)
     if args.out and len(args.drafts) != 1:
         ap.error("--out is only valid with a single draft")
+    if args.no_md and args.no_docx:
+        ap.error("--no-md and --no-docx together would write nothing")
 
     from phiweaver.canto.coverage import coverage_for_draft
     for d in args.drafts:
@@ -406,9 +412,16 @@ def main(argv=None) -> int:
             print(md)
         else:
             out = Path(args.out) if args.out else default_out(d)
-            out.write_text(md, encoding="utf-8")
-            print(f"wrote {out}  —  genes: {counts['genes_enter']} enter / {counts['genes_held']} held; "
-                  f"annotations: {counts['annotations_enter']} enter; parked: {counts['parked']}")
+            written = []
+            if not args.no_md:
+                out.write_text(md, encoding="utf-8")
+                written.append(str(out))
+            if not args.no_docx:
+                from phiweaver.export.docx import write_docx
+                written.append(str(write_docx(md, out.with_suffix(".docx"))))
+            print(f"wrote {', '.join(written)}  —  genes: {counts['genes_enter']} enter / "
+                  f"{counts['genes_held']} held; annotations: {counts['annotations_enter']} enter; "
+                  f"parked: {counts['parked']}")
         for w in coverage_for_draft(d):
             print(f"  ⚠ coverage [{Path(d).name}]: {w}", file=sys.stderr)
     return 0

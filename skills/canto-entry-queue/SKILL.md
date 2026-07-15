@@ -3,12 +3,15 @@ name: canto-entry-queue
 description: Turn a phiweaver curation draft into a concise, table-driven PHI-Canto "entry queue" — a click-list a biocurator works through top to bottom in canto.phi-base.org, with uncertain items parked so they can't be entered by accident. This is the single Route-1 output; use when a draft's `canto` block is ready for a curator to enter into PHI-Canto.
 backing_script:
   - phiweaver/canto/entry_queue.py
+  - phiweaver/export/docx.py
 tests:
   - tests/test_entry_queue.py
+  - tests/test_export_docx.py
 inputs:
   - a phiweaver draft (.md) whose ```json block contains a populated `canto` object
 outputs:
   - one Markdown entry queue per draft — setup tables (genes/alleles/genotypes/host/metagenotypes) then annotation tables (GO / physical interaction / pathogen / interaction / disease), a parked-items safety section, and summary counts
+  - a Word **.docx** copy of the entry queue alongside the .md; by default both are written — pass `--no-docx` for markdown only, or `--no-md` for the Word file only
 ---
 
 # Canto entry queue
