@@ -80,19 +80,22 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
   annotations). PHI-ECO is qualitative (no "PDA"/"25 °C" term) so numeric specifics stay in the
   comment — the medium→PECO granularity is the curator's call.
 
-- [ ] **Annotation-extension relations + allowed values (Canto config)** — *blocked, needs curator
-  input* (surfaced 2026-07-15, PMID:42089373 review; = "C2"). PHI-Canto annotations carry
-  `relation → value` **extensions** (e.g. `infects_tissue`, `compared_to_control`). Per Hsin-Yun's
-  review the interaction "reduced virulence" **interpretation** belongs in an extension (the primary
-  term is the *measured* `PHIPO:0000365`), but the correct **relation** and its **value vocabulary**
-  are unknown: weaver only infers relation names from gold-standard examples — the draft's
-  `infective_ability = reduced virulence` is a **guess**, not in our attested set (`infects_tissue`
-  / `compared_to_control` / `gene_for_gene_interaction` / `with_host_peptide` / `assayed_using`).
-  Unlike PHIPO/GO/BTO/PECO these are **Canto/PHI-base configuration, not an OLS ontology**, so there
-  is nothing to fetch/vendor. **NEEDS from the curator:** the list of interaction-phenotype extension
-  relations + allowed values — esp. which relation carries virulence, and whether the value is free
-  text / a fixed set / a term ID (e.g. PHIPO_EXT). Then: fix the draft placeholder, add validation if
-  term-based (mirror BTO/PECO), record the convention. Tracks `CURATION-LESSONS.md` L5.
+- [x] **Annotation-extension relations + allowed values (Canto config)** — *resolved 2026-07-15*
+  (surfaced 2026-07-15, PMID:42089373 review; = "C2"). PHI-Canto annotations carry `relation → value`
+  **extensions**. The doubt was that `infective_ability = reduced virulence` in the Sdh draft looked
+  like a **guess**. The curator supplied `config/annotation_extension/phipo_extensions.tsv` from the
+  private PHI-base/config repo, which settles it: **`infective_ability` is a real, attested relation**
+  (not a guess), and its value must be a **PHIPO term ID under `PHIPO:0001179` *infective ability
+  phenotype*** — so "reduced virulence" is `PHIPO:0000015` (confirmed a descendant of PHIPO:0001179),
+  written as the ID, **not** bare text. Done: vendored the TSV offline (weaver is *not* pointed at the
+  private repo — data/README.md), added `phiweaver/lookup/extension_config.py` + `tests/
+  test_extension_config.py` (attested-relation + value-type checks, mirroring BTO/PECO), documented the
+  attested-relations table in `Ontology-Terms-Reference.md`, and fixed the `infective_ability` rule in
+  `PHI-Canto-Curation-Conventions.md`. Tracks `CURATION-LESSONS.md` L5 (→ applied).
+  - *Remaining (curator-facing, low priority):* the gold-standard example curations still display
+    `infective_ability reduced virulence` as text — decide with Hsin-Yun whether examples/drafts should
+    carry the term ID `PHIPO:0000015` in the value. Also **not** validated offline yet: term-value
+    *subtree* membership and the per-primary-term `domain ID` subset constraints (deeper checks).
 
 ## Ontology coverage gaps (PHIPO term requests)
 _Curatable phenotypes seen in papers that have **no** PHIPO term — captured and flagged in the draft,

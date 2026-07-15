@@ -85,8 +85,11 @@ any single rule as current — some were reversed at least once before settling.
   phenotype — e.g. `PHIPO:0000365` *decreased pathogen growth within host* (from lesion length /
   disease index / in-host growth).
 - An **interpretation** such as "reduced virulence" is **not** the primary term — do **not** use
-  `PHIPO:0000015 reduced virulence` as primary. It goes in the **annotation extension** (the exact
-  relation/value is pending the PHI-Canto extension vocabulary).
+  `PHIPO:0000015 reduced virulence` as primary. It goes in the **annotation extension**, as the
+  relation **`infective_ability`** with a **PHIPO term ID** value (not the bare phrase): e.g.
+  `infective_ability → PHIPO:0000015` (reduced virulence). The value must be a term under
+  `PHIPO:0001179` *infective ability phenotype* (the extension's range); confirmed against the
+  PHI-Canto extension config — see the attested-relations list in `Ontology-Terms-Reference.md`.
 - Choose the measured primary term to match the assay; keep the interpretive outcome in the
   extension.
 

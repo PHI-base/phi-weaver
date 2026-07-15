@@ -319,4 +319,39 @@ with **ROBOT** (needs Java); the ontology maintainer (James Seager) does the loa
 
 ---
 
+## Annotation-extension relations (PHI-Canto config, not an ontology)
+
+A PHIPO phenotype annotation can carry **extensions** — `relation → value` qualifiers.
+The legal relations and the value type each accepts are **PHI-Canto configuration**, not
+an OLS ontology, so they are validated **offline** against a vendored copy of
+`phipo_extensions.tsv` by `phiweaver/lookup/extension_config.py` (source: PHI-base/config,
+private — see `phiweaver/lookup/data/README.md`). Do **not** invent relations: use only the
+attested set below. Run `python3 -m phiweaver.lookup.extension_config` to print the live list,
+or `... infective_ability=PHIPO:0000015` to check one pair.
+
+| Relation | Value type | Notes |
+|---|---|---|
+| `alteration_in_archetype` | free text | |
+| `assayed_using` | GeneID | assayed protein/RNA; add **two** GeneIDs for binding pairs |
+| `compared_to_control` | MetagenotypeID | links a mutant metagenotype to its WT control |
+| `gene_for_gene_interaction` | `PHIPO_EXT:` term | annotation type `gene_for_gene_phenotype` |
+| `inverse_gene_for_gene` | `PHIPO_EXT:` term | annotation type `gene_for_gene_phenotype` |
+| `has_penetrance` | `FYPO_EXT:` term or numeric (e.g. `75%`) | proportion of population showing the phenotype |
+| `has_severity` | `FYPO_EXT:` term | |
+| **`infective_ability`** | **PHIPO term under `PHIPO:0001179`** | the *interpretation* of a pathogen–host interaction (e.g. `PHIPO:0000015` reduced virulence). Annotation type `pathogen_host_interaction_phenotype`. |
+| `interaction_outcome` | PHIPO term under `PHIPO:0001198` | outcome of interaction. Annotation type `pathogen_host_interaction_phenotype`. |
+| `infects_tissue` | BTO term | host tissue infected |
+| `observed_organ` | BTO term (allowed roots listed in config) | organ where phenotype was observed |
+| `with_host_peptide` | free text | UniProtKB accession + residue range, e.g. `P12345 (100-200)` |
+
+**Key rule for interaction phenotypes:** the primary term is the *measured* phenotype
+(e.g. `PHIPO:0000365` decreased pathogen growth within host); the *interpretation*
+"reduced virulence" goes in `infective_ability` **as the term ID `PHIPO:0000015`**, never
+as bare text. See the interaction-phenotype section of
+`PHI-Canto-Curation-Conventions.md`. What is **not** yet validated offline: that a
+term-typed value is a genuine *descendant* of the range root, and the per-primary-term
+subset constraints in the config's `domain ID` column — deeper checks left to the curator.
+
+---
+
 *This reference guide should be used alongside the complete PHI-Canto documentation for comprehensive curation support.*

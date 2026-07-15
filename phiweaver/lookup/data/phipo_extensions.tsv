@@ -1,0 +1,35 @@
+domain ID	subset relation	extension relation	range ID	Canto display text	Help text	cardinality	role	annotation_type_name
+PHIPO:0001218	is_a	alteration_in_archetype	Text	alteration in archetype		*	user	
+PHIPO:0000131	is_a	assayed_using	GeneID	affected proteins (add TWO, i.e. both binding partners)		2	user	
+PHIPO:0000132	is_a	assayed_using	GeneID	affected proteins (add TWO, i.e. both binding partners)		2	user	
+PHIPO:0000237	is_a	assayed_using	GeneID	assayed protein		0,1	user	
+PHIPO:0000249	is_a	assayed_using	GeneID	assayed RNA		0,1	user	
+PHIPO:0000989	is_a	assayed_using	GeneID	assayed protein		0,1	user	
+PHIPO:0001025	is_a	assayed_using	GeneID	assayed protein		0,1	user	
+PHIPO:0001060	is_a	assayed_using	GeneID	assayed RNA		0,1	user	
+PHIPO:0001064	is_a	assayed_using	GeneID	assayed RNA		0,1	user	
+PHIPO:0001118	is_a	assayed_using	GeneID	assayed protein		0,1	user	
+PHIPO:0001245	is_a	assayed_using	GeneID	assayed protein		0,1	user	
+PHIPO:0001262	is_a	assayed_using	GeneID	assayed protein		0,1	user	
+PHIPO:0001263	is_a	assayed_using	GeneID	assayed RNA		0,1	user	
+PHIPO:0001267	is_a	assayed_using	GeneID	assayed RNA		0,1	user	
+PHIPO:0001281	is_a	assayed_using	GeneID	assayed protein		0,1	user	
+PHIPO:0001282	is_a	assayed_using	GeneID	assayed protein		0,1	user	
+PHIPO:0001283	is_a	assayed_using	GeneID	assayed protein		0,1	user	
+PHIPO:0001284	is_a	assayed_using	GeneID	assayed protein		0,1	user	
+PHIPO:0000001	is_a	compared_to_control	MetagenotypeID	compared to control genotype		0,1	user	
+PHIPO:0000001	is_a	gene_for_gene_interaction	PHIPO_EXT:0000001	gene-for-gene interaction		0,1	user	gene_for_gene_phenotype
+PHIPO:0000001-is_a(PHIPO:0001196)&is_a(PHIPO:0001197)	is_a	has_penetrance	FYPO_EXT:1000002|%	penetrance	proportion of the population that shows the phenotype (can be quantitative or qualitative)	0,1	user	
+PHIPO:0000402	is_a	has_penetrance	FYPO_EXT:1000002|%	penetrance	proportion of the population that shows the phenotype (can be quantitative or qualitative)	0,1	user	
+PHIPO:0000001	is_a	has_severity	FYPO_EXT:1000001	severity		0,1	user	
+PHIPO:0000082	is_a	has_severity	FYPO_EXT:1000001	severity		0,1	user	
+PHIPO:0000127	is_a	has_severity	FYPO_EXT:1000001	severity		0,1	user	
+PHIPO:0000509	is_a	has_severity	FYPO_EXT:1000001	severity		0,1	user	
+PHIPO:0001215	is_a	has_severity	FYPO_EXT:1000001	severity		0,1	user	
+PHIPO:0001218	is_a	has_severity	FYPO_EXT:1000001	severity		0,1	user	
+PHIPO:0000001	is_a	infective_ability	PHIPO:0001179	extent of infectivity	extent of change in pathogenicity and virulence	0,1	user	pathogen_host_interaction_phenotype
+PHIPO:0000001	is_a	infects_tissue	BTO:0000000	host tissue infected		*	user	
+PHIPO:0000001	is_a	interaction_outcome	PHIPO:0001198	outcome of interaction		0,1	user	pathogen_host_interaction_phenotype
+PHIPO:0000001	is_a	inverse_gene_for_gene	PHIPO_EXT:0000040	inverse gene-for-gene interaction		0,1	user	gene_for_gene_phenotype
+PHIPO:0000002-is_a(PHIPO:0000411)	is_a	observed_organ	BTO:0001489|BTO:0001494|BTO:0001461	observed in organ	the organ where the phenotype was observed	0,1	user	
+PHIPO:0000001	is_a	with_host_peptide 	Text	with host elicitor peptide	the UniProtKB accession number for the protein containing the peptide, then the start and end of the range of amino acids, in parentheses (100-200)	0,1	user	
