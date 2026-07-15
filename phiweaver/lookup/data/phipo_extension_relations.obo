@@ -1,0 +1,40 @@
+format-version: 1.2
+ontology: phipo_extensions
+default-namespace: phipo_extensions
+
+[Typedef]
+id: assayed_using
+name: assayed_using
+def: "Relation between a phenotype and an entity, such as a gene product that acts as an enzyme or substrate, with which the phenotype was assayed." [PomBase:mah]
+comment: Frequently used example: normal or abnormal protein localization assayed_using PomBase:SPBC11B10.09
+property_value: local_domain FYPO:0000001 ! phenotype
+
+[Typedef]
+id: infects_tissue
+name: infects_tissue
+def: "(Detailed definition here)"
+
+[Typedef]
+id: causes_disease
+name: causes_disease
+def: "(Detailed definition here)"
+
+[Typedef]
+id: has_penetrance
+name: has_penetrance
+def: "Relation between a phenotype and its observed penetrance in a population. Penetrance is the proportion of individuals carrying an allele that express a trait associated with the allele." [PomBase:mah]
+synonym: "penetrance" EXACT [PomBase:mah]
+property_value: local_domain FYPO:0000002 ! cell phenotype
+
+[Typedef]
+id: has_severity
+name: has_severity
+def: "Relation between a phenotype and its observed severity in a cell. Can also be used to capture expressivity, i.e. the extent to which a phenotype is expressed in an individual." [PomBase:mah]
+synonym: "has_expressivity" EXACT [PomBase:mah]
+comment: Expressivity is relevant in individuals in which a phenotype is penetrant, i.e. that have an allele and express the phenotype associated with the allele.
+property_value: local_domain FYPO:0000001 ! phenotype
+
+[Typedef]
+id: infective_ability
+name: infective_ability
+def: "Relation between a pathogen-host interaction phenotype and its observed pathogenicity and virulence. Pathogenicity is the ability of a pathogen to produce infectious disease. Virulence is the severity of an infectious disease."

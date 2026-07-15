@@ -352,6 +352,20 @@ as bare text. See the interaction-phenotype section of
 term-typed value is a genuine *descendant* of the range root, and the per-primary-term
 subset constraints in the config's `domain ID` column — deeper checks left to the curator.
 
+**Extensions on other annotation types.** GO and disease-name annotations have their own
+(smaller) extension configs, also vendored and checked offline
+(`extension_config --config go` / `--config phido`):
+
+- **GO annotations** (`phibase_go_extensions.tsv`): `has_input` (a protein ID or free text,
+  e.g. "binds"), `with_host_species` / `with_symbiont_species` (an NCBI taxon ID). These
+  values are IDs/text, **not** ontology branches.
+- **Disease-name (PHIDO) annotations** (`phido_extensions.tsv`): `infects_tissue → BTO`
+  (host tissue), same as on phenotypes.
+
+Neither is used by current drafts yet. The relations themselves are defined (with prose
+definitions) in `phipo_extension_relations.obo` — a **reference** file, not a validation
+source (it is incomplete vs `phipo_extensions.tsv`). See `phiweaver/lookup/data/README.md`.
+
 ---
 
 *This reference guide should be used alongside the complete PHI-Canto documentation for comprehensive curation support.*

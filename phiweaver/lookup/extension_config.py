@@ -40,20 +40,34 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
 
-CONFIG_PATH = Path(__file__).resolve().parent / "data" / "phipo_extensions.tsv"
+_DATA = Path(__file__).resolve().parent / "data"
+
+# The three bundled extension configs, keyed by the annotation family they govern.
+# All share the same TSV shape (domain -> relation -> range); each covers a different
+# PHI-Canto annotation type. "phipo" is the default (interaction/phenotype extensions).
+BUNDLED_CONFIGS = {
+    "phipo": _DATA / "phipo_extensions.tsv",   # PHIPO phenotype / interaction annotations
+    "go": _DATA / "phibase_go_extensions.tsv",  # GO (gene product) annotations
+    "phido": _DATA / "phido_extensions.tsv",    # PHIDO disease-name annotations
+}
+CONFIG_PATH = BUNDLED_CONFIGS["phipo"]          # backward-compatible default
 CONFIG_SOURCE = "bundled phipo_extensions.tsv"
 
 # Value-type of an extension, derived from its declared range ID.
 #   free_text        range "Text"            — arbitrary text (e.g. with_host_peptide)
 #   gene_id          range "GeneID"          — a gene identifier the curation defines
+#   protein_id       range "ProteinID"       — a protein identifier the curation defines
 #   metagenotype_id  range "MetagenotypeID"  — a metagenotype the curation defines
+#   taxon_id         range "PathogenTaxonID"/"HostTaxonID" — an NCBI taxon the curation gives
 #   phipo_term       range "PHIPO:xxxxxxx"   — a PHIPO term (subtree of the range root)
 #   bto_term         range "BTO:xxxxxxx"     — a BTO tissue term
 #   phipo_ext_term   range "PHIPO_EXT:xxx"   — a term in the PHIPO_EXT extension namespace
 #   fypo_ext_term    range "FYPO_EXT:xxx"    — a FYPO_EXT term (optionally with a |unit)
 FREE_TEXT = "free_text"
 GENE_ID = "gene_id"
+PROTEIN_ID = "protein_id"
 METAGENOTYPE_ID = "metagenotype_id"
+TAXON_ID = "taxon_id"
 PHIPO_TERM = "phipo_term"
 BTO_TERM = "bto_term"
 PHIPO_EXT_TERM = "phipo_ext_term"
@@ -78,8 +92,12 @@ def _range_kind(range_id: str) -> str:
         return FREE_TEXT
     if head == "GeneID":
         return GENE_ID
+    if head == "ProteinID":
+        return PROTEIN_ID
     if head == "MetagenotypeID":
         return METAGENOTYPE_ID
+    if head in ("PathogenTaxonID", "HostTaxonID"):
+        return TAXON_ID
     if head.startswith("PHIPO_EXT:"):
         return PHIPO_EXT_TERM
     if head.startswith("FYPO_EXT:"):
@@ -159,34 +177,45 @@ def _parse(path: Path) -> Optional[Dict[str, ExtensionRelation]]:
     return rels
 
 
-@lru_cache(maxsize=1)
-def _index() -> Optional[Dict[str, ExtensionRelation]]:
-    """Module-level cache of the parsed bundled config (None if unavailable)."""
-    return _parse(CONFIG_PATH)
+@lru_cache(maxsize=len(BUNDLED_CONFIGS))
+def _index(config: str = "phipo") -> Optional[Dict[str, ExtensionRelation]]:
+    """Module-level cache of a parsed bundled config, by name (None if unavailable)."""
+    return _parse(BUNDLED_CONFIGS[config])
 
 
-def load(path: Optional[Path] = None) -> Dict[str, ExtensionRelation]:
-    """Return {relation: ExtensionRelation} for the bundled config (or a given path).
-    Raises FileNotFoundError if the config cannot be read."""
-    index = _parse(path) if path is not None else _index()
+def load(path: Optional[Path] = None, config: str = "phipo") -> Dict[str, ExtensionRelation]:
+    """Return {relation: ExtensionRelation} for a bundled config (or an explicit path).
+
+    `config` selects which bundled TSV to read ('phipo' [default], 'go', or 'phido').
+    An explicit `path` overrides `config`. Raises FileNotFoundError if unreadable, or
+    KeyError for an unknown config name."""
+    if path is not None:
+        index = _parse(path)
+    else:
+        if config not in BUNDLED_CONFIGS:
+            raise KeyError(f"unknown config '{config}'; expected one of {sorted(BUNDLED_CONFIGS)}")
+        index = _index(config)
     if index is None:
-        raise FileNotFoundError(f"cannot read extension config ({path or CONFIG_PATH})")
+        raise FileNotFoundError(
+            f"cannot read extension config ({path or BUNDLED_CONFIGS.get(config)})")
     return index
 
 
-def attested_relations(index: Optional[Dict[str, ExtensionRelation]] = None) -> List[str]:
-    """Sorted list of attested extension-relation names."""
-    return sorted((index or load()).keys())
+def attested_relations(index: Optional[Dict[str, ExtensionRelation]] = None,
+                       config: str = "phipo") -> List[str]:
+    """Sorted list of attested extension-relation names in a config."""
+    return sorted((index or load(config=config)).keys())
 
 
 def validate_pair(relation: str, value: str,
-                  index: Optional[Dict[str, ExtensionRelation]] = None) -> ExtensionCheck:
-    """Check one `relation → value` extension against the bundled config.
+                  index: Optional[Dict[str, ExtensionRelation]] = None,
+                  config: str = "phipo") -> ExtensionCheck:
+    """Check one `relation → value` extension against a bundled config.
 
     Validates (a) the relation is attested and (b) the value matches the *type* the
     relation's range declares. Does NOT check ontology-subtree membership or per-domain
     subset constraints (see module docstring)."""
-    idx = index if index is not None else load()
+    idx = index if index is not None else load(config=config)
     rel = idx.get(relation.strip())
     if rel is None:
         return ExtensionCheck(relation, value, False, False, None,
@@ -195,7 +224,7 @@ def validate_pair(relation: str, value: str,
     kind = rel.range_kind
     val = value.strip()
     # ID-typed ranges the curation defines itself, and free text: nothing to format-check.
-    if kind in (FREE_TEXT, GENE_ID, METAGENOTYPE_ID):
+    if kind in (FREE_TEXT, GENE_ID, PROTEIN_ID, METAGENOTYPE_ID, TAXON_ID):
         return ExtensionCheck(relation, value, True, True, kind)
     # For a FYPO_EXT range that permits a unit (e.g. `...|%`), a bare number+unit penetrance
     # is also valid; only reject when a term-looking value has the wrong prefix.
@@ -221,13 +250,15 @@ def main(argv=None) -> int:
         description="List attested PHI-Canto extension relations, or validate a relation:value pair.")
     p.add_argument("pair", nargs="?",
                    help="a 'relation=value' extension to validate, e.g. infective_ability=PHIPO:0000015")
-    p.add_argument("--config", help="path to an alternative phipo_extensions.tsv")
+    p.add_argument("--config", default="phipo", choices=sorted(BUNDLED_CONFIGS),
+                   help="which bundled config to use (default: phipo)")
+    p.add_argument("--config-file", help="path to an alternative extensions TSV (overrides --config)")
     args = p.parse_args(argv)
 
-    path = Path(args.config) if args.config else None
+    path = Path(args.config_file) if args.config_file else None
     try:
-        index = load(path)
-    except FileNotFoundError as exc:
+        index = load(path, config=args.config)
+    except (FileNotFoundError, KeyError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
 

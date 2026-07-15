@@ -1,0 +1,2 @@
+domain ID	subset relation	extension relation	range ID	Canto display text	Help text	cardinality	role	annotation_type_name
+PHIDO:0000001	is_a	infects_tissue	BTO:0000000	host tissue infected		*	user	disease_name

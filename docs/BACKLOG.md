@@ -96,6 +96,31 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
     `infective_ability reduced virulence` as text — decide with Hsin-Yun whether examples/drafts should
     carry the term ID `PHIPO:0000015` in the value. Also **not** validated offline yet: term-value
     *subtree* membership and the per-primary-term `domain ID` subset constraints (deeper checks).
+  - *Also vendored 2026-07-15:* the sibling configs `phibase_go_extensions.tsv` (GO annotations) and
+    `phido_extensions.tsv` (disease annotations), plus `phipo_extension_relations.obo` (relation
+    *definitions*, kept as reference — incomplete, not a validation source). `extension_config` now
+    loads all three (`--config phipo|go|phido`). Neither GO nor disease extensions are used by current
+    drafts. See `phiweaver/lookup/data/README.md`.
+
+- [ ] **Rewire the 4 hand-vendored extension configs to a public source when available** (added
+  2026-07-15). `phiweaver/lookup/data/{phipo_extensions.tsv, phibase_go_extensions.tsv,
+  phido_extensions.tsv, phipo_extension_relations.obo}` were **copied in by hand** from the
+  **private** PHI-base/config repo (`config/annotation_extension/`) — no `curl`-able source, unlike
+  the public `phido.obo` / `phi-eco.obo`. **When `config/annotation_extension/` is published to a
+  public GitHub repo:** point the refresh instructions in `data/README.md` at the public raw URLs,
+  pin the source commit, and drop the "copied by hand" provenance. Until then these are static
+  snapshots that only update when the curator re-supplies them.
+
+- [ ] **PHIPO_EXT / FYPO_EXT extension *value* terms can't be existence-checked offline** (surfaced
+  2026-07-15). The **gate roots are already in the vendored `phipo_extensions.tsv`** —
+  `gene_for_gene_interaction → PHIPO_EXT:0000001`, `inverse_gene_for_gene → PHIPO_EXT:0000040`,
+  `has_severity → FYPO_EXT:1000001`, `has_penetrance → FYPO_EXT:1000002` — exactly as
+  `infective_ability → PHIPO:0001179`. The gap is only the *child value terms*: unlike PHIPO (on OLS),
+  `PHIPO_EXT:` / `FYPO_EXT:` do **not** resolve on OLS4 (verified 2026-07-15: not in `phipo`, no global
+  hits) and aren't in any bundled `.obo`, so `extension_config` can only **format-check** a value, not
+  confirm it exists. To close it we'd need the PHIPO_EXT / FYPO_EXT term list as a file to vendor
+  (mirror PHIDO/PECO). Low priority — gene-for-gene / penetrance / severity extensions are not in
+  current drafts, and their gate roots are already known.
 
 ## Ontology coverage gaps (PHIPO term requests)
 _Curatable phenotypes seen in papers that have **no** PHIPO term — captured and flagged in the draft,

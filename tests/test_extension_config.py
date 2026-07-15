@@ -70,5 +70,36 @@ class ValidatePairTests(unittest.TestCase):
         self.assertTrue(ec.validate_pair("has_penetrance", "FYPO_EXT:1000002").ok)
 
 
+class MultiConfigTests(unittest.TestCase):
+    def test_go_config_loads_and_classifies(self):
+        index = ec.load(config="go")
+        self.assertEqual(index["has_input"].range_kind, ec.PROTEIN_ID)
+        self.assertEqual(index["with_host_species"].range_kind, ec.TAXON_ID)
+        self.assertEqual(index["with_symbiont_species"].range_kind, ec.TAXON_ID)
+
+    def test_phido_config_loads(self):
+        index = ec.load(config="phido")
+        self.assertIn("infects_tissue", index)
+        self.assertEqual(index["infects_tissue"].range_kind, ec.BTO_TERM)
+        self.assertIn("disease_name", index["infects_tissue"].annotation_types)
+
+    def test_configs_are_separate_namespaces(self):
+        # infective_ability is a PHIPO relation, not a GO one.
+        self.assertFalse(ec.validate_pair("infective_ability", "PHIPO:0000015", config="go").attested)
+        self.assertTrue(ec.validate_pair("infective_ability", "PHIPO:0000015", config="phipo").ok)
+
+    def test_go_taxon_and_protein_ranges_accept_ids(self):
+        self.assertTrue(ec.validate_pair("with_host_species", "NCBITaxon:4565", config="go").ok)
+        self.assertTrue(ec.validate_pair("has_input", "SomeProtein", config="go").ok)
+
+    def test_phido_infects_tissue_wants_bto(self):
+        self.assertTrue(ec.validate_pair("infects_tissue", "BTO:0000934", config="phido").ok)
+        self.assertFalse(ec.validate_pair("infects_tissue", "PHIPO:0000015", config="phido").value_ok)
+
+    def test_unknown_config_raises(self):
+        with self.assertRaises(KeyError):
+            ec.load(config="nope")
+
+
 if __name__ == "__main__":
     unittest.main()
