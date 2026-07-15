@@ -12,6 +12,24 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
   **offline** against it — existence + obsolescence, no network. GO/PHIPO still use OLS.
   Refresh instructions: `phiweaver/lookup/data/README.md`. Surfaced 2026-07-03 curating
   PMID:26177154 (PHIDO:0000164 Fusarium wilt), which now validates 7/7.
+- [ ] **PomGeneEx (RNA-level) vocabulary + validation gap** (surfaced 2026-07-11) — weaver knows
+  the `wt_rna_expression` annotation type and the phrase "RNA level increased" (one gold-standard
+  example, PINE1/PMID:35468894; RT-qPCR/RNA-seq guidance in the methodology docs), but does **not**
+  know the PomGeneEx term **IDs** or the full controlled set, and `validate_ontology_ids` cannot
+  validate PomGeneEx (supports PHIPO/GO/PHIDO/MOD/UniProtKB only). Repo grep: `PomGeneEx` = 0 hits;
+  the six non-"increased" qualifiers (decreased / unchanged / present / absent / constant /
+  fluctuates) = 0 hits. The seven RNA-level qualifiers, from the PHI-Canto UI (curator screenshot,
+  2026-07-11): RNA level increased **PomGeneEx:0000011**, decreased **:0000012**, unchanged
+  **:0000013**, RNA present **:0000014**, RNA absent **:0000015**, RNA level constant **:0000016**,
+  RNA level fluctuates **:0000017**. Plan (mirror the PHIDO fix — PomGeneEx is PomBase-local, not on
+  OLS4): **vendor the PomGeneEx ontology offline** under `phiweaver/lookup/data/` and teach
+  `validate_ontology_ids` the `PomGeneEx` prefix (offline existence/obsolescence), plus surface the
+  7-term vocabulary to the drafting/entry-queue workflow so RNA-level items get the right qualifier +
+  ID, not just prose. **NEEDS: the link to the PomBase GitHub repository file** that is the
+  authoritative PomGeneEx source (analogous to github.com/PHI-base/phido for PHIDO) — obtain and
+  record it before vendoring; do not hand-transcribe/invent IDs beyond the seven above. Surfaced
+  curating PMID:40756215 (Pt31812/Lr42), where the qRT-PCR "RNA level increased during infection"
+  item was left as prose, not annotated with the qualifier/ID.
 - [ ] **Per-article token attribution** (tool landed 2026-07-11) — `phiweaver/article_tokens.py`
   attributes a batch session's token spend to each curated paper (PMID) + a shared-overhead split
   (equal 1/N, or `--weight-by-direct`), joining First-author/Year/Title from the tracking DB. Reads
@@ -37,6 +55,48 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
   same paper costs less on a cheaper model (recomputed on read; a rate change doesn't invalidate
   rows). Ties into the **Recuration-comparison workflow** item below (same "DB is the aggregation
   home, grows over time, neutral diff" shape).
+
+- [ ] **`query_uniprot --locus-tag` misses strain-proteome loci** (surfaced 2026-07-14) — for a gene
+  named only by an NCBI locus tag, the tool queries the **species** taxon and returns `not_found` when
+  the entry lives under a **strain** reference-proteome taxon. Curating PMID:42089373 (5 *F.
+  pseudograminearum* Sdh subunits), `--locus-tag FPSE_04172 --organism 101028` (species) → `not_found`
+  for all five; a direct UniProtKB REST query resolved them under **strain CS3096, taxon 1028729**
+  (K3UT42/K3VJU5/K3UP39/K3VHW6/K3VVK3). Worked around by hand. Fix options: when the species-taxon
+  locus-tag search is empty, **retry across child/strain taxa** (or drop the organism filter and match
+  the locus tag in the returned entries), and flag the strain mismatch (expt isolate vs reference
+  proteome) rather than reporting a false `not_found`. Recurring accession-resolution weakness (also
+  noted in the 2026-07-05 benchmark run).
+
+## Ontology coverage gaps (PHIPO term requests)
+_Curatable phenotypes seen in papers that have **no** PHIPO term — captured and flagged in the draft,
+not forced onto a wrong ID. Candidates to raise with the PHIPO/PHI-base ontology team._
+- [x] **Mycotoxin / DON production — terms exist** (corrected 2026-07-15). Earlier logged as a gap;
+  **wrong** — PHIPO already has free-living DON phenotype terms: **PHIPO:0001445** decreased level of
+  deoxynivalenol, **PHIPO:0001447** increased, **PHIPO:0001443** abnormal deoxynivalenol biosynthesis,
+  **PHIPO:0001441** abnormal mycotoxin biosynthesis, **PHIPO:0001182** normal level (+ within-host
+  variants PHIPO:0000219/232/233/234). The earlier `map_phenotype` phrasings ("decreased deoxynivalenol
+  **production**") just didn't match the ontology wording ("decreased **level of** deoxynivalenol").
+  PMID:42089373 reduced DON now maps to PHIPO:0001445. **Lesson for phiweaver:** when a phenotype
+  phrase returns `no_match`, retry with the "level of" / "abnormal X biosynthesis" phrasings before
+  declaring a gap. Two genuine *residual* items below.
+- [ ] **No free-living "absent / abolished DON" term** — for a plate/flask assay with *no detectable*
+  DON (ΔFpSdhA/B/D + ΔFpSdhC1&2, PMID:42089373 Table S4) there is only PHIPO:0001445 "decreased" (used
+  as closest) and the *within-host* PHIPO:0000234 "pathogen deoxynivalenol within host absent" — no
+  free-living "absent" phenotype. Minor term request.
+- [ ] **Typo in PHIPO:0001441 label** — "abnormal mycotoxin **biosythesis**" (should be
+  "biosynthesis"). Cosmetic ontology fix to raise with the PHIPO team.
+- [ ] **Toxisome formation / ER-to-toxisome remodelling** — reduced toxisome number and failure of the
+  ER to remodel into toxisomes (ΔFpSdhC2, PMID:42089373 Fig 3C, Tri1-GFP confocal). No PHIPO term for
+  this subcellular structure.
+- [ ] **SDHI fungicide sensitivity terms for 4 chemicals** — PHIPO has per-chemical
+  sensitivity/resistance terms for fluopyram, boscalid, penflufen, thifluzamide (and carboxin) but
+  **not** cyclobutrifluram, pydiflumetofen, fluxapyroxad, or isofetamid (PMID:42089373). Those four fell
+  back to the generic PHIPO:0000021 (increased sensitivity to chemical) / PHIPO:0000022 (increased
+  resistance to chemical) with the chemical named in conditions. Request per-chemical child terms.
+- [ ] **Complete loss of conidiation (free-living)** — only PHIPO:0000052 "decreased number of asexual
+  spores" and *within-host* absence terms (e.g. PHIPO:0000468) exist; there is no free-living
+  "absence/abolished asexual sporulation" phenotype term, so total conidiation loss (ΔFpSdhA/B/D +
+  double, PMID:42089373; "completely lost conidiation", PMID:41020836) is under-described.
 
 ## Curation workflow
 - [ ] **Format convergence** — phiweaver *drafts* use the example-template body shape while *gold
