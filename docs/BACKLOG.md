@@ -67,6 +67,16 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
   proteome) rather than reporting a false `not_found`. Recurring accession-resolution weakness (also
   noted in the 2026-07-05 benchmark run).
 
+- [ ] **Vendor PHI-ECO (conditions) offline + validate `PECO:`** (source link received 2026-07-15).
+  Conditions in a PHI-Canto annotation use **PHI-ECO** (prefix `PECO:`), which is **PHI-base-local**
+  (not on OLS) — so weaver's free-text conditions never validate and won't pass final approval
+  (Hsin-Yun review; `CURATION-LESSONS.md` L6). Source now known: **github.com/PHI-base/phi-eco**.
+  Plan (mirror the PHIDO fix): vendor the ontology file under `phiweaver/lookup/data/`, teach
+  `validate_ontology_ids` the `PECO` prefix (offline existence/obsolescence), and surface the
+  condition vocabulary to drafting so the Condition field emits PECO terms, not prose. Reference +
+  term-request workflow captured in `07-Standards/Ontology-Terms-Reference.md`. Sibling of the
+  **PomGeneEx** item above (same offline-vendor shape).
+
 ## Ontology coverage gaps (PHIPO term requests)
 _Curatable phenotypes seen in papers that have **no** PHIPO term — captured and flagged in the draft,
 not forced onto a wrong ID. Candidates to raise with the PHIPO/PHI-base ontology team._

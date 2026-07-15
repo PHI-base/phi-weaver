@@ -207,7 +207,48 @@ Common host tissues (BRENDA Tissue Ontology terms):
 - `Reconstituted Complex` - A forms complex with B
 - `PCA` (Protein Complementation Assay) - A interacts with B
 
-## Experimental Conditions
+## Experimental Conditions — PHI-ECO (PECO)
+
+**PHI-ECO** is the **PHI-base experimental-conditions ontology** — the controlled vocabulary for the
+**Condition** field of a PHI-Canto annotation (growth media, temperature, chemical treatments, and
+the inoculation / effector-delivery method). Term prefix **`PECO:`**.
+
+> **Curation rule:** condition entries must be **PECO terms**. Free-text conditions (e.g.
+> "PDA, 25 °C, 5 d") do **not** pass final approval — map each to a PECO term, or request a new one.
+> (Source: Hsin-Yun Chang review, 2026-07-15; see `docs/CURATION-LESSONS.md` L6.)
+
+### Source & browsing
+- Ontology (OBO / GitHub): **<https://github.com/PHI-base/phi-eco>**
+- Like PHIDO, PHI-ECO is **PHI-base-local** — not hosted on EBI OLS, so validate **offline** against
+  the repo's ontology file (the plan is to vendor it as we did `phido.obo`; see the backlog).
+
+### Requesting new PECO terms (curator workflow)
+New terms are drafted in a Google-Sheet **"PHI-ECO term creator"**, then loaded into the ontology
+with **ROBOT** (needs Java); the ontology maintainer (James Seager) does the load. The curator fills
+**one row per new term** with these columns:
+- **Condition name · Definition · Subclass of** (the parent term) **· Created by · Creation date**
+- **Contributor id:** use `changh` for Hsin-Yun Chang — kept consistent across PHIPO / PHI-ECO so
+  contributions track across ontologies.
+- **Naming rule:** put a **space after `+`** in chemical-medium term names — e.g. `+ wortmannin`,
+  not `+wortmannin`.
+- Term-creator spreadsheet: <https://docs.google.com/spreadsheets/d/1GXazqAmvsfqB03wj_T-5aA6a3-kn1gcQjYZMHiosUYE/edit>
+- "How to use the PHI-ECO term creator" doc: <https://docs.google.com/document/d/1LHXq6akcJnj_XfvjcFPyuLy3KrNBe5MsGhsmiVHHSFE/edit>
+- ROBOT: <https://robot.obolibrary.org/>
+
+### Example PECO terms — effector-delivery mechanisms
+| PECO ID | Term | Definition (abridged) |
+| --- | --- | --- |
+| PECO:0005028 | delivery mechanism: agrobacterium | gene products transiently expressed via agrobacterium-mediated delivery into the host |
+| PECO:0005235 | delivery mechanism: heterologous organism | gene products expressed in the host via a heterologous-organism delivery system |
+| PECO:0005239 | delivery mechanism: pathogen inoculation | a pathogen is inoculated onto a host |
+| PECO:0005242 | delivery mechanism: pathogen mycelium inoculation | pathogen mycelium inoculated onto a host |
+| PECO:0005244 | delivery mechanism: pathogen point inoculation | pathogen point-inoculated onto a small, specific region of host tissue |
+| PECO:0005241 | delivery mechanism: pathogen spore inoculation | pathogen spores inoculated onto a host |
+| PECO:0005243 | delivery mechanism: pathogen spray inoculation | pathogen spray-inoculated over a large area of host tissue |
+| PECO:0005271 | delivery mechanism: culture infiltration | gene products infiltrated into the host |
+| PECO:0005272 | delivery mechanism: pathogen gene expressed by transgenic host | pathogen gene products transiently or stably expressed in the host |
+
+### Informal condition categories (map each to a PECO term before annotating)
 
 ### Growth Conditions
 - `minimal medium` - Defined nutrient medium

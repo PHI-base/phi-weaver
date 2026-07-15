@@ -21,7 +21,8 @@ PHI-Canto-ready annotation **drafts** and tracks curation progress.
   Codespaces a `demo-literature/` folder is used). See `docs/STORAGE-CONFIGURATION.md`.
 - Tracking database: SQLite at `11-CLAUDE-AI/db/phi_canto_tracking.db` (gitignored).
 - At session start, read `11-CLAUDE-AI/SESSION-LOGS/INDEX.md` for prior context.
-- Key ontologies: PHIPO (phenotype), PHIDO (disease), GO, BRENDA tissue, UniProtKB.
+- Key ontologies: PHIPO (phenotype), PHIDO (disease), GO, BRENDA tissue, UniProtKB, PHI-ECO
+  (experimental conditions, prefix `PECO:` — see `07-Standards/Ontology-Terms-Reference.md`).
 - When a recurring question gets resolved, add a short Q/A + a `See:` pointer to
   `docs/FAQ.md` (a lookup layer over the canonical docs — keep answers short, don't duplicate).
 
