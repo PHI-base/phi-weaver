@@ -2,16 +2,16 @@
 """
 validate_ontology_ids.py — deterministic ontology-ID validation for PHI-Weaver curation.
 
-Checks the identifiers a curation depends on — PHIPO, GO, PHIDO, MOD (PSI-MOD) and
-UniProtKB — in two stages:
+Checks the identifiers a curation depends on — PHIPO, GO, PHIDO, MOD (PSI-MOD),
+BTO (BRENDA tissue, for the host-tissue extension) and UniProtKB — in two stages:
 
   1. FORMAT (offline, always): does the ID match the official syntax for its prefix?
      Catches typos and invented IDs without touching the network. (OBO terms use a
      7-digit local id; MOD/PSI-MOD uses a 5-digit local id.)
   2. EXISTENCE / OBSOLESCENCE: does the term actually exist in the ontology, and is it
      current (not obsolete)?
-       - GO, PHIPO and MOD resolve **online** via the EBI Ontology Lookup Service REST API
-         (https://www.ebi.ac.uk/ols4/api). Responses are cached and stamped with a
+       - GO, PHIPO, MOD and BTO resolve **online** via the EBI Ontology Lookup Service REST
+         API (https://www.ebi.ac.uk/ols4/api). Responses are cached and stamped with a
          retrieval timestamp for provenance.
        - PHIDO is **not hosted by OLS4**, so it resolves **offline** against a bundled
          copy of the ontology (`data/phido.obo`, vendored from github.com/PHI-base/phido).
@@ -56,11 +56,12 @@ USER_AGENT = "PHI-Weaver-validate-ontology-ids/1.0 (https://github.com/PHI-base/
 DEFAULT_CACHE = Path(__file__).resolve().parent / ".cache" / "ontology_cache.sqlite"
 
 # Ontology-term prefixes we recognise (as opposed to UniProtKB accessions).
-OBO_PREFIXES = {"PHIPO", "GO", "PHIDO", "MOD"}
+OBO_PREFIXES = {"PHIPO", "GO", "PHIDO", "MOD", "BTO"}
 # The subset we verify online, mapped to their OLS ontology name. PHIDO is absent on
 # purpose: OLS4 does not host it, so it is resolved offline against the bundled .obo.
-# MOD is PSI-MOD (protein modifications), used by PHI-Canto's protein-modification type.
-OLS_ONTOLOGY = {"PHIPO": "phipo", "GO": "go", "MOD": "mod"}
+# MOD is PSI-MOD (protein modifications), used by PHI-Canto's protein-modification type;
+# BTO is the BRENDA Tissue Ontology, used for the host-tissue (infects_tissue) extension.
+OLS_ONTOLOGY = {"PHIPO": "phipo", "GO": "go", "MOD": "mod", "BTO": "bto"}
 
 # Bundled PHIDO ontology (vendored from github.com/PHI-base/phido — see data/README.md).
 PHIDO_OBO_PATH = Path(__file__).resolve().parent / "data" / "phido.obo"
@@ -71,12 +72,13 @@ PHIDO_SOURCE = "bundled phido.obo"
 _UNSET = object()
 
 # Official ID syntax per prefix. Anchored, so a partial match is a fail.
-#   GO/PHIPO/PHIDO: 7-digit zero-padded numeric local id.
-#   MOD (PSI-MOD):  5-digit zero-padded numeric local id.
-#   UniProtKB:      the canonical accession regex, with an optional isoform suffix.
+#   GO/PHIPO/PHIDO/BTO: 7-digit zero-padded numeric local id.
+#   MOD (PSI-MOD):      5-digit zero-padded numeric local id.
+#   UniProtKB:          the canonical accession regex, with an optional isoform suffix.
 _OBO7_RE = re.compile(r"\d{7}$")
 _MOD_RE = re.compile(r"\d{5}$")
-_LOCAL_ID_RE = {"PHIPO": _OBO7_RE, "GO": _OBO7_RE, "PHIDO": _OBO7_RE, "MOD": _MOD_RE}
+_LOCAL_ID_RE = {"PHIPO": _OBO7_RE, "GO": _OBO7_RE, "PHIDO": _OBO7_RE, "MOD": _MOD_RE,
+                "BTO": _OBO7_RE}
 _UNIPROT_RE = re.compile(
     r"(?:[OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9](?:[A-Z][A-Z0-9]{2}[0-9]){1,2})"
     r"(?:-\d+)?$"
@@ -86,7 +88,7 @@ _UNIPROT_PREFIXES = {"UNIPROTKB", "UNIPROT"}
 
 # Matches any candidate ontology ID in free text, for --file extraction.
 _ID_IN_TEXT_RE = re.compile(
-    r"\b(PHIPO|PHIDO|GO|MOD|UniProtKB|UniProt):[A-Za-z0-9-]+", re.IGNORECASE)
+    r"\b(PHIPO|PHIDO|GO|MOD|BTO|UniProtKB|UniProt):[A-Za-z0-9-]+", re.IGNORECASE)
 
 
 class OntologyError(RuntimeError):

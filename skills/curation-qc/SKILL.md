@@ -24,9 +24,11 @@ clean, provenance-complete draft.
 
 ## Workflow
 1. Check every gene/protein has a verified UniProtKB accession (see `uniprot-lookup`).
-2. Check every ontology term (PHIPO/GO/PHIDO) ID exists and is non-obsolete. Run
+2. Check every ontology term (PHIPO/GO/PHIDO/BTO/MOD) ID exists and is non-obsolete. Run
    `python3 scripts/validate_ontology_ids.py --file <draft>` to validate every ID in the
    draft at once (or pass IDs directly); obsolete and not-found terms fail the check.
+   **Host-tissue (`infects_tissue`) extensions must use a BTO term** (e.g. `BTO:0000268`
+   coleoptile), not free text — flag a free-text tissue value.
 3. Check each annotation has: evidence type, source location (figure/table), and
    experimental conditions where relevant.
 4. Check pathogen and host organisms/strains are specified.

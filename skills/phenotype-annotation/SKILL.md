@@ -45,7 +45,9 @@ annotation; choosing the PHIPO term itself is delegated to the phipo-mapping ski
 4. Add only meaningful conditions (medium, temperature, chemical, delivery); do not
    over-specify standard conditions or details already implied by the term.
 5. Add extensions — single-species (penetrance, severity, assayed feature) or interaction
-   (host tissue, infective ability, control genotype, outcome).
+   (host tissue, infective ability, control genotype, outcome). **Host tissue uses a BRENDA
+   Tissue Ontology (BTO) term** (e.g. `BTO:0000268` coleoptile), not free text — verify it with
+   `validate_ontology_ids` (BTO resolves online via OLS, like GO/PHIPO).
 6. Attach the figure/table reference and any clarifying comment.
 7. If no term fits or the evidence is unclear, say so explicitly rather than forcing a term
    or code.

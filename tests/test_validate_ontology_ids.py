@@ -31,7 +31,7 @@ class CountingGetter:
 
 class FormatTests(unittest.TestCase):
     def test_valid_obo_formats(self):
-        for good in ("PHIPO:0000001", "GO:0009405", "PHIDO:0000123"):
+        for good in ("PHIPO:0000001", "GO:0009405", "PHIDO:0000123", "BTO:0000268"):
             prefix, ok = v.check_format(good)
             self.assertTrue(ok, good)
             self.assertEqual(prefix, good.split(":")[0])
@@ -133,6 +133,20 @@ class ValidateTests(unittest.TestCase):
         self.assertEqual(r.existence, "exists")
         self.assertEqual(r.label, "phosphorylated residue")
         self.assertTrue(r.ok)
+
+    def test_bto_resolves_via_ols(self):
+        # BRENDA tissue (host-tissue extension) resolves online like GO/PHIPO/MOD.
+        val = v.OntologyValidator(http_get=ols_getter([term("BTO:0000268", "coleoptile")]))
+        r = val.validate("BTO:0000268")
+        self.assertEqual(r.prefix, "BTO")
+        self.assertEqual(r.existence, "exists")
+        self.assertEqual(r.label, "coleoptile")
+        self.assertTrue(r.ok)
+
+    def test_bto_not_found_fails(self):
+        r = v.OntologyValidator(http_get=ols_getter([])).validate("BTO:9999999")
+        self.assertEqual(r.existence, "not_found")
+        self.assertFalse(r.ok)
 
     def test_find_term_prefers_defining_ontology(self):
         # OLS echoes one obo_id from several ontologies; the non-defining cross-reference
