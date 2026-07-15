@@ -51,6 +51,13 @@ clean, provenance-complete draft.
      and that no specific GO function is asserted from a growth-confounded phenotype alone.
      (phiweaver working convention, pending team confirmation — see the "Phenotype interpretation"
      section of the conventions doc.)
+   - **Data-standardisation naming (curator convention 2026-07-15)** — gene symbols carry **no
+     species prefix** (`SdhA`, not `FpSdhA`); deletion genotypes use the **Δ-suffix** (`SdhAΔ`,
+     not `ΔFpSdhA`); "Figure" is written in full, not "Fig."
+   - **Interaction primary term is a measurement, not an interpretation** — an interaction
+     phenotype's primary term must be a measured phenotype (e.g. `PHIPO:0000365` decreased
+     pathogen growth within host); flag any interaction annotation whose primary term is
+     `PHIPO:0000015` (reduced virulence) — that interpretation belongs in the extension.
 8. Compile a QC report: pass items, issues, and open questions.
 
 ## Expected outputs

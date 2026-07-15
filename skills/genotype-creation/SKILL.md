@@ -40,6 +40,12 @@ conventions live in `06-Training/Quick-Reference-Genotype-Creation.md`.
 6. Where the paper does not state a detail (e.g. expression level), mark it "not assayed"
    or flag the ambiguity — never invent an allele or level.
 
+## Naming & data standardisation (curator convention, 2026-07-15)
+From `07-Standards/PHI-Canto-Curation-Conventions.md` (Hsin-Yun Chang review of PMID:42089373):
+- **Gene symbol without species prefix** — `SdhA`, not `FpSdhA`.
+- **Deletion genotypes use the Δ-suffix** — `SdhAΔ`, not `ΔFpSdhA` (double mutant `SdhC1&2Δ`;
+  complement `SdhC2Δ-C`).
+
 ## Controlled genotype labels
 Use standardized labels so genotype names read consistently across curations (from the
 PHI-base curator methodology, `06-Training/Gene-for-Gene-Curation-Methodology.md`). Applies to

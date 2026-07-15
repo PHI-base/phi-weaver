@@ -36,6 +36,10 @@ annotation; choosing the PHIPO term itself is delegated to the phipo-mapping ski
    (`python3 -m phiweaver.lookup.map_phenotype "<phenotype phrase>"`), reading definitions
    rather than names and preferring the most specific term. Verify the chosen ID with
    `python3 -m phiweaver.lookup.validate_ontology_ids PHIPO:XXXXXXX`.
+   For an **interaction** phenotype the primary term must be a **measured/observed** phenotype
+   (e.g. `PHIPO:0000365` decreased pathogen growth within host) — an **interpretation** like
+   "reduced virulence" is **not** the primary term (do not use `PHIPO:0000015` as primary); it
+   goes in the annotation extension (curator convention, 2026-07-15; conventions doc).
 3. Choose the evidence code that matches the experimental method (direct assay, inferred
    from mutant, microscopy, growth assay, expression analysis, …).
 4. Add only meaningful conditions (medium, temperature, chemical, delivery); do not

@@ -65,6 +65,31 @@ any single rule as current — some were reversed at least once before settling.
 - **Signal-peptide removal is NOT pushed to background** — considered and rejected; the assay
   is still looking at the (processed) WT protein. (`#77`)
 
+## Naming & data standardisation
+> **Provenance:** curator review (Hsin-Yun Chang, 2026-07-15) on PMID:42089373; logged as **L4**
+> in `docs/CURATION-LESSONS.md`. Canonical gene-symbol source (UniProtKB gene name vs. strip the
+> species prefix) pending clarification.
+
+- **Gene symbol carries no species prefix.** Use the standard symbol — **`SdhA`**, not `FpSdhA`;
+  **`TRI1`**, not `FpTRI1`. The species-specific prefix an author adds (`Fp`, `Fg`, …) is dropped
+  for the annotated gene symbol.
+- **Deletion genotypes use the Δ-suffix** (gene, then delta): **`SdhAΔ`**, not `ΔFpSdhA`. Applies
+  to the double mutant (`SdhC1&2Δ`) and complement controls (`SdhC2Δ-C`).
+- **Write "Figure" in full**, not "Fig." (whether this extends to other abbreviations, e.g.
+  "Table", is pending confirmation).
+
+## Interaction phenotype — primary term is a measurement; interpretation goes in the extension
+> **Provenance:** curator review (Hsin-Yun Chang, 2026-07-15); logged as **L5**.
+
+- The **primary term** of a pathogen–host interaction phenotype must be a **measured / observed**
+  phenotype — e.g. `PHIPO:0000365` *decreased pathogen growth within host* (from lesion length /
+  disease index / in-host growth).
+- An **interpretation** such as "reduced virulence" is **not** the primary term — do **not** use
+  `PHIPO:0000015 reduced virulence` as primary. It goes in the **annotation extension** (the exact
+  relation/value is pending the PHI-Canto extension vocabulary).
+- Choose the measured primary term to match the assay; keep the interpretive outcome in the
+  extension.
+
 ## Expression levels
 
 - **Never emit `Unknown` expression level** — it was retired. Real cases were almost always
