@@ -73,9 +73,12 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
   OLS. Vendored `phiweaver/lookup/data/phi-eco.obo` (from github.com/PHI-base/phi-eco, 658 terms)
   and taught `validate_ontology_ids` the `PECO` prefix (offline existence/obsolescence, reusing the
   PHIDO OBO parser via a shared `_validate_offline`). +5 tests; reference + term-request workflow in
-  `07-Standards/Ontology-Terms-Reference.md`. **Remaining (drafting side):** surface the condition
-  vocabulary to the drafting workflow so the Condition field *emits* PECO terms instead of free-text
-  prose (`CURATION-LESSONS.md` L6) — validation infra is done, generation is not.
+  `07-Standards/Ontology-Terms-Reference.md`. **Generation side also done 2026-07-15:** added the
+  offline `map_condition` lookup (`phiweaver/lookup/map_condition.py`, condition phrase → PECO
+  candidates over the bundled ontology) and wired it into `phenotype-annotation` + `curation-qc`,
+  so the drafting workflow emits PECO Condition terms (demonstrated on PMID:42089373's interaction
+  annotations). PHI-ECO is qualitative (no "PDA"/"25 °C" term) so numeric specifics stay in the
+  comment — the medium→PECO granularity is the curator's call.
 
 ## Ontology coverage gaps (PHIPO term requests)
 _Curatable phenotypes seen in papers that have **no** PHIPO term — captured and flagged in the draft,

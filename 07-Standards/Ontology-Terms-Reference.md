@@ -216,6 +216,12 @@ the inoculation / effector-delivery method). Term prefix **`PECO:`**.
 > **Curation rule:** condition entries must be **PECO terms**. Free-text conditions (e.g.
 > "PDA, 25 °C, 5 d") do **not** pass final approval — map each to a PECO term, or request a new one.
 > (Source: Hsin-Yun Chang review, 2026-07-15; see `docs/CURATION-LESSONS.md` L6.)
+>
+> **Tooling:** map a condition phrase to a PECO term with
+> `python3 -m phiweaver.lookup.map_condition "<phrase>"` (offline over the bundled ontology; never
+> invents), then verify with `validate_ontology_ids`. PHI-ECO is **qualitative** (`rich medium`,
+> `standard temperature`, delivery mechanisms, `+ wounding`) — it has no "PDA"/"25 °C" term, so map
+> the qualitative condition and keep numeric specifics in the annotation comment.
 
 ### Source & browsing
 - Ontology (OBO / GitHub): **<https://github.com/PHI-base/phi-eco>**

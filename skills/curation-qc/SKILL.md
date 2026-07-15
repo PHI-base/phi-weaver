@@ -28,7 +28,9 @@ clean, provenance-complete draft.
    `python3 scripts/validate_ontology_ids.py --file <draft>` to validate every ID in the
    draft at once (or pass IDs directly); obsolete and not-found terms fail the check.
    **Host-tissue (`infects_tissue`) extensions must use a BTO term** (e.g. `BTO:0000268`
-   coleoptile), not free text — flag a free-text tissue value.
+   coleoptile), not free text — flag a free-text tissue value. **Condition-field entries must use
+   PECO (PHI-ECO) terms** (map via `map_condition`, validate offline) — flag free-text conditions
+   that carry no PECO term (numeric specifics may stay in the comment).
 3. Check each annotation has: evidence type, source location (figure/table), and
    experimental conditions where relevant.
 4. Check pathogen and host organisms/strains are specified.

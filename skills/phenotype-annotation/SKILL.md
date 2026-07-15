@@ -1,8 +1,12 @@
 ---
 name: phenotype-annotation
 description: Build complete PHI-Canto phenotype annotations (annotation type, PHIPO term, evidence code, conditions, extensions) for a genotype or interaction. Use after genotypes exist; delegates PHIPO term selection to the phipo-mapping skill.
-backing_script: null
-tests: null
+backing_script:
+  - phiweaver/lookup/map_condition.py
+  - phiweaver/lookup/validate_ontology_ids.py
+tests:
+  - tests/test_map_condition.py
+  - tests/test_validate_ontology_ids.py
 inputs:
   - genotype or metagenotype (from genotype-creation)
   - phenotype description + source location (figure/table)
@@ -42,8 +46,13 @@ annotation; choosing the PHIPO term itself is delegated to the phipo-mapping ski
    goes in the annotation extension (curator convention, 2026-07-15; conventions doc).
 3. Choose the evidence code that matches the experimental method (direct assay, inferred
    from mutant, microscopy, growth assay, expression analysis, …).
-4. Add only meaningful conditions (medium, temperature, chemical, delivery); do not
-   over-specify standard conditions or details already implied by the term.
+4. Add conditions as **PECO (PHI-ECO) terms**, not free text — the Condition field is a
+   controlled vocabulary and prose entries fail final approval. Map each condition to a PECO
+   term with `python3 -m phiweaver.lookup.map_condition "<phrase>"` (offline; never invents) and
+   verify it with `validate_ontology_ids`. PHI-ECO is **qualitative** (e.g. `rich medium`,
+   `standard temperature`, delivery mechanisms, `+ wounding`) — map the qualitative condition and
+   keep numeric specifics (exact medium, temperature, duration) in the annotation comment. Don't
+   force a term where none fits; do not over-specify conditions implied by the phenotype term.
 5. Add extensions — single-species (penetrance, severity, assayed feature) or interaction
    (host tissue, infective ability, control genotype, outcome). **Host tissue uses a BRENDA
    Tissue Ontology (BTO) term** (e.g. `BTO:0000268` coleoptile), not free text — verify it with
