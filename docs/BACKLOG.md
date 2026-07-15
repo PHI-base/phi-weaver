@@ -80,6 +80,20 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
   annotations). PHI-ECO is qualitative (no "PDA"/"25 °C" term) so numeric specifics stay in the
   comment — the medium→PECO granularity is the curator's call.
 
+- [ ] **Annotation-extension relations + allowed values (Canto config)** — *blocked, needs curator
+  input* (surfaced 2026-07-15, PMID:42089373 review; = "C2"). PHI-Canto annotations carry
+  `relation → value` **extensions** (e.g. `infects_tissue`, `compared_to_control`). Per Hsin-Yun's
+  review the interaction "reduced virulence" **interpretation** belongs in an extension (the primary
+  term is the *measured* `PHIPO:0000365`), but the correct **relation** and its **value vocabulary**
+  are unknown: weaver only infers relation names from gold-standard examples — the draft's
+  `infective_ability = reduced virulence` is a **guess**, not in our attested set (`infects_tissue`
+  / `compared_to_control` / `gene_for_gene_interaction` / `with_host_peptide` / `assayed_using`).
+  Unlike PHIPO/GO/BTO/PECO these are **Canto/PHI-base configuration, not an OLS ontology**, so there
+  is nothing to fetch/vendor. **NEEDS from the curator:** the list of interaction-phenotype extension
+  relations + allowed values — esp. which relation carries virulence, and whether the value is free
+  text / a fixed set / a term ID (e.g. PHIPO_EXT). Then: fix the draft placeholder, add validation if
+  term-based (mirror BTO/PECO), record the convention. Tracks `CURATION-LESSONS.md` L5.
+
 ## Ontology coverage gaps (PHIPO term requests)
 _Curatable phenotypes seen in papers that have **no** PHIPO term — captured and flagged in the draft,
 not forced onto a wrong ID. Candidates to raise with the PHIPO/PHI-base ontology team._
@@ -112,6 +126,14 @@ not forced onto a wrong ID. Candidates to raise with the PHIPO/PHI-base ontology
   double, PMID:42089373; "completely lost conidiation", PMID:41020836) is under-described.
 
 ## Curation workflow
+- [ ] **Confirm open clarifications from Hsin-Yun's 2026-07-15 review** (applied with sensible
+  defaults; fold her answers into `07-Standards/PHI-Canto-Curation-Conventions.md`): (D1) canonical
+  **gene-symbol source** — UniProtKB gene name vs. "strip the species prefix" (drafted as
+  strip-prefix, e.g. `SdhA`); (D2) is there a **full allele/genotype naming standard** beyond the
+  deletion Δ-suffix; (D3) does **"Figure in full"** extend to other abbreviations (e.g. "Table");
+  (D4) **filenames** keep the PMID/`FpSdh` basename (kept — cosmetic, renaming would orphan the
+  queue/docx). Also the GO-no-biochem-evidence question (`CURATION-LESSONS.md` L3) is still open
+  with her.
 - [ ] **Format convergence** — phiweaver *drafts* use the example-template body shape while *gold
   standards* use PHI-Canto's structure; converge them (toward PHI-Canto) so retrieval and
   benchmarking compare like-for-like. *Partly done 2026-07-04*: the example `annotation_types`
