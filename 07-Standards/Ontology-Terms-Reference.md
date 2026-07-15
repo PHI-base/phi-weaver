@@ -219,8 +219,12 @@ the inoculation / effector-delivery method). Term prefix **`PECO:`**.
 
 ### Source & browsing
 - Ontology (OBO / GitHub): **<https://github.com/PHI-base/phi-eco>**
-- Like PHIDO, PHI-ECO is **PHI-base-local** — not hosted on EBI OLS, so validate **offline** against
-  the repo's ontology file (the plan is to vendor it as we did `phido.obo`; see the backlog).
+- Like PHIDO, PHI-ECO is **PHI-base-local** — not on EBI OLS. It is **vendored offline** at
+  `phiweaver/lookup/data/phi-eco.obo`, and `validate_ontology_ids` now checks `PECO:` IDs against
+  it (`✅ PECO:0005028 … via bundled phi-eco.obo`).
+- **⚠ Prefix collision:** the OLS ontology named `peco` is the *unrelated* Planteome **Plant
+  Experimental Conditions Ontology**. PHI-base PECO terms are **only** in the bundled file — never
+  validate them against OLS (they will falsely return not_found or match a different term).
 
 ### Requesting new PECO terms (curator workflow)
 New terms are drafted in a Google-Sheet **"PHI-ECO term creator"**, then loaded into the ontology

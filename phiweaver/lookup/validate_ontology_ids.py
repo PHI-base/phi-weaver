@@ -3,7 +3,8 @@
 validate_ontology_ids.py — deterministic ontology-ID validation for PHI-Weaver curation.
 
 Checks the identifiers a curation depends on — PHIPO, GO, PHIDO, MOD (PSI-MOD),
-BTO (BRENDA tissue, for the host-tissue extension) and UniProtKB — in two stages:
+BTO (BRENDA tissue, for the host-tissue extension), PECO (PHI-ECO experimental
+conditions) and UniProtKB — in two stages:
 
   1. FORMAT (offline, always): does the ID match the official syntax for its prefix?
      Catches typos and invented IDs without touching the network. (OBO terms use a
@@ -13,9 +14,11 @@ BTO (BRENDA tissue, for the host-tissue extension) and UniProtKB — in two stag
        - GO, PHIPO, MOD and BTO resolve **online** via the EBI Ontology Lookup Service REST
          API (https://www.ebi.ac.uk/ols4/api). Responses are cached and stamped with a
          retrieval timestamp for provenance.
-       - PHIDO is **not hosted by OLS4**, so it resolves **offline** against a bundled
-         copy of the ontology (`data/phido.obo`, vendored from github.com/PHI-base/phido).
-         This closes a false-negative gap where every PHIDO ID used to return not_found.
+       - PHIDO and PECO (PHI-ECO) are **not hosted by OLS4**, so each resolves **offline**
+         against a bundled copy of the ontology (`data/phido.obo` and `data/phi-eco.obo`,
+         vendored from github.com/PHI-base/phido and .../phi-eco). This closes a false-negative
+         gap where every such ID used to return not_found. NB the OLS ontology named "peco" is
+         the unrelated Planteome ontology — PHI-base PECO terms are only in the bundled file.
 
 UniProtKB accessions are format-checked here; their *existence* is resolved by the
 companion `query_uniprot.py` (which also returns the protein function), so this script
@@ -56,29 +59,32 @@ USER_AGENT = "PHI-Weaver-validate-ontology-ids/1.0 (https://github.com/PHI-base/
 DEFAULT_CACHE = Path(__file__).resolve().parent / ".cache" / "ontology_cache.sqlite"
 
 # Ontology-term prefixes we recognise (as opposed to UniProtKB accessions).
-OBO_PREFIXES = {"PHIPO", "GO", "PHIDO", "MOD", "BTO"}
-# The subset we verify online, mapped to their OLS ontology name. PHIDO is absent on
-# purpose: OLS4 does not host it, so it is resolved offline against the bundled .obo.
-# MOD is PSI-MOD (protein modifications), used by PHI-Canto's protein-modification type;
+OBO_PREFIXES = {"PHIPO", "GO", "PHIDO", "MOD", "BTO", "PECO"}
+# The subset we verify online, mapped to their OLS ontology name. PHIDO and PECO are absent
+# on purpose: OLS4 hosts neither, so they resolve offline against a bundled .obo.
+# (PECO here = the PHI-base experimental-conditions ontology / PHI-ECO — NOT the Planteome
+# "peco" on OLS, a different ontology that happens to share the prefix.) MOD is PSI-MOD;
 # BTO is the BRENDA Tissue Ontology, used for the host-tissue (infects_tissue) extension.
 OLS_ONTOLOGY = {"PHIPO": "phipo", "GO": "go", "MOD": "mod", "BTO": "bto"}
 
-# Bundled PHIDO ontology (vendored from github.com/PHI-base/phido — see data/README.md).
+# Bundled offline ontologies (vendored from PHI-base repos — see data/README.md).
 PHIDO_OBO_PATH = Path(__file__).resolve().parent / "data" / "phido.obo"
 PHIDO_SOURCE = "bundled phido.obo"
+PHI_ECO_OBO_PATH = Path(__file__).resolve().parent / "data" / "phi-eco.obo"
+PHI_ECO_SOURCE = "bundled phi-eco.obo"
 
 # Sentinel: "no PHIDO index was injected, use the bundled one". Distinct from an
 # injected None, which models an unreadable ontology file.
 _UNSET = object()
 
 # Official ID syntax per prefix. Anchored, so a partial match is a fail.
-#   GO/PHIPO/PHIDO/BTO: 7-digit zero-padded numeric local id.
-#   MOD (PSI-MOD):      5-digit zero-padded numeric local id.
-#   UniProtKB:          the canonical accession regex, with an optional isoform suffix.
+#   GO/PHIPO/PHIDO/BTO/PECO: 7-digit zero-padded numeric local id.
+#   MOD (PSI-MOD):           5-digit zero-padded numeric local id.
+#   UniProtKB:               the canonical accession regex, with an optional isoform suffix.
 _OBO7_RE = re.compile(r"\d{7}$")
 _MOD_RE = re.compile(r"\d{5}$")
 _LOCAL_ID_RE = {"PHIPO": _OBO7_RE, "GO": _OBO7_RE, "PHIDO": _OBO7_RE, "MOD": _MOD_RE,
-                "BTO": _OBO7_RE}
+                "BTO": _OBO7_RE, "PECO": _OBO7_RE}
 _UNIPROT_RE = re.compile(
     r"(?:[OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9](?:[A-Z][A-Z0-9]{2}[0-9]){1,2})"
     r"(?:-\d+)?$"
@@ -88,7 +94,7 @@ _UNIPROT_PREFIXES = {"UNIPROTKB", "UNIPROT"}
 
 # Matches any candidate ontology ID in free text, for --file extraction.
 _ID_IN_TEXT_RE = re.compile(
-    r"\b(PHIPO|PHIDO|GO|MOD|BTO|UniProtKB|UniProt):[A-Za-z0-9-]+", re.IGNORECASE)
+    r"\b(PHIPO|PHIDO|GO|MOD|BTO|PECO|UniProtKB|UniProt):[A-Za-z0-9-]+", re.IGNORECASE)
 
 
 class OntologyError(RuntimeError):
@@ -203,16 +209,23 @@ def _phido_index() -> Optional[Dict[str, Tuple[Optional[str], bool]]]:
     return _load_phido()
 
 
+@lru_cache(maxsize=1)
+def _peco_index() -> Optional[Dict[str, Tuple[Optional[str], bool]]]:
+    """Module-level cache of the parsed bundled PHI-ECO ontology (None if unavailable)."""
+    return _load_phido(PHI_ECO_OBO_PATH)
+
+
 # ------------------------------------------------------------------------- Client
 
 class OntologyValidator:
     def __init__(self, cache: Optional[ResponseCache] = None,
                  http_get: Optional[Callable] = None,
-                 phido_index=_UNSET):
+                 phido_index=_UNSET, peco_index=_UNSET):
         self.cache = cache
         self._http_get = http_get or _requests_get
         # Injectable for tests; falls back to the bundled ontology when not supplied.
         self._phido_index = phido_index
+        self._peco_index = peco_index
 
     def _get(self, url: str, params: dict, use_cache: bool):
         key = url + "?" + json.dumps(params, sort_keys=True)
@@ -234,7 +247,7 @@ class OntologyValidator:
         if prefix is None:
             return ValidationResult(raw, None, False, "unknown_prefix",
                                     None, None, False, None,
-                                    "unrecognised prefix; expected PHIPO/GO/PHIDO/MOD/UniProtKB")
+                                    "unrecognised prefix; expected PHIPO/GO/PHIDO/MOD/BTO/PECO/UniProtKB")
         if not fmt_ok:
             return ValidationResult(raw, prefix, False, "format_invalid",
                                     None, None, False, None,
@@ -251,6 +264,10 @@ class OntologyValidator:
         if prefix == "PHIDO":
             # PHIDO is not on OLS4 — resolve offline against the bundled ontology.
             return self._validate_phido(raw)
+        if prefix == "PECO":
+            # PHI-ECO is PHI-base-local (OLS 'peco' is the unrelated Planteome ontology) —
+            # resolve offline against the bundled ontology.
+            return self._validate_peco(raw)
 
         # GO/PHIPO: verify existence + obsolescence via OLS.
         obo_id = f"{prefix}:{raw.split(':', 1)[1].strip()}"
@@ -280,22 +297,32 @@ class OntologyValidator:
     def _validate_phido(self, raw: str) -> ValidationResult:
         """Resolve a PHIDO ID offline against the bundled ontology."""
         index = _phido_index() if self._phido_index is _UNSET else self._phido_index
-        obo_id = f"PHIDO:{raw.split(':', 1)[1].strip()}"
+        return self._validate_offline(raw, "PHIDO", index, PHIDO_SOURCE, PHIDO_OBO_PATH)
+
+    def _validate_peco(self, raw: str) -> ValidationResult:
+        """Resolve a PECO (PHI-ECO) ID offline against the bundled ontology."""
+        index = _peco_index() if self._peco_index is _UNSET else self._peco_index
+        return self._validate_offline(raw, "PECO", index, PHI_ECO_SOURCE, PHI_ECO_OBO_PATH)
+
+    @staticmethod
+    def _validate_offline(raw: str, prefix: str, index, source: str, path) -> ValidationResult:
+        """Resolve an ID offline against a bundled ontology index (PHIDO / PECO)."""
+        obo_id = f"{prefix}:{raw.split(':', 1)[1].strip()}"
         if index is None:
-            return ValidationResult(raw, "PHIDO", True, "error",
-                                    None, PHIDO_SOURCE, False, _now(),
-                                    f"cannot read bundled PHIDO ontology ({PHIDO_OBO_PATH})")
+            return ValidationResult(raw, prefix, True, "error",
+                                    None, source, False, _now(),
+                                    f"cannot read bundled {prefix} ontology ({path})")
         if obo_id not in index:
-            return ValidationResult(raw, "PHIDO", True, "not_found",
-                                    None, PHIDO_SOURCE, False, None,
-                                    "term not present in bundled PHIDO")
+            return ValidationResult(raw, prefix, True, "not_found",
+                                    None, source, False, None,
+                                    f"term not present in bundled {prefix}")
         name, obsolete = index[obo_id]
         if obsolete:
-            return ValidationResult(raw, "PHIDO", True, "obsolete",
-                                    name, PHIDO_SOURCE, False, None,
+            return ValidationResult(raw, prefix, True, "obsolete",
+                                    name, source, False, None,
                                     "term is obsolete; do not use")
-        return ValidationResult(raw, "PHIDO", True, "exists",
-                                name, PHIDO_SOURCE, False, None)
+        return ValidationResult(raw, prefix, True, "exists",
+                                name, source, False, None)
 
 
 def _find_term(body: dict, obo_id: str):

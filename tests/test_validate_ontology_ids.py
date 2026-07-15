@@ -220,6 +220,50 @@ class PhidoOfflineTests(unittest.TestCase):
         self.assertEqual(r.label, "Fusarium wilt")
 
 
+class PecoOfflineTests(unittest.TestCase):
+    """PHI-ECO (PECO) is PHI-base-local (OLS 'peco' is the unrelated Planteome ontology),
+    so it resolves offline against the bundled phi-eco.obo. Injected index → no network."""
+
+    INDEX = {
+        "PECO:0005028": ("delivery mechanism: agrobacterium", False),
+        "PECO:0000002": ("obsolete condition", True),
+    }
+
+    def _validator(self, index):
+        def boom(url, params):
+            raise AssertionError("PECO must not hit OLS/the network")
+        return v.OntologyValidator(http_get=boom, peco_index=index)
+
+    def test_existing_peco_passes(self):
+        r = self._validator(self.INDEX).validate("PECO:0005028")
+        self.assertEqual(r.existence, "exists")
+        self.assertEqual(r.label, "delivery mechanism: agrobacterium")
+        self.assertEqual(r.source, v.PHI_ECO_SOURCE)
+        self.assertTrue(r.ok)
+
+    def test_obsolete_peco_fails(self):
+        r = self._validator(self.INDEX).validate("PECO:0000002")
+        self.assertEqual(r.existence, "obsolete")
+        self.assertFalse(r.ok)
+
+    def test_missing_peco_is_not_found(self):
+        r = self._validator(self.INDEX).validate("PECO:0009999")
+        self.assertEqual(r.existence, "not_found")
+        self.assertFalse(r.ok)
+
+    def test_missing_ontology_file_is_reported_not_silently_passed(self):
+        # index None models an unreadable bundled file: honest error, not not_found.
+        r = self._validator(None).validate("PECO:0005028")
+        self.assertEqual(r.existence, "error")
+        self.assertFalse(r.ok)
+
+    def test_bundled_ontology_loads_and_has_delivery_term(self):
+        # Exercises the real bundled phi-eco.obo end-to-end.
+        r = v.OntologyValidator().validate("PECO:0005028")
+        self.assertEqual(r.existence, "exists")
+        self.assertEqual(r.label, "delivery mechanism: agrobacterium")
+
+
 class LoaderTests(unittest.TestCase):
     def test_load_phido_parses_terms_and_obsolete_flags(self):
         idx = v._load_phido()
