@@ -128,9 +128,11 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
   `FYPO_EXT` into `validate_ontology_ids` (offline, like PHIPO_EXT). *Caveat:* `phipo_extensions.tsv`
   points `has_severity`/`has_penetrance` at `FYPO_EXT:1000001`/`1000002`, which are **grouping/gate
   roots not defined as terms** in the file — a literal such value reads `not_found`, which is correct
-  (curators annotate high/medium/low/complete, not the root). Only loose end left if ever needed:
-  canonical definitions for the two `1000001`/`1000002` root ids (ask PomBase — Val Wood / Kim
-  Rutherford). Low priority — penetrance/severity aren't in current drafts.
+  (curators annotate high/medium/low/complete, not the root). **Confirmed non-issue (2026-07-16):** we
+  don't need those root ids — they're never annotated as values, `extension_config` uses the range
+  only to type-check (not existence-check), and we don't do subtree-membership validation (the only
+  thing that would need them). The values curators actually pick all resolve. Nothing to chase; noted
+  only as historical numbering drift (file root is `FYPO_EXT:1000000`; config points at `1000001/2`).
   - *Note on PHI-base/canto as a source:* its `t/data/*_small.obo` are **truncated test fixtures**
     (`phipo_small.obo` = 2 terms, `go_small.obo` = 21), and `t/data/extension_config.tsv` is a 9-line
     stub — do NOT source the full ontologies or the real extension config from there. FYPO_EXT is the
