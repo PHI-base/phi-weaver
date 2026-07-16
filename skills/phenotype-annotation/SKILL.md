@@ -53,12 +53,18 @@ annotation; choosing the PHIPO term itself is delegated to the phipo-mapping ski
    `standard temperature`, delivery mechanisms, `+ wounding`) — map the qualitative condition and
    keep numeric specifics (exact medium, temperature, duration) in the annotation comment. Don't
    force a term where none fits; do not over-specify conditions implied by the phenotype term.
-5. Add extensions — single-species (penetrance, severity, assayed feature) or interaction
+5. For an **RNA-expression** annotation (`wt_rna_expression`, from RT-qPCR / RNA-seq), the
+   RNA-level qualifier is a **controlled phrase** — use exactly one of the seven PomGeneEx
+   qualifiers (RNA level increased / decreased / unchanged / constant / fluctuates, RNA present,
+   RNA absent), not free prose. See `06-Training/Gene-for-Gene-Curation-Methodology.md` §9 for the
+   phrase list and when to use each; keep fold-change / timepoints / method in the comment. IDs are
+   not required for the draft.
+6. Add extensions — single-species (penetrance, severity, assayed feature) or interaction
    (host tissue, infective ability, control genotype, outcome). **Host tissue uses a BRENDA
    Tissue Ontology (BTO) term** (e.g. `BTO:0000268` coleoptile), not free text — verify it with
    `validate_ontology_ids` (BTO resolves online via OLS, like GO/PHIPO).
-6. Attach the figure/table reference and any clarifying comment.
-7. If no term fits or the evidence is unclear, say so explicitly rather than forcing a term
+7. Attach the figure/table reference and any clarifying comment.
+8. If no term fits or the evidence is unclear, say so explicitly rather than forcing a term
    or code.
 
 ## Expected outputs

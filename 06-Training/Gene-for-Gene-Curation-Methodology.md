@@ -146,8 +146,24 @@ interpretation):
 
 ## 9. RNA expression annotation
 
-Use when supported by data (RT-qPCR, RNA-seq). Typical annotation: *RNA level increased →
-during response to host*.
+Use when supported by data (RT-qPCR, RNA-seq) — the `wt_rna_expression` annotation type. Typical
+annotation: *RNA level increased → during response to host*.
+
+The RNA-level **qualifier is a controlled phrase**, not free text: pick exactly one of the seven
+PomGeneEx qualifiers below (use the phrase — the numeric IDs are not required for the draft):
+
+| Qualifier phrase | Use when |
+|------------------|----------|
+| RNA level increased | RNA present at a higher level under one condition/time than otherwise |
+| RNA level decreased | RNA present at a lower level under one condition/time than otherwise |
+| RNA level unchanged | RNA present at the same level under one condition/time as otherwise |
+| RNA present | RNA detected (no level comparison) |
+| RNA absent | RNA not detected |
+| RNA level constant | level stays steady across conditions/time |
+| RNA level fluctuates | level varies across conditions/time |
+
+Keep the numeric specifics (fold-change, timepoints, method) in the annotation comment. Do not
+invent a qualifier outside this list; if none fits, say so rather than forcing one.
 
 ## 10. Physical interaction evidence
 

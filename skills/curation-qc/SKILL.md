@@ -32,7 +32,11 @@ clean, provenance-complete draft.
    PECO (PHI-ECO) terms** (map via `map_condition`, validate offline) — flag free-text conditions
    that carry no PECO term (numeric specifics may stay in the comment).
 3. Check each annotation has: evidence type, source location (figure/table), and
-   experimental conditions where relevant.
+   experimental conditions where relevant. **RNA-expression (`wt_rna_expression`) annotations must
+   use one of the seven controlled PomGeneEx qualifier phrases** (RNA level increased / decreased /
+   unchanged / constant / fluctuates, RNA present, RNA absent — see
+   `06-Training/Gene-for-Gene-Curation-Methodology.md` §9) — flag a free-prose RNA-level qualifier
+   (numeric specifics belong in the comment).
 4. Check pathogen and host organisms/strains are specified.
 5. Check provenance is recorded: input file, commands, assumptions, outputs, uncertainties.
 6. Check evidence / interpretation / speculation are separated and labelled.

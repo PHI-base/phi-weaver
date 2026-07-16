@@ -12,24 +12,18 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
   **offline** against it — existence + obsolescence, no network. GO/PHIPO still use OLS.
   Refresh instructions: `phiweaver/lookup/data/README.md`. Surfaced 2026-07-03 curating
   PMID:26177154 (PHIDO:0000164 Fusarium wilt), which now validates 7/7.
-- [ ] **PomGeneEx (RNA-level) vocabulary + validation gap** (surfaced 2026-07-11) — weaver knows
-  the `wt_rna_expression` annotation type and the phrase "RNA level increased" (one gold-standard
-  example, PINE1/PMID:35468894; RT-qPCR/RNA-seq guidance in the methodology docs), but does **not**
-  know the PomGeneEx term **IDs** or the full controlled set, and `validate_ontology_ids` cannot
-  validate PomGeneEx (supports PHIPO/GO/PHIDO/MOD/UniProtKB only). Repo grep: `PomGeneEx` = 0 hits;
-  the six non-"increased" qualifiers (decreased / unchanged / present / absent / constant /
-  fluctuates) = 0 hits. The seven RNA-level qualifiers, from the PHI-Canto UI (curator screenshot,
-  2026-07-11): RNA level increased **PomGeneEx:0000011**, decreased **:0000012**, unchanged
-  **:0000013**, RNA present **:0000014**, RNA absent **:0000015**, RNA level constant **:0000016**,
-  RNA level fluctuates **:0000017**. Plan (mirror the PHIDO fix — PomGeneEx is PomBase-local, not on
-  OLS4): **vendor the PomGeneEx ontology offline** under `phiweaver/lookup/data/` and teach
-  `validate_ontology_ids` the `PomGeneEx` prefix (offline existence/obsolescence), plus surface the
-  7-term vocabulary to the drafting/entry-queue workflow so RNA-level items get the right qualifier +
-  ID, not just prose. **NEEDS: the link to the PomBase GitHub repository file** that is the
-  authoritative PomGeneEx source (analogous to github.com/PHI-base/phido for PHIDO) — obtain and
-  record it before vendoring; do not hand-transcribe/invent IDs beyond the seven above. Surfaced
-  curating PMID:40756215 (Pt31812/Lr42), where the qRT-PCR "RNA level increased during infection"
-  item was left as prose, not annotated with the qualifier/ID.
+- [x] **PomGeneEx (RNA-level) qualifier vocabulary gap** (surfaced 2026-07-11; scope reduced to
+  terms-only 2026-07-16; **done 2026-07-16**) — weaver knew the `wt_rna_expression` annotation type
+  and the phrase "RNA level increased" (one gold-standard example, PINE1/PMID:35468894) but not the
+  full controlled set of RNA-level qualifiers. **Terms-only scope (curator, 2026-07-16): the
+  qualifier IDs are NOT needed — only the term phrases** (no offline ontology, no `PomGeneEx` prefix
+  in `validate_ontology_ids`). The seven controlled qualifier phrases (PHI-Canto UI screenshot
+  2026-07-11): RNA level increased, RNA level decreased, RNA level unchanged, RNA present, RNA
+  absent, RNA level constant, RNA level fluctuates. **Surfaced to the drafting workflow (2026-07-16):**
+  authoritative phrase table + per-phrase "use when" added to `Gene-for-Gene-Curation-Methodology.md`
+  §9; a controlled-phrase step in the `phenotype-annotation` skill; and a QC flag in the `curation-qc`
+  skill for free-prose RNA-level qualifiers. Motivating case: PMID:40756215 (Pt31812/Lr42), where the
+  qRT-PCR "RNA level increased during infection" item was left as prose.
 - [ ] **Per-article token attribution** (tool landed 2026-07-11) — `phiweaver/article_tokens.py`
   attributes a batch session's token spend to each curated paper (PMID) + a shared-overhead split
   (equal 1/N, or `--weight-by-direct`), joining First-author/Year/Title from the tracking DB. Reads
@@ -101,15 +95,6 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
     *definitions*, kept as reference — incomplete, not a validation source). `extension_config` now
     loads all three (`--config phipo|go|phido`). Neither GO nor disease extensions are used by current
     drafts. See `phiweaver/lookup/data/README.md`.
-
-- [ ] **Rewire the 4 hand-vendored extension configs to a public source when available** (added
-  2026-07-15). `phiweaver/lookup/data/{phipo_extensions.tsv, phibase_go_extensions.tsv,
-  phido_extensions.tsv, phipo_extension_relations.obo}` were **copied in by hand** from the
-  **private** PHI-base/config repo (`config/annotation_extension/`) — no `curl`-able source, unlike
-  the public `phido.obo` / `phi-eco.obo`. **When `config/annotation_extension/` is published to a
-  public GitHub repo:** point the refresh instructions in `data/README.md` at the public raw URLs,
-  pin the source commit, and drop the "copied by hand" provenance. Until then these are static
-  snapshots that only update when the curator re-supplies them.
 
 - [x] **PHIPO_EXT extension values — existence check CLOSED** (2026-07-16). PHIPO_EXT is a **separate**
   PHI-base ontology (not part of PHIPO — PHIPO obsoleted its old gene-for-gene term in 2020 and moved
@@ -262,9 +247,14 @@ not forced onto a wrong ID. Candidates to raise with the PHIPO/PHI-base ontology
 
 - [ ] **Activate the benchmark sandbox allowlist**: the airtight profile exists
   (`07-Standards/curation-benchmarking/benchmark-sandbox.settings.json`) — network allowlisted to
-  UniProt + EBI OLS only, `failIfUnavailable: true`. Remaining: **install `bubblewrap`** (not on
-  the box yet) and **test it once** (tools reachable, a PHI-base fetch blocked), then use
-  `claude --settings …benchmark-sandbox.settings.json` for scored runs. This is the only route that
+  UniProt + EBI OLS only, `failIfUnavailable: true`. Progress: **`bubblewrap` installed**
+  (`/usr/bin/bwrap` 0.9.0, 2026-07-16) and the underlying isolation verified on this box — userns
+  works and `--unshare-net` blocks connectivity while unsandboxed DNS resolves. Remaining: **run the
+  one end-to-end test through Claude Code's sandbox** (`claude --settings
+  07-Standards/curation-benchmarking/benchmark-sandbox.settings.json`, then confirm a UniProt/OLS
+  lookup succeeds AND a `phi-base.org` / `raw.githubusercontent.com/PHI-base` fetch is blocked — the
+  domain allowlist is enforced by Claude Code's sandbox layer, not raw bwrap), then use it for scored
+  runs. This is the only route that
   also covers PHI-base's **GitHub data repos** (`github.com/PHI-base`, `raw.githubusercontent.com`),
   which can't be cleanly domain-denied. The local `.claude/settings.json` WebFetch deny on
   `*.phi-base.org` is the interim (website-only) control.
@@ -278,3 +268,12 @@ not forced onto a wrong ID. Candidates to raise with the PHIPO/PHI-base ontology
 - [ ] Full machine-readable curation-record schema (first slice done: the draft `auto_check` block).
 - [ ] Plug-in host + local AI on ROGER (long-term; needs collaborator / research-computing help).
 - [ ] Optional: UniProt mapping for Zhang-2024 from its genome IDs; read Zhang supplementary S1–S7.
+- [ ] **Rewire the 4 hand-vendored extension configs to a public source when available** (added
+  2026-07-15; deferred 2026-07-16). `phiweaver/lookup/data/{phipo_extensions.tsv,
+  phibase_go_extensions.tsv, phido_extensions.tsv, phipo_extension_relations.obo}` were **copied in
+  by hand** from the **private** PHI-base/config repo (`config/annotation_extension/`) — no
+  `curl`-able source, unlike the public `phido.obo` / `phi-eco.obo`. **When
+  `config/annotation_extension/` is published to a public GitHub repo:** point the refresh
+  instructions in `data/README.md` at the public raw URLs, pin the source commit, and drop the
+  "copied by hand" provenance. Until then these are static snapshots that only update when the
+  curator re-supplies them.
