@@ -137,10 +137,6 @@ not forced onto a wrong ID. Candidates to raise with the PHIPO/PHI-base ontology
   PMID:42089373 reduced DON now maps to PHIPO:0001445. **Lesson for phiweaver:** when a phenotype
   phrase returns `no_match`, retry with the "level of" / "abnormal X biosynthesis" phrasings before
   declaring a gap. Two genuine *residual* items below.
-- [ ] **No free-living "absent / abolished DON" term** — for a plate/flask assay with *no detectable*
-  DON (ΔFpSdhA/B/D + ΔFpSdhC1&2, PMID:42089373 Table S4) there is only PHIPO:0001445 "decreased" (used
-  as closest) and the *within-host* PHIPO:0000234 "pathogen deoxynivalenol within host absent" — no
-  free-living "absent" phenotype. Minor term request.
 - [ ] **Typo in PHIPO:0001441 label** — "abnormal mycotoxin **biosythesis**" (should be
   "biosynthesis"). Cosmetic ontology fix to raise with the PHIPO team.
 - [ ] **Toxisome formation / ER-to-toxisome remodelling** — reduced toxisome number and failure of the
@@ -265,6 +261,15 @@ not forced onto a wrong ID. Candidates to raise with the PHIPO/PHI-base ontology
   phiweaver does not measure them — they are supplied by hand in the `tokens` CSV column. Add a
   small logging step during drafting that records each paper's LLM token usage (from the CLI/API
   usage readout) into the scores (or the scorecard), so tokens flow into the report automatically.
+
+## Waiting for response (filed — external action)
+_Requests we have submitted and are now blocked on someone else (ontology team, curator). Chase
+periodically; move back to the owning section if reopened, or tick `[x]` when accepted/closed._
+- [ ] **Free-living "absent / abolished DON" term** — filed 2026-07-16 as
+  [PHI-base/phipo#452](https://github.com/PHI-base/phipo/issues/452). The free-living DON branch stops
+  at PHIPO:0001445 "decreased" (used as closest); the only "absent" DON term, PHIPO:0000234, is
+  *within-host* (wrong context for an in-vitro assay). Evidence: PMID:42089373 Table S4 (ΔFpSdhA/B/D +
+  ΔFpSdhC1&2, no detectable DON). Awaiting ontology-team action.
 
 ## Deferred (see DESIGN-DECISIONS.md D11 / PLUGIN-ARCHITECTURE.md)
 - [ ] Full machine-readable curation-record schema (first slice done: the draft `auto_check` block).
