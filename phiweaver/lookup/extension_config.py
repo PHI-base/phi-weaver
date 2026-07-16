@@ -24,6 +24,10 @@ Scope (deliberately staged, mirroring validate_ontology_ids' FORMAT-vs-EXISTENCE
   enforce the per-domain `subset relation` constraints (the `is_a(...)` expressions in
   the `domain ID` column). Those need the ontology graph / the primary term in hand;
   they are a deeper check left to the curator + `validate_ontology_ids` for now.
+- **Term *existence*** of a value (does `PHIPO_EXT:0000012` / `PHIPO:0000015` / `BTO:…`
+  actually exist and is it non-obsolete?) is `validate_ontology_ids`' job, not ours — it
+  resolves PHIPO/GO/BTO online and PHIDO/PECO/**PHIPO_EXT** offline. This module only
+  checks that a value has the right *type* for its relation.
 
 The parser reads the TSV columns:
     domain ID | subset relation | extension relation | range ID | Canto display text |

@@ -264,6 +264,93 @@ class PecoOfflineTests(unittest.TestCase):
         self.assertEqual(r.label, "delivery mechanism: agrobacterium")
 
 
+class PhipoExtOfflineTests(unittest.TestCase):
+    """PHIPO_EXT is a SEPARATE PHI-base ontology of extension-only terms (gene-for-gene
+    values), not part of PHIPO and not on OLS, so it resolves offline against the bundled
+    phipo_ext.obo. Injected index → no network."""
+
+    INDEX = {
+        "PHIPO_EXT:0000001": ("gene-for-gene interaction phenotype", False),
+        "PHIPO_EXT:0000099": ("obsolete extension term", True),
+    }
+
+    def _validator(self, index):
+        def boom(url, params):
+            raise AssertionError("PHIPO_EXT must not hit OLS/the network")
+        return v.OntologyValidator(http_get=boom, phipo_ext_index=index)
+
+    def test_format_and_split(self):
+        prefix, ok = v.check_format("PHIPO_EXT:0000001")
+        self.assertEqual(prefix, "PHIPO_EXT")
+        self.assertTrue(ok)
+        # the shared PHIPO prefix must not swallow PHIPO_EXT
+        self.assertEqual(v.check_format("PHIPO:0000015")[0], "PHIPO")
+
+    def test_existing_phipo_ext_passes(self):
+        r = self._validator(self.INDEX).validate("PHIPO_EXT:0000001")
+        self.assertEqual(r.existence, "exists")
+        self.assertEqual(r.label, "gene-for-gene interaction phenotype")
+        self.assertEqual(r.source, v.PHIPO_EXT_SOURCE)
+        self.assertTrue(r.ok)
+
+    def test_obsolete_phipo_ext_fails(self):
+        r = self._validator(self.INDEX).validate("PHIPO_EXT:0000099")
+        self.assertEqual(r.existence, "obsolete")
+        self.assertFalse(r.ok)
+
+    def test_missing_phipo_ext_is_not_found(self):
+        r = self._validator(self.INDEX).validate("PHIPO_EXT:0009999")
+        self.assertEqual(r.existence, "not_found")
+        self.assertFalse(r.ok)
+
+    def test_extraction_picks_up_both_prefixes(self):
+        ids = v.extract_ids("gene-for-gene PHIPO_EXT:0000001 with PHIPO:0000015")
+        self.assertEqual(ids, ["PHIPO_EXT:0000001", "PHIPO:0000015"])
+
+    def test_bundled_ontology_loads_end_to_end(self):
+        # Exercises the real bundled phipo_ext.obo (offline; no network).
+        r = v.OntologyValidator().validate("PHIPO_EXT:0000001")
+        self.assertEqual(r.existence, "exists")
+        self.assertEqual(r.label, "gene-for-gene interaction phenotype")
+
+
+class FypoExtOfflineTests(unittest.TestCase):
+    """FYPO_EXT is a small PomBase extension ontology (penetrance/severity values), not on
+    OLS, resolved offline against the bundled fypo_extension.obo."""
+
+    def test_format_and_split(self):
+        prefix, ok = v.check_format("FYPO_EXT:0000001")
+        self.assertEqual(prefix, "FYPO_EXT")
+        self.assertTrue(ok)
+
+    def test_real_values_pass(self):
+        # high / medium / low / complete are the real penetrance/severity values.
+        val = v.OntologyValidator()
+        r = val.validate("FYPO_EXT:0000001")
+        self.assertEqual(r.existence, "exists")
+        self.assertEqual(r.label, "high")
+        self.assertEqual(r.source, v.FYPO_EXT_SOURCE)
+        self.assertTrue(r.ok)
+        self.assertTrue(val.validate("FYPO_EXT:0000003").ok)  # low
+
+    def test_missing_id_not_found(self):
+        # 1000001/1000002 are config grouping-roots, not defined as terms in the file.
+        r = v.OntologyValidator().validate("FYPO_EXT:1000001")
+        self.assertEqual(r.existence, "not_found")
+        self.assertFalse(r.ok)
+
+    def test_no_network_used(self):
+        def boom(url, params):
+            raise AssertionError("FYPO_EXT must not hit OLS/the network")
+        r = v.OntologyValidator(http_get=boom).validate("FYPO_EXT:0000004")
+        self.assertEqual(r.existence, "exists")
+        self.assertEqual(r.label, "complete")
+
+    def test_extraction_distinguishes_phipo_ext_and_fypo_ext(self):
+        ids = v.extract_ids("PHIPO_EXT:0000001, FYPO_EXT:0000001, PHIPO:0000015")
+        self.assertEqual(ids, ["PHIPO_EXT:0000001", "FYPO_EXT:0000001", "PHIPO:0000015"])
+
+
 class LoaderTests(unittest.TestCase):
     def test_load_phido_parses_terms_and_obsolete_flags(self):
         idx = v._load_phido()

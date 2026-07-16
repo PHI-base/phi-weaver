@@ -1,0 +1,423 @@
+format-version: 1.2
+ontology: phipo_ext
+property_value: http://purl.org/dc/elements/1.1/description "Extension ontology for the Pathogen Host Interactions Phenotype Ontology (PHIPO), providing extra terms needed for curation." xsd:string
+property_value: http://purl.org/dc/elements/1.1/title "Pathogen Host Interactions Phenotype Ontology Extensions" xsd:string
+property_value: http://purl.org/dc/terms/license "https://creativecommons.org/licenses/by/4.0/" xsd:anyURI
+creation_date: 2018-07-09T13:43:00Z
+created_by: alaynecuzick
+
+[Term]
+id: PHIPO_EXT:0000001
+name: gene-for-gene interaction phenotype
+def: "A pathogen host interaction phenotype that affects the outcome of a gene-for-gene relationship in plant pathogen interactions. The gene-for-gene hypothesis follows that for each gene controlling resistance (R) in the host there is a corresponding gene controlling avirulence (avr) in the pathogen." []
+subset: qc_do_not_annotate
+created_by: alaynecuzick
+creation_date: 2020-11-11T12:59:19Z
+
+[Term]
+id: PHIPO_EXT:0000002
+name: compatible interaction
+def: "A pathogen host interaction phenotype where the gene-for-gene relationship between the pathogen and plant host results in disease susceptibility." []
+subset: qc_do_not_annotate
+is_a: PHIPO_EXT:0000001 ! gene-for-gene interaction phenotype
+created_by: alaynecuzick
+creation_date: 2020-11-11T12:59:19Z
+
+[Term]
+id: PHIPO_EXT:0000003
+name: incompatible interaction
+def: "A pathogen host interaction phenotype where the gene-for-gene relationship between the pathogen and plant host results in disease resistance." []
+subset: qc_do_not_annotate
+is_a: PHIPO_EXT:0000001 ! gene-for-gene interaction phenotype
+created_by: alaynecuzick
+creation_date: 2020-11-11T12:59:19Z
+
+[Term]
+id: PHIPO_EXT:0000004
+name: functional host resistance gene absent
+def: "A phenotype where ability of a host to be resistant to a pathogen, via the recognition of a pathogen effector by a specific host resistance gene, is absent." []
+subset: qc_do_not_annotate
+synonym: "host resistance absent" EXACT []
+is_a: PHIPO_EXT:0000001 ! gene-for-gene interaction phenotype
+created_by: alaynecuzick
+creation_date: 2020-11-11T12:59:19Z
+
+[Term]
+id: PHIPO_EXT:0000005
+name: compromised host resistance gene
+def: "A phenotype where the ability of a host to be resistant to a pathogen, via the recognition of a pathogen effector by a specific host resistance gene is abolished (resistance was present and is now absent)." []
+subset: qc_do_not_annotate
+synonym: "loss of host resistance" EXACT []
+is_a: PHIPO_EXT:0000004 ! functional host resistance gene absent
+created_by: alaynecuzick
+creation_date: 2020-11-11T12:59:19Z
+
+[Term]
+id: PHIPO_EXT:0000006
+name: functional host resistance gene present
+def: "A phenotype where ability of a host to be resistant to a pathogen, via the recognition of a pathogen effector by a specific host resistance gene, is present." []
+subset: qc_do_not_annotate
+synonym: "host resistance present" EXACT []
+is_a: PHIPO_EXT:0000001 ! gene-for-gene interaction phenotype
+created_by: alaynecuzick
+creation_date: 2020-11-11T12:59:19Z
+
+[Term]
+id: PHIPO_EXT:0000007
+name: gain of functional host resistance gene
+def: "A phenotype where the ability of a host, to be resistant to a pathogen, via the recognition of a pathogen effector by a specific host resistance gene is acquired (resistance was absent and is now present)." []
+comment: Gain of function may result from engineering of a natural variant or transformation
+subset: qc_do_not_annotate
+synonym: "gain of host resistance" EXACT []
+is_a: PHIPO_EXT:0000006 ! functional host resistance gene present
+created_by: alaynecuzick
+creation_date: 2020-11-11T12:59:19Z
+
+[Term]
+id: PHIPO_EXT:0000008
+name: recognizable pathogen effector absent
+def: "A phenotype where the ability of a pathogen effector to be recognized by a specific host resistance gene is absent." []
+subset: qc_do_not_annotate
+is_a: PHIPO_EXT:0000001 ! gene-for-gene interaction phenotype
+created_by: alaynecuzick
+creation_date: 2020-11-11T12:59:19Z
+
+[Term]
+id: PHIPO_EXT:0000009
+name: compromised recognizable pathogen effector
+def: "A phenotype where the ability of a pathogen effector to be recognized by a specific host resistance gene is abolished (recognition was present and is now absent)." []
+subset: qc_do_not_annotate
+synonym: "loss of recognizable pathogen effector" EXACT []
+is_a: PHIPO_EXT:0000008 ! recognizable pathogen effector absent
+created_by: alaynecuzick
+creation_date: 2020-11-11T12:59:19Z
+
+[Term]
+id: PHIPO_EXT:0000010
+name: recognizable pathogen effector present
+def: "A phenotype where the ability of a pathogen effector to be recognized by a specific host resistance gene is present." []
+subset: qc_do_not_annotate
+is_a: PHIPO_EXT:0000001 ! gene-for-gene interaction phenotype
+created_by: alaynecuzick
+creation_date: 2020-11-11T12:59:19Z
+
+[Term]
+id: PHIPO_EXT:0000011
+name: gain of recognizable pathogen effector
+def: "A phenotype where the ability of a pathogen effector to be recognized by a specific host resistance gene is acquired (recognition was absent and is now present)." []
+subset: qc_do_not_annotate
+is_a: PHIPO_EXT:0000010 ! recognizable pathogen effector present
+created_by: alaynecuzick
+creation_date: 2020-11-11T12:59:19Z
+
+[Term]
+id: PHIPO_EXT:0000012
+name: compatible interaction, recognizable pathogen effector present, functional host resistance gene absent
+def: "A pathogen host interaction phenotype where the gene-for-gene relationship between the pathogen and plant host results in disease susceptibility. The ability of a pathogen effector to be recognized by a specific host resistance gene is present and the ability of a host to be resistant to a pathogen, via the recognition of a pathogen effector by a specific host resistance gene, is absent." []
+subset: qc_extension_only
+is_a: PHIPO_EXT:0000001 ! gene-for-gene interaction phenotype
+created_by: alaynecuzick
+creation_date: 2020-11-11T12:59:19Z
+
+[Term]
+id: PHIPO_EXT:0000013
+name: compatible interaction, recognizable pathogen effector absent, functional host resistance gene present
+def: "A pathogen host interaction phenotype where the gene-for-gene relationship between the pathogen and plant host results in disease susceptibility. The ability of a pathogen effector to be recognized by a specific host resistance gene is absent and the ability of a host to be resistant to a pathogen, via the recognition of a pathogen effector by a specific host resistance gene, is present." []
+subset: qc_extension_only
+is_a: PHIPO_EXT:0000001 ! gene-for-gene interaction phenotype
+created_by: alaynecuzick
+creation_date: 2020-11-11T12:59:19Z
+
+[Term]
+id: PHIPO_EXT:0000014
+name: compatible interaction, recognizable pathogen effector present, compromised host resistance gene
+def: "A pathogen host interaction phenotype where the gene-for-gene relationship between the pathogen and plant host results in disease susceptibility. The ability of a pathogen effector to be recognized by a specific host resistance gene is present and the ability of a host to be resistant to a pathogen, via the recognition of a pathogen effector by a specific host resistance gene is abolished (resistance was present and is now absent)." []
+subset: qc_extension_only
+is_a: PHIPO_EXT:0000001 ! gene-for-gene interaction phenotype
+created_by: alaynecuzick
+creation_date: 2020-11-11T12:59:19Z
+
+[Term]
+id: PHIPO_EXT:0000015
+name: obsolete compatible interaction, recognizable pathogen effector present, functional host resistance gene present
+def: "A pathogen host interaction phenotype where the gene-for-gene relationship between the pathogen and plant host results in disease susceptibility. The ability of a pathogen effector to be recognized by a specific host resistance gene is present and the ability of a host to be resistant to a pathogen, via the recognition of a pathogen effector by a specific host resistance gene, is present." []
+subset: qc_extension_only
+is_obsolete: true
+created_by: alaynecuzick
+creation_date: 2020-11-11T12:59:19Z
+
+[Term]
+id: PHIPO_EXT:0000016
+name: obsolete compatible interaction, gain of recognizable pathogen effector, functional host resistance gene present
+def: "A pathogen host interaction phenotype where the gene-for-gene relationship between the pathogen and plant host results in disease susceptibility. A phenotype where the ability of a pathogen effector to be recognized by a specific host resistance gene is acquired (recognition was absent and is now present) and the ability of a host to be resistant to a pathogen, via the recognition of a pathogen effector by a specific host resistance gene, is present." []
+subset: qc_extension_only
+is_obsolete: true
+created_by: alaynecuzick
+creation_date: 2020-11-11T12:59:19Z
+
+[Term]
+id: PHIPO_EXT:0000017
+name: obsolete compatible interaction, gain of recognizable pathogen effector, functional host resistance gene absent
+def: "A pathogen host interaction phenotype where the gene-for-gene relationship between the pathogen and plant host results in disease susceptibility. A phenotype where the ability of a pathogen effector to be recognized by a specific host resistance gene is acquired (recognition was absent and is now present) and the ability of a host to be resistant to a pathogen, via the recognition of a pathogen effector by a specific host resistance gene, is absent." []
+subset: qc_extension_only
+is_obsolete: true
+created_by: alaynecuzick
+creation_date: 2020-11-11T12:59:19Z
+
+[Term]
+id: PHIPO_EXT:0000018
+name: incompatible interaction, recognizable pathogen effector present, functional host resistance gene present
+def: "A pathogen host interaction phenotype where the gene-for-gene relationship between the pathogen and plant host results in disease resistance. The ability of a pathogen effector to be recognized by a specific host resistance gene is present and the ability of a host to be resistant to a pathogen, via the recognition of a pathogen effector by a specific host resistance gene, is present." []
+subset: qc_extension_only
+is_a: PHIPO_EXT:0000001 ! gene-for-gene interaction phenotype
+created_by: alaynecuzick
+creation_date: 2020-11-11T12:59:19Z
+
+[Term]
+id: PHIPO_EXT:0000019
+name: incompatible interaction, recognizable pathogen effector present, gain of functional host resistance gene
+def: "A pathogen host interaction phenotype where the gene-for-gene relationship between the pathogen and plant host results in disease resistance. The ability of a pathogen effector to be recognized by a specific host resistance gene is present and the ability of a host, to be resistant to a pathogen, via the recognition of a pathogen effector by a specific host resistance gene is acquired (resistance was absent and is now present)." []
+subset: qc_extension_only
+is_a: PHIPO_EXT:0000001 ! gene-for-gene interaction phenotype
+created_by: alaynecuzick
+creation_date: 2020-11-11T12:59:19Z
+
+[Term]
+id: PHIPO_EXT:0000020
+name: obsolete incompatible interaction, recognizable pathogen effector present, compromised host resistance gene
+def: "A pathogen host interaction phenotype where the gene-for-gene relationship between the pathogen and plant host results in disease resistance. The ability of a pathogen effector to be recognized by a specific host resistance gene is present and the ability of a host, to be resistant to a pathogen, via the recognition of a pathogen effector by a specific host resistance gene is abolished (resistance was present and is now absent)." []
+subset: qc_extension_only
+is_obsolete: true
+created_by: alaynecuzick
+creation_date: 2020-11-11T12:59:19Z
+
+[Term]
+id: PHIPO_EXT:0000021
+name: obsolete incompatible interaction, compromised recognizable pathogen effector, functional host resistance gene present
+def: "A pathogen host interaction phenotype where the gene-for-gene relationship between the pathogen and plant host results in disease resistance. The ability of a pathogen effector to produce an infectious disease is abolished and the ability of a host to be resistant to a pathogen, via the recognition of a pathogen effector by a specific host resistance gene, is present." []
+subset: qc_extension_only
+is_obsolete: true
+created_by: alaynecuzick
+creation_date: 2020-11-11T12:59:19Z
+
+[Term]
+id: PHIPO_EXT:0000022
+name: obsolete incompatible interaction, recognizable pathogen effector present, functional host resistance gene absent
+def: "A pathogen host interaction phenotype where the gene-for-gene relationship between the pathogen and plant host results in disease resistance. The ability of a pathogen effector to be recognized by a specific host resistance gene is present and the ability of a host to be resistant to a pathogen, via the recognition of a pathogen effector by a specific host resistance gene, is absent." []
+subset: qc_extension_only
+is_obsolete: true
+created_by: alaynecuzick
+creation_date: 2020-11-11T12:59:19Z
+
+[Term]
+id: PHIPO_EXT:0000023
+name: obsolete incompatible interaction, gain of recognizable pathogen effector, functional host resistance gene absent
+def: "A pathogen host interaction phenotype where the gene-for-gene relationship between the pathogen and plant host results in disease resistance. The ability of a pathogen effector to be recognized by a specific host resistance gene is acquired (recognition was absent and is now present) and the ability of a host to be resistant to a pathogen, via the recognition of a pathogen effector by a specific host resistance gene, is absent." []
+subset: qc_extension_only
+is_obsolete: true
+created_by: alaynecuzick
+creation_date: 2020-11-11T12:59:19Z
+
+[Term]
+id: PHIPO_EXT:0000024
+name: obsolete incompatible interaction, recognizable pathogen effector absent, functional host resistance gene present
+def: "A pathogen host interaction phenotype where the gene-for-gene relationship between the pathogen and plant host results in disease resistance. The ability of a pathogen effector to be recognized by a specific host resistance gene is absent and the ability of a host to be resistant to a pathogen, via the recognition of a pathogen effector by a specific host resistance gene, is present." []
+subset: qc_extension_only
+is_obsolete: true
+created_by: alaynecuzick
+creation_date: 2020-11-11T12:59:19Z
+
+[Term]
+id: PHIPO_EXT:0000025
+name: obsolete incompatible interaction, recognizable pathogen effector absent, functional host resistance gene absent
+def: "A pathogen host interaction phenotype where the gene-for-gene relationship between the pathogen and plant host results in disease resistance. The ability of a pathogen effector to be recognized by a specific host resistance gene is absent and the ability of a host to be resistant to a pathogen, via the recognition of a pathogen effector by a specific host resistance gene, is absent." []
+subset: qc_extension_only
+is_obsolete: true
+created_by: alaynecuzick
+creation_date: 2020-11-11T12:59:19Z
+
+[Term]
+id: PHIPO_EXT:0000026
+name: obsolete incompatible interaction, recognizable pathogen effector absent, gain of functional host resistance gene
+def: "A pathogen host interaction phenotype where the gene-for-gene relationship between the pathogen and plant host results in disease resistance. The ability of a pathogen effector to be recognized by a specific host resistance gene is absent and the ability of a host to be resistant to a pathogen, via the recognition of a pathogen effector by a specific host resistance gene is acquired (resistance was absent and is now present)." []
+subset: qc_extension_only
+is_obsolete: true
+created_by: alaynecuzick
+creation_date: 2020-11-11T12:59:19Z
+
+[Term]
+id: PHIPO_EXT:0000027
+name: incompatible interaction, gain of recognizable pathogen effector, gain of functional host resistance gene
+def: "A pathogen host interaction phenotype where the gene-for-gene relationship between the pathogen and plant host results in disease resistance. The ability of a pathogen effector to be recognized by a specific host resistance gene is acquired (recognition was absent and is now present) and the ability of a host to be resistant to a pathogen, via the recognition of a pathogen effector by a specific host resistance gene is acquired (resistance was absent and is now present)." []
+subset: qc_extension_only
+is_a: PHIPO_EXT:0000001 ! gene-for-gene interaction phenotype
+created_by: alaynecuzick
+creation_date: 2020-11-11T12:59:19Z
+
+[Term]
+id: PHIPO_EXT:0000028
+name: obsolete incompatible interaction, compromised recognizable pathogen effector, functional host resistance gene absent
+def: "A pathogen host interaction phenotype where the gene-for-gene relationship between the pathogen and plant host results in disease resistance. The ability of a pathogen effector to be recognized by a specific host resistance gene is abolished (recognition was present and is now absent) and the ability of a host to be resistant to a pathogen, via the recognition of a pathogen effector by a specific host resistance gene, is absent." []
+subset: qc_extension_only
+is_obsolete: true
+created_by: alaynecuzick
+creation_date: 2020-11-11T12:59:19Z
+
+[Term]
+id: PHIPO_EXT:0000029
+name: obsolete compatible interaction, functional host resistance gene present
+def: "A pathogen host interaction phenotype where the gene-for-gene relationship between the pathogen and plant host results in disease susceptibility. The ability of a host to be resistant to a pathogen, via the recognition of a pathogen effector by a specific host resistance gene, is present. (The presence of a functional pathogen effector is unknown due to a lack of data showing whether it is able to cause disease)." []
+subset: qc_extension_only
+is_obsolete: true
+created_by: alaynecuzick
+creation_date: 2020-12-09T15:11:15Z
+
+[Term]
+id: PHIPO_EXT:0000030
+name: incompatible interaction, functional pathogen necrotrophic effector present, functional host susceptibility locus compromised
+def: "A pathogen host interaction phenotype where the inverse gene-for-gene relationship between the pathogen and plant host results in disease resistance. The ability of a pathogen necrotrophic effector (NE) to interact with a specific host susceptibility locus is present (functional NE present). The ability of a specific functional host susceptibility locus (SL) to interact with the NE is abolished (functional SL was present and is now absent)." []
+subset: qc_extension_only
+is_a: PHIPO_EXT:0000040 ! inverse gene-for-gene interaction phenotype
+created_by: alaynecuzick
+creation_date: 2021-01-26T13:53:16Z
+
+[Term]
+id: PHIPO_EXT:0000031
+name: compatible interaction, functional pathogen necrotrophic effector present, functional host susceptibility locus present
+def: "A pathogen host interaction phenotype where the inverse gene-for-gene relationship between the pathogen and plant host results in disease susceptibility. The ability of a pathogen necrotrophic effector (NE) to interact with a specific host susceptibility locus is present (functional NE present). The ability of a specific functional host susceptibility locus (SL) to interact with the NE is present (functional SL present)." []
+subset: qc_extension_only
+is_a: PHIPO_EXT:0000040 ! inverse gene-for-gene interaction phenotype
+created_by: alaynecuzick
+creation_date: 2021-01-26T13:53:16Z
+
+[Term]
+id: PHIPO_EXT:0000032
+name: incompatible interaction, functional pathogen necrotrophic effector present, functional host susceptibility locus absent
+def: "A pathogen host interaction phenotype where the inverse gene-for-gene relationship between the pathogen and plant host results in disease resistance. The ability of a pathogen necrotrophic effector (NE) to interact with a specific host susceptibility locus is present (functional NE present). The ability of a specific functional host susceptibility locus (SL) to interact with the NE is absent (functional SL absent)." []
+subset: qc_extension_only
+is_a: PHIPO_EXT:0000040 ! inverse gene-for-gene interaction phenotype
+created_by: alaynecuzick
+creation_date: 2021-01-26T13:53:16Z
+
+[Term]
+id: PHIPO_EXT:0000033
+name: compatible interaction, functional pathogen necrotrophic effector present, gain of functional host susceptibility locus
+def: "A pathogen host interaction phenotype where the inverse gene-for-gene relationship between the pathogen and plant host results in disease susceptibility. The ability of a pathogen necrotrophic effector (NE) to interact with a specific host susceptibility locus is present (functional NE present). The ability of a specific functional host susceptibility locus (SL) to interact with the NE is acquired (functional SL was absent and is now present)." []
+subset: qc_extension_only
+is_a: PHIPO_EXT:0000040 ! inverse gene-for-gene interaction phenotype
+created_by: alaynecuzick
+creation_date: 2021-01-26T13:53:16Z
+
+[Term]
+id: PHIPO_EXT:0000034
+name: incompatible interaction, functional pathogen necrotrophic effector absent, functional host susceptibility locus present
+def: "A pathogen host interaction phenotype where the inverse gene-for-gene relationship between the pathogen and plant host results in disease resistance. The ability of a pathogen necrotrophic effector (NE) to interact with a specific host susceptibility locus is absent (functional NE absent). The ability of a specific functional host susceptibility locus (SL) to interact with the NE is present (functional SL present)." []
+subset: qc_extension_only
+is_a: PHIPO_EXT:0000040 ! inverse gene-for-gene interaction phenotype
+created_by: alaynecuzick
+creation_date: 2021-01-27T15:44:11Z
+
+[Term]
+id: PHIPO_EXT:0000035
+name: compatible interaction, gain of functional pathogen necrotrophic effector, functional host susceptibility locus present
+def: "A pathogen host interaction phenotype where the inverse gene-for-gene relationship between the pathogen and plant host results in disease susceptibility. The ability of a pathogen necrotrophic effector (NE) to interact with a specific host susceptibility locus is acquired (functional NE was absent and is now present). The ability of a specific functional host susceptibility locus (SL) to interact with the NE is present (functional SL present)." []
+is_a: PHIPO_EXT:0000040 ! inverse gene-for-gene interaction phenotype
+created_by: alaynecuzick
+creation_date: 2021-01-27T15:44:11Z
+
+[Term]
+id: PHIPO_EXT:0000036
+name: incompatible interaction, gain of functional pathogen necrotrophic effector, functional host susceptibility locus compromised
+def: "A pathogen host interaction phenotype where the inverse gene-for-gene relationship between the pathogen and plant host results in disease resistance. The ability of a pathogen necrotrophic effector (NE) to interact with a specific host susceptibility locus is acquired (functional NE was absent and is now present). The ability of a specific functional host susceptibility locus (SL) to interact with the NE is abolished (functional SL was present and is now absent)." []
+is_a: PHIPO_EXT:0000040 ! inverse gene-for-gene interaction phenotype
+created_by: alaynecuzick
+creation_date: 2021-01-27T15:44:11Z
+
+[Term]
+id: PHIPO_EXT:0000037
+name: obsolete incompatible interaction, recognizable pathogen necrotrophic effector present, host susceptibility locus present
+def: "A pathogen host interaction phenotype where the inverse gene-for-gene relationship between the pathogen and plant host results in disease resistance. The ability of a pathogen necrotrophic effector to be recognized by a specific host susceptibility locus is present. The ability of a host to be susceptible to a pathogen, via the recognition of a pathogen necrotrophic effector by a specific host susceptibility locus, is present." []
+is_obsolete: true
+created_by: alaynecuzick
+creation_date: 2021-01-27T15:44:11Z
+
+[Term]
+id: PHIPO_EXT:0000038
+name: compatible interaction, compromised recognizable pathogen necrotrophic effector, host susceptibility locus present
+def: "A pathogen host interaction phenotype where the inverse gene-for-gene relationship between the pathogen and plant host results in disease susceptibility. The ability of a pathogen necrotrophic effector to be recognized by a specific host susceptibility locus is abolished (recognition was present and is now absent). The ability of a host to be susceptible to a pathogen, via the recognition of a pathogen necrotrophic effector by a specific host susceptibility locus, is present." []
+is_obsolete: true
+created_by: alaynecuzick
+creation_date: 2021-01-29T15:35:41Z
+
+[Term]
+id: PHIPO_EXT:0000039
+name: obsolete incompatible interaction, gain of recognizable pathogen necrotrophic effector, host susceptibility locus present
+def: "A pathogen host interaction phenotype where the inverse gene-for-gene relationship between the pathogen and plant host results in disease resistance. The ability of a pathogen necrotrophic effector to be recognized by a specific host susceptibility locus is acquired (recognition was absent and is now present). The ability of a host to be susceptible to a pathogen, via the recognition of a pathogen necrotrophic effector by a specific host susceptibility locus, is present." []
+is_obsolete: true
+created_by: alaynecuzick
+creation_date: 2021-01-29T15:35:41Z
+
+[Term]
+id: PHIPO_EXT:0000040
+name: inverse gene-for-gene interaction phenotype
+def: "A pathogen host interaction phenotype that affects the outcome of an inverse gene-for-gene relationship in plant pathogen interactions. The inverse gene-for-gene hypothesis follows that for each gene controlling susceptibility (susceptibility locus) in the host there is a corresponding gene (necrotrophic effector) in the pathogen. Recognition of the necrotrophic effector by the host susceptibility locus results in disease susceptibility (a compatible interaction)." []
+created_by: alaynecuzick
+creation_date: 2021-02-01T11:03:52Z
+
+[Term]
+id: PHIPO_EXT:0000041
+name: incompatible interaction, functional pathogen necrotrophic effector compromised, functional host susceptibility locus present
+def: "A pathogen host interaction phenotype where the inverse gene-for-gene relationship between the pathogen and plant host results in disease resistance. The ability of a pathogen necrotrophic effector (NE) to interact with a specific host susceptibility locus is abolished (functional NE was present and is now absent). The ability of a specific functional host susceptibility locus (SL) to interact with the NE is present (functional SL present)." []
+is_a: PHIPO_EXT:0000040 ! inverse gene-for-gene interaction phenotype
+created_by: alaynecuzick
+creation_date: 2021-02-05T12:36:59Z
+
+[Term]
+id: PHIPO_EXT:0000042
+name: incompatible interaction, gain of recognizable pathogen effector, functional host resistance gene present
+def: "A pathogen host interaction phenotype where the gene-for-gene relationship between the pathogen and plant host results in disease resistance. The ability of a pathogen effector to produce an infectious disease is acquired and the ability of a host to be resistant to a pathogen, via the recognition of a pathogen effector by a specific host resistance gene, is present." []
+is_a: PHIPO_EXT:0000001 ! gene-for-gene interaction phenotype
+created_by: alaynecuzick
+creation_date: 2021-02-05T14:28:07Z
+
+[Term]
+id: PHIPO_EXT:0000043
+name: compatible interaction, recognizable pathogen effector absent, functional host resistance gene absent
+def: "A pathogen host interaction phenotype where the gene-for-gene relationship between the pathogen and plant host results in disease susceptibility. The ability of a pathogen effector to be recognized by a specific host resistance gene is absent and the ability of a host to be resistant to a pathogen, via the recognition of a pathogen effector by a specific host resistance gene, is absent." []
+is_a: PHIPO_EXT:0000001 ! gene-for-gene interaction phenotype
+created_by: alaynecuzick
+creation_date: 2021-02-05T14:28:07Z
+
+[Term]
+id: PHIPO_EXT:0000044
+name: compatible interaction, recognizable pathogen effector absent, functional host resistance gene compromised
+def: "A pathogen host interaction phenotype where the gene-for-gene relationship between the pathogen and plant host results in disease susceptibility. The ability of a pathogen effector to be recognized by a specific host resistance gene is absent and the ability of a host to be resistant to a pathogen, via the recognition of a pathogen effector by a specific host resistance gene, is abolished (resistance was present and is now absent)." []
+is_a: PHIPO_EXT:0000001 ! gene-for-gene interaction phenotype
+created_by: alaynecuzick
+creation_date: 2021-02-08T13:21:07Z
+
+[Term]
+id: PHIPO_EXT:0000045
+name: compatible interaction, compromised recognizable pathogen effector, functional host resistance gene present
+def: "A pathogen host interaction phenotype where the gene-for-gene relationship between the pathogen and plant host results in disease susceptibility. The ability of a pathogen effector to be recognized by a specific host resistance gene is abolished (recognition was present and is now absent) and the ability of a host to be resistant to a pathogen, via the recognition of a pathogen effector by a specific host resistance gene, is present." []
+is_a: PHIPO_EXT:0000001 ! gene-for-gene interaction phenotype
+created_by: alaynecuzick
+creation_date: 2021-03-03T14:26:03Z
+
+[Term]
+id: PHIPO_EXT:0000046
+name: metagenotype outcome overcome by external condition
+def: "A pathogen host interaction phenotype where either the gene-for-gene or inverse gene-for-gene relationship between the pathogen and plant host cannot be accurately recorded as the outcome is due to an external condition such as a change in temperature or light exposure." []
+is_a: PHIPO_EXT:0000001 ! gene-for-gene interaction phenotype
+is_a: PHIPO_EXT:0000040 ! inverse gene-for-gene interaction phenotype
+created_by: alaynecuzick
+creation_date: 2021-03-29T14:28:01Z
+
+[Term]
+id: PHIPO_EXT:0000047
+name: compatible interaction, compromised recognizable pathogen effector, functional host resistance gene absent 
+def: "A pathogen host interaction phenotype where the gene-for-gene relationship between the pathogen and plant host results in disease susceptibility. The ability of a pathogen effector to be recognized by a specific host resistance gene is abolished (recognition was present and is now absent) and the ability of a host to be resistant to a pathogen, via the recognition of a pathogen effector by a specific host resistance gene, is absent." []
+is_a: PHIPO_EXT:0000001 ! gene-for-gene interaction phenotype
+created_by: changh
+creation_date: 2025-07-14T00:00:00Z
+

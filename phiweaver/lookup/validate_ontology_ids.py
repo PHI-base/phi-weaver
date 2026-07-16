@@ -14,11 +14,16 @@ conditions) and UniProtKB — in two stages:
        - GO, PHIPO, MOD and BTO resolve **online** via the EBI Ontology Lookup Service REST
          API (https://www.ebi.ac.uk/ols4/api). Responses are cached and stamped with a
          retrieval timestamp for provenance.
-       - PHIDO and PECO (PHI-ECO) are **not hosted by OLS4**, so each resolves **offline**
-         against a bundled copy of the ontology (`data/phido.obo` and `data/phi-eco.obo`,
-         vendored from github.com/PHI-base/phido and .../phi-eco). This closes a false-negative
-         gap where every such ID used to return not_found. NB the OLS ontology named "peco" is
-         the unrelated Planteome ontology — PHI-base PECO terms are only in the bundled file.
+       - PHIDO, PECO (PHI-ECO), PHIPO_EXT and FYPO_EXT are **not hosted by OLS4**, so each
+         resolves **offline** against a bundled copy of the ontology (`data/phido.obo`,
+         `data/phi-eco.obo`, `data/phipo_ext.obo`, `data/fypo_extension.obo`; vendored from
+         github.com/PHI-base/{phido,phi-eco,phipo_ext} and PHI-base/canto). This closes a
+         false-negative gap where every such ID used to return not_found. NB the OLS ontology
+         named "peco" is the unrelated Planteome ontology — PHI-base PECO terms are only in the
+         bundled file. PHIPO_EXT is a *separate* PHI-base ontology of extension-only terms
+         (gene-for-gene interaction values); it is NOT part of PHIPO (PHIPO obsoleted its old
+         gene-for-gene term and moved these into PHIPO_EXT). FYPO_EXT is a small PomBase extension
+         ontology holding the penetrance/severity values (high/medium/low/complete).
 
 UniProtKB accessions are format-checked here; their *existence* is resolved by the
 companion `query_uniprot.py` (which also returns the protein function), so this script
@@ -59,7 +64,7 @@ USER_AGENT = "PHI-Weaver-validate-ontology-ids/1.0 (https://github.com/PHI-base/
 DEFAULT_CACHE = Path(__file__).resolve().parent / ".cache" / "ontology_cache.sqlite"
 
 # Ontology-term prefixes we recognise (as opposed to UniProtKB accessions).
-OBO_PREFIXES = {"PHIPO", "GO", "PHIDO", "MOD", "BTO", "PECO"}
+OBO_PREFIXES = {"PHIPO", "PHIPO_EXT", "GO", "PHIDO", "MOD", "BTO", "PECO", "FYPO_EXT"}
 # The subset we verify online, mapped to their OLS ontology name. PHIDO and PECO are absent
 # on purpose: OLS4 hosts neither, so they resolve offline against a bundled .obo.
 # (PECO here = the PHI-base experimental-conditions ontology / PHI-ECO — NOT the Planteome
@@ -72,6 +77,10 @@ PHIDO_OBO_PATH = Path(__file__).resolve().parent / "data" / "phido.obo"
 PHIDO_SOURCE = "bundled phido.obo"
 PHI_ECO_OBO_PATH = Path(__file__).resolve().parent / "data" / "phi-eco.obo"
 PHI_ECO_SOURCE = "bundled phi-eco.obo"
+PHIPO_EXT_OBO_PATH = Path(__file__).resolve().parent / "data" / "phipo_ext.obo"
+PHIPO_EXT_SOURCE = "bundled phipo_ext.obo"
+FYPO_EXT_OBO_PATH = Path(__file__).resolve().parent / "data" / "fypo_extension.obo"
+FYPO_EXT_SOURCE = "bundled fypo_extension.obo"
 
 # Sentinel: "no PHIDO index was injected, use the bundled one". Distinct from an
 # injected None, which models an unreadable ontology file.
@@ -83,8 +92,8 @@ _UNSET = object()
 #   UniProtKB:               the canonical accession regex, with an optional isoform suffix.
 _OBO7_RE = re.compile(r"\d{7}$")
 _MOD_RE = re.compile(r"\d{5}$")
-_LOCAL_ID_RE = {"PHIPO": _OBO7_RE, "GO": _OBO7_RE, "PHIDO": _OBO7_RE, "MOD": _MOD_RE,
-                "BTO": _OBO7_RE, "PECO": _OBO7_RE}
+_LOCAL_ID_RE = {"PHIPO": _OBO7_RE, "PHIPO_EXT": _OBO7_RE, "GO": _OBO7_RE, "PHIDO": _OBO7_RE,
+                "MOD": _MOD_RE, "BTO": _OBO7_RE, "PECO": _OBO7_RE, "FYPO_EXT": _OBO7_RE}
 _UNIPROT_RE = re.compile(
     r"(?:[OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9](?:[A-Z][A-Z0-9]{2}[0-9]){1,2})"
     r"(?:-\d+)?$"
@@ -93,8 +102,10 @@ _UNIPROT_RE = re.compile(
 _UNIPROT_PREFIXES = {"UNIPROTKB", "UNIPROT"}
 
 # Matches any candidate ontology ID in free text, for --file extraction.
+# PHIPO_EXT must precede PHIPO in the alternation so the longer prefix wins.
 _ID_IN_TEXT_RE = re.compile(
-    r"\b(PHIPO|PHIDO|GO|MOD|BTO|PECO|UniProtKB|UniProt):[A-Za-z0-9-]+", re.IGNORECASE)
+    r"\b(PHIPO_EXT|PHIPO|FYPO_EXT|PHIDO|GO|MOD|BTO|PECO|UniProtKB|UniProt):[A-Za-z0-9-]+",
+    re.IGNORECASE)
 
 
 class OntologyError(RuntimeError):
@@ -215,17 +226,32 @@ def _peco_index() -> Optional[Dict[str, Tuple[Optional[str], bool]]]:
     return _load_phido(PHI_ECO_OBO_PATH)
 
 
+@lru_cache(maxsize=1)
+def _phipo_ext_index() -> Optional[Dict[str, Tuple[Optional[str], bool]]]:
+    """Module-level cache of the parsed bundled PHIPO_EXT ontology (None if unavailable)."""
+    return _load_phido(PHIPO_EXT_OBO_PATH)
+
+
+@lru_cache(maxsize=1)
+def _fypo_ext_index() -> Optional[Dict[str, Tuple[Optional[str], bool]]]:
+    """Module-level cache of the parsed bundled FYPO_EXT ontology (None if unavailable)."""
+    return _load_phido(FYPO_EXT_OBO_PATH)
+
+
 # ------------------------------------------------------------------------- Client
 
 class OntologyValidator:
     def __init__(self, cache: Optional[ResponseCache] = None,
                  http_get: Optional[Callable] = None,
-                 phido_index=_UNSET, peco_index=_UNSET):
+                 phido_index=_UNSET, peco_index=_UNSET, phipo_ext_index=_UNSET,
+                 fypo_ext_index=_UNSET):
         self.cache = cache
         self._http_get = http_get or _requests_get
         # Injectable for tests; falls back to the bundled ontology when not supplied.
         self._phido_index = phido_index
         self._peco_index = peco_index
+        self._phipo_ext_index = phipo_ext_index
+        self._fypo_ext_index = fypo_ext_index
 
     def _get(self, url: str, params: dict, use_cache: bool):
         key = url + "?" + json.dumps(params, sort_keys=True)
@@ -247,7 +273,7 @@ class OntologyValidator:
         if prefix is None:
             return ValidationResult(raw, None, False, "unknown_prefix",
                                     None, None, False, None,
-                                    "unrecognised prefix; expected PHIPO/GO/PHIDO/MOD/BTO/PECO/UniProtKB")
+                                    "unrecognised prefix; expected PHIPO/PHIPO_EXT/GO/PHIDO/MOD/BTO/PECO/FYPO_EXT/UniProtKB")
         if not fmt_ok:
             return ValidationResult(raw, prefix, False, "format_invalid",
                                     None, None, False, None,
@@ -268,6 +294,14 @@ class OntologyValidator:
             # PHI-ECO is PHI-base-local (OLS 'peco' is the unrelated Planteome ontology) —
             # resolve offline against the bundled ontology.
             return self._validate_peco(raw)
+        if prefix == "PHIPO_EXT":
+            # PHIPO_EXT is a SEPARATE PHI-base ontology (not part of PHIPO, not on OLS) —
+            # the extension-only terms (gene-for-gene etc.); resolve offline.
+            return self._validate_phipo_ext(raw)
+        if prefix == "FYPO_EXT":
+            # FYPO_EXT is a small PomBase extension ontology (penetrance/severity values:
+            # high/medium/low/complete); not on OLS; resolve offline.
+            return self._validate_fypo_ext(raw)
 
         # GO/PHIPO: verify existence + obsolescence via OLS.
         obo_id = f"{prefix}:{raw.split(':', 1)[1].strip()}"
@@ -303,6 +337,16 @@ class OntologyValidator:
         """Resolve a PECO (PHI-ECO) ID offline against the bundled ontology."""
         index = _peco_index() if self._peco_index is _UNSET else self._peco_index
         return self._validate_offline(raw, "PECO", index, PHI_ECO_SOURCE, PHI_ECO_OBO_PATH)
+
+    def _validate_phipo_ext(self, raw: str) -> ValidationResult:
+        """Resolve a PHIPO_EXT ID offline against the bundled ontology."""
+        index = _phipo_ext_index() if self._phipo_ext_index is _UNSET else self._phipo_ext_index
+        return self._validate_offline(raw, "PHIPO_EXT", index, PHIPO_EXT_SOURCE, PHIPO_EXT_OBO_PATH)
+
+    def _validate_fypo_ext(self, raw: str) -> ValidationResult:
+        """Resolve a FYPO_EXT ID offline against the bundled ontology."""
+        index = _fypo_ext_index() if self._fypo_ext_index is _UNSET else self._fypo_ext_index
+        return self._validate_offline(raw, "FYPO_EXT", index, FYPO_EXT_SOURCE, FYPO_EXT_OBO_PATH)
 
     @staticmethod
     def _validate_offline(raw: str, prefix: str, index, source: str, path) -> ValidationResult:

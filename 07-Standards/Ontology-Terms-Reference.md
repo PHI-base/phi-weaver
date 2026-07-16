@@ -366,6 +366,16 @@ Neither is used by current drafts yet. The relations themselves are defined (wit
 definitions) in `phipo_extension_relations.obo` — a **reference** file, not a validation
 source (it is incomplete vs `phipo_extensions.tsv`). See `phiweaver/lookup/data/README.md`.
 
+**Extension value terms are validated offline.** Both come from *separate* small ontologies, each
+vendored and resolved by `validate_ontology_ids` (existence + obsolescence, like PHIDO/PECO):
+
+- **`PHIPO_EXT:`** — gene-for-gene values (`gene_for_gene_interaction` / `inverse_gene_for_gene`);
+  `phipo_ext.obo` from the public `PHI-base/phipo_ext` repo. Not part of PHIPO.
+- **`FYPO_EXT:`** — penetrance/severity values (`has_penetrance` / `has_severity` → `high` / `medium`
+  / `low` / `complete`); `fypo_extension.obo` from `PHI-base/canto`. The config's `FYPO_EXT:1000001`
+  / `1000002` are grouping/gate roots (not annotation values); a curator picks a qualitative value or
+  gives a percentage.
+
 ---
 
 *This reference guide should be used alongside the complete PHI-Canto documentation for comprehensive curation support.*

@@ -111,22 +111,30 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
   pin the source commit, and drop the "copied by hand" provenance. Until then these are static
   snapshots that only update when the curator re-supplies them.
 
-- [ ] **PHIPO_EXT / FYPO_EXT extension *value* terms can't be existence-checked offline** (surfaced
-  2026-07-15). The **gate roots are already in the vendored `phipo_extensions.tsv`** —
-  `gene_for_gene_interaction → PHIPO_EXT:0000001`, `inverse_gene_for_gene → PHIPO_EXT:0000040`,
-  `has_severity → FYPO_EXT:1000001`, `has_penetrance → FYPO_EXT:1000002` — exactly as
-  `infective_ability → PHIPO:0001179`. The gap is only the *child value terms*: unlike PHIPO (on OLS),
-  `PHIPO_EXT:` / `FYPO_EXT:` do **not** resolve on OLS4 (verified 2026-07-15: not in `phipo`, no global
-  hits) and aren't in any bundled `.obo`, so `extension_config` can only **format-check** a value, not
-  confirm it exists. To close it we'd need the PHIPO_EXT / FYPO_EXT term list as a file to vendor
-  (mirror PHIDO/PECO). Low priority — gene-for-gene / penetrance / severity extensions are not in
-  current drafts, and their gate roots are already known.
-  - *Partial answer (Cuzick et al. 2023, Appendix 1 — see [[07-Standards/PHI-Canto-Framework-Cuzick2023]]):*
-    the gene-for-gene PHIPO_EXT **value labels** are now known (~11 compound "compatibility / effector
-    status / R-gene status" strings), as are the `extent of infectivity` values (loss/unaffected
-    pathogenicity, reduced/increased virulence, mutualism present/absent/loss). Still missing: the
-    term **IDs** for those labels — a vendored PHIPO_EXT term file would let us map label→ID and
-    existence-check.
+- [x] **PHIPO_EXT extension values — existence check CLOSED** (2026-07-16). PHIPO_EXT is a **separate**
+  PHI-base ontology (not part of PHIPO — PHIPO obsoleted its old gene-for-gene term in 2020 and moved
+  these into PHIPO_EXT; the PHIPO release has zero `PHIPO_EXT` ids). Its terms live in the **public**
+  `github.com/PHI-base/phipo_ext` repo (`phipo_ext.obo`, CC-BY 4.0, 47 terms/15 obsolete). Vendored to
+  `phiweaver/lookup/data/phipo_ext.obo` and wired into `validate_ontology_ids` (new `PHIPO_EXT` prefix,
+  resolved offline like PHIDO/PECO; splitter/extractor match `PHIPO_EXT` before `PHIPO`). So
+  `gene_for_gene_interaction` / `inverse_gene_for_gene` values are now existence + obsolescence checked.
+  - *Contrast:* `infective_ability` values (reduced virulence, etc.) were always plain PHIPO terms
+    (OLS-checked); this closes the *other* gate.
+
+- [x] **FYPO_EXT extension values — existence check CLOSED (with a caveat)** (2026-07-16). The
+  penetrance/severity value terms (`high`/`medium`/`low`/`complete` + root `FYPO_EXT:1000000`) are a
+  tiny **PomBase** extension ontology. Vendored `fypo_extension.obo` from **PHI-base/canto**
+  (`t/data/fypo_extension.obo`; only 5 terms so the test-data copy is the whole ontology) and wired
+  `FYPO_EXT` into `validate_ontology_ids` (offline, like PHIPO_EXT). *Caveat:* `phipo_extensions.tsv`
+  points `has_severity`/`has_penetrance` at `FYPO_EXT:1000001`/`1000002`, which are **grouping/gate
+  roots not defined as terms** in the file — a literal such value reads `not_found`, which is correct
+  (curators annotate high/medium/low/complete, not the root). Only loose end left if ever needed:
+  canonical definitions for the two `1000001`/`1000002` root ids (ask PomBase — Val Wood / Kim
+  Rutherford). Low priority — penetrance/severity aren't in current drafts.
+  - *Note on PHI-base/canto as a source:* its `t/data/*_small.obo` are **truncated test fixtures**
+    (`phipo_small.obo` = 2 terms, `go_small.obo` = 21), and `t/data/extension_config.tsv` is a 9-line
+    stub — do NOT source the full ontologies or the real extension config from there. FYPO_EXT is the
+    lone exception because the ontology is genuinely tiny.
 
 ## Ontology coverage gaps (PHIPO term requests)
 _Curatable phenotypes seen in papers that have **no** PHIPO term — captured and flagged in the draft,
