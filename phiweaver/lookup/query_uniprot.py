@@ -13,6 +13,10 @@ Design rules (see AGENTS.md):
   invented accession.
 - Prefer reviewed (Swiss-Prot) entries; flag unreviewed (TrEMBL) as lower confidence.
 - Record provenance: the query, the UniProt release, and the retrieval timestamp.
+- Strain-proteome fallback: a locus-tag search scoped to a *species* taxon can miss entries
+  filed under a *strain* reference-proteome (child) taxon. When that happens the search is
+  retried without the organism filter and the result is flagged `organism_filter_relaxed` so a
+  curator confirms the strain — never a silent false `not_found`.
 
 CLI:
     python3 scripts/query_uniprot.py --gene FgTPP1 --organism 5518
@@ -70,6 +74,7 @@ class LookupResult:
     retrieved_at: str
     from_cache: bool
     error: Optional[str] = None
+    organism_filter_relaxed: bool = False
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -105,12 +110,19 @@ class UniProtClient:
             self.cache.put(key, body, {"release": release})
         return body, release, False
 
+    def _search(self, q: str, use_cache: bool):
+        return self._get(
+            f"{BASE_URL}/uniprotkb/search",
+            {"query": q, "fields": DEFAULT_FIELDS, "format": "json", "size": 25},
+            use_cache)
+
     def lookup(self, gene=None, locus_tag=None, organism_id=None, accession=None,
                use_cache=True) -> LookupResult:
         query_meta = {
             "gene": gene, "locus_tag": locus_tag,
             "organism_id": organism_id, "accession": accession,
         }
+        relaxed = False
         try:
             if accession:
                 body, release, cached = self._get(
@@ -121,11 +133,20 @@ class UniProtClient:
                 if not q:
                     return LookupResult(query_meta, "error", [], None, _now(), False,
                                         "no gene / locus_tag / accession provided")
-                body, release, cached = self._get(
-                    f"{BASE_URL}/uniprotkb/search",
-                    {"query": q, "fields": DEFAULT_FIELDS, "format": "json", "size": 25},
-                    use_cache)
+                body, release, cached = self._search(q, use_cache)
                 entries = body.get("results", []) if body else []
+                # Strain-proteome fallback: a locus-tag search scoped to a *species* taxon
+                # misses entries filed under a *strain* reference-proteome taxon (a child
+                # taxon), producing a false not_found. Retry once without the organism
+                # filter, matching the locus tag across all taxa, and flag the relaxed
+                # scope so a curator confirms the strain (experimental isolate vs
+                # reference proteome) rather than trusting a species-taxon match.
+                if not entries and locus_tag and organism_id:
+                    body, release2, cached2 = self._search(
+                        _build_query(gene, locus_tag, None), use_cache)
+                    entries = body.get("results", []) if body else []
+                    if entries:
+                        relaxed, release, cached = True, release2, cached2
         except UniProtError as exc:
             return LookupResult(query_meta, "error", [], None, _now(), False, str(exc))
 
@@ -139,7 +160,7 @@ class UniProtClient:
             status = "ambiguous"
         return LookupResult(
             query_meta, status, [asdict(c) for c in candidates],
-            release, _now(), cached)
+            release, _now(), cached, organism_filter_relaxed=relaxed)
 
 
 # ----------------------------------------------------------------------- Parsing
@@ -217,6 +238,12 @@ def format_human(result: LookupResult) -> str:
     ]
     if result.error:
         lines.append(f"Error  : {result.error}")
+    if result.organism_filter_relaxed:
+        lines.append(
+            f"  ⚠️  Organism filter relaxed: no match under the requested taxon "
+            f"{result.query.get('organism_id')}. These entries were matched by locus tag "
+            f"across all taxa — likely a strain reference-proteome (child taxon). Confirm the "
+            f"strain matches the experimental isolate before use.")
     for i, c in enumerate(result.candidates, 1):
         rev = "reviewed (Swiss-Prot)" if c["reviewed"] \
             else "UNREVIEWED (TrEMBL — lower confidence)"

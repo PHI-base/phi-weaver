@@ -33,6 +33,25 @@ def search_getter(results, release="2026_02"):
     return _get
 
 
+class TaxonAwareGetter:
+    """Returns `species_results` when the query carries `organism_id:<species>`, else
+    `relaxed_results` (the organism-filter-dropped retry). Counts calls."""
+
+    def __init__(self, species, species_results, relaxed_results, release="2026_02"):
+        self.species = species
+        self.species_results = species_results
+        self.relaxed_results = relaxed_results
+        self.release = release
+        self.calls = 0
+
+    def __call__(self, url, params):
+        self.calls += 1
+        q = params.get("query", "")
+        results = self.species_results if f"organism_id:{self.species}" in q \
+            else self.relaxed_results
+        return 200, {"results": results}, {"x-uniprot-release": self.release}
+
+
 class CountingGetter:
     def __init__(self, body, release="2026_02"):
         self.body, self.release, self.calls = body, release, 0
@@ -98,6 +117,50 @@ class LookupTests(unittest.TestCase):
         r = qu.UniProtClient(http_get=direct).lookup(accession="P12345")
         self.assertEqual(r.status, "found")
         self.assertEqual(r.candidates[0]["accession"], "P12345")
+
+    def test_locus_tag_strain_fallback(self):
+        # Species-taxon search is empty; the entry lives under a strain taxon (child).
+        getter = TaxonAwareGetter(
+            species=101028,
+            species_results=[],
+            relaxed_results=[entry("K3UT42", "FpSdhA", taxon=1028729)])
+        r = qu.UniProtClient(http_get=getter).lookup(
+            locus_tag="FPSE_04172", organism_id=101028)
+        self.assertEqual(r.status, "found")
+        self.assertTrue(r.organism_filter_relaxed)
+        self.assertEqual(r.candidates[0]["accession"], "K3UT42")
+        self.assertEqual(r.candidates[0]["organism_id"], 1028729)
+        self.assertEqual(getter.calls, 2)  # species search + relaxed retry
+
+    def test_no_fallback_when_species_hits(self):
+        getter = TaxonAwareGetter(
+            species=101028,
+            species_results=[entry("P00001", "FpSdhA", taxon=101028)],
+            relaxed_results=[entry("SHOULD_NOT_APPEAR", "x")])
+        r = qu.UniProtClient(http_get=getter).lookup(
+            locus_tag="FPSE_04172", organism_id=101028)
+        self.assertEqual(r.status, "found")
+        self.assertFalse(r.organism_filter_relaxed)
+        self.assertEqual(r.candidates[0]["accession"], "P00001")
+        self.assertEqual(getter.calls, 1)  # no retry needed
+
+    def test_fallback_still_not_found(self):
+        getter = TaxonAwareGetter(
+            species=101028, species_results=[], relaxed_results=[])
+        r = qu.UniProtClient(http_get=getter).lookup(
+            locus_tag="FPSE_04172", organism_id=101028)
+        self.assertEqual(r.status, "not_found")
+        self.assertFalse(r.organism_filter_relaxed)
+        self.assertEqual(getter.calls, 2)  # retry attempted, also empty
+
+    def test_gene_only_search_does_not_trigger_fallback(self):
+        # A gene search (no locus tag) must not broaden across taxa.
+        getter = TaxonAwareGetter(
+            species=101028, species_results=[], relaxed_results=[entry("X", "g")])
+        r = qu.UniProtClient(http_get=getter).lookup(gene="SdhA", organism_id=101028)
+        self.assertEqual(r.status, "not_found")
+        self.assertFalse(r.organism_filter_relaxed)
+        self.assertEqual(getter.calls, 1)
 
     def test_cache_avoids_second_http_call(self):
         getter = CountingGetter({"results": [entry("P12345", "FgTPP1")]})

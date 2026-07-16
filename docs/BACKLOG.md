@@ -50,16 +50,18 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
   rows). Ties into the **Recuration-comparison workflow** item below (same "DB is the aggregation
   home, grows over time, neutral diff" shape).
 
-- [ ] **`query_uniprot --locus-tag` misses strain-proteome loci** (surfaced 2026-07-14) — for a gene
-  named only by an NCBI locus tag, the tool queries the **species** taxon and returns `not_found` when
-  the entry lives under a **strain** reference-proteome taxon. Curating PMID:42089373 (5 *F.
-  pseudograminearum* Sdh subunits), `--locus-tag FPSE_04172 --organism 101028` (species) → `not_found`
-  for all five; a direct UniProtKB REST query resolved them under **strain CS3096, taxon 1028729**
-  (K3UT42/K3VJU5/K3UP39/K3VHW6/K3VVK3). Worked around by hand. Fix options: when the species-taxon
-  locus-tag search is empty, **retry across child/strain taxa** (or drop the organism filter and match
-  the locus tag in the returned entries), and flag the strain mismatch (expt isolate vs reference
-  proteome) rather than reporting a false `not_found`. Recurring accession-resolution weakness (also
-  noted in the 2026-07-05 benchmark run).
+- [x] **`query_uniprot --locus-tag` misses strain-proteome loci** (surfaced 2026-07-14; **fixed
+  2026-07-16**) — for a gene named only by an NCBI locus tag, the tool queried the **species** taxon
+  and returned `not_found` when the entry lives under a **strain** reference-proteome taxon. Curating
+  PMID:42089373 (5 *F. pseudograminearum* Sdh subunits), `--locus-tag FPSE_04172 --organism 101028`
+  (species) → `not_found` for all five; a direct UniProtKB REST query resolved them under **strain
+  CS3096, taxon 1028729** (K3UT42/K3VJU5/K3UP39/K3VHW6/K3VVK3). **Fix (query_uniprot.py):** when a
+  locus-tag search scoped to an organism returns empty, the lookup **retries once without the organism
+  filter** (matching the locus tag across all taxa) and flags the result `organism_filter_relaxed` —
+  `format_human` prints a strain-mismatch warning so a curator confirms the strain (experimental
+  isolate vs reference proteome) rather than getting a false `not_found`. Scoped to locus-tag searches
+  only (a gene-only search does not broaden). +4 tests in `tests/test_query_uniprot.py` (fallback hit,
+  no-fallback-when-species-hits, fallback-still-not-found, gene-only-no-broaden); all 13 pass.
 
 - [x] **Vendor PHI-ECO (conditions) offline + validate `PECO:`** (done 2026-07-15). PHI-ECO
   (prefix `PECO:`) is **PHI-base-local** — and crucially the OLS ontology named `peco` is the
