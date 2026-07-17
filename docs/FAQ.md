@@ -146,6 +146,15 @@ Current solo workflow commits **directly to `main`** rather than using feature b
 requests. Pushing to `main` can trip an agent safety guardrail; the curator authorises the push
 (e.g. `! git push origin main`). Revisit if collaborators need review-before-merge.
 
+### Can PHI-Weaver help with PHIPO ontology development?
+**Yes, within limits.** Curation is the best gap detector — it meets gaps on real papers with the
+evidence in hand — so weaver **records** them (`docs/ontology-gaps.jsonl`, ranked by how many papers
+needed each), **drafts** evidence-backed requests, and for a **pattern extension** (a missing
+dimension in a live sibling set) opens a **PR** against `phipo-edit.owl` — PHI-base/phipo#454 is the
+worked example. It does **not** design terms otherwise, and it **cannot decide**: `no_match` is not
+proof of a gap, so a human rules on every request. Most "gaps" so far were wording or obsoletion.
+**See:** `skills/ontology-term-request/SKILL.md` (the two routes, and the checks before either).
+
 ### Does PHIPO lookup use OLS or a local copy?
 **Local — from two different files, and the distinction matters.** `phipo-base.obo` (the **release
 artifact**) answers "give me a term for this phrase" and validates IDs, because that is the question
