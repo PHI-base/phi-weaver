@@ -65,6 +65,28 @@ them out **before** recording anything.
    biosynthesis" found the term. Always retry alternate wordings first. A retry that succeeds
    is a **synonym** request, not a term request — cheaper to get accepted, and it fixes the
    search for everyone.
+
+   **Two systematic retries, before any other** — both come from how PHIPO is built, so both
+   pay off repeatedly:
+
+   - **Species-specific → species-neutral.** PHIPO is species-neutral *by design*: its own
+     header reads `dc:description "Ontology of species-neutral phenotypes observed in
+     pathogen-host interactions."` The vocabulary a fungal paper uses is largely **absent from
+     the primary labels**: `conidiation`/`conidia`, `appressorium`, `haustorium`, `sclerotium`,
+     `mycelium`, `ascospore`, `urediniospore` — **all zero** label hits. PHIPO says
+     `asexual spores`, `sexual spores`, `hyphae`, `pathogen penetration structure` instead.
+     A curator's own words will therefore miss, and it will look like a gap.
+     **But the species vocabulary lives in EXACT synonyms** (35 `conidi*` synonyms), so the
+     search does find it — `map_phenotype "conidia absent"` → ★ `PHIPO:0000061 asexual spores
+     absent`. Retry with the general term before concluding anything.
+   - **Process noun → entity noun.** For presence/absence PHIPO models the **entity**, not the
+     process: `asexual spores absent`, not "sporulation abolished". It keeps the process form
+     only for **timing** (`delayed`/`premature asexual sporulation`). So "abolished asexual
+     sporulation" misses while "conidia absent" hits.
+
+   Worked case (2026-07-17): "Complete loss of conidiation (free-living)" sat in the backlog as
+   a real gap. Both retries above find `PHIPO:0000061`, free-living, exact. **It was never a
+   gap** — two wording steps hid it.
 2. **A granularity miss in PHI-ECO.** PECO is deliberately qualitative: "potato dextrose agar
    at 25 °C" correctly maps to `rich medium`, with the numerics staying in the annotation
    comment (lesson L6). A qualitative term that fits is not a gap.

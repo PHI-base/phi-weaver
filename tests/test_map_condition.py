@@ -81,6 +81,25 @@ class SearchTests(unittest.TestCase):
         r = mc.search("medium", self.TERMS, rows=1)
         self.assertEqual(len(r.candidates), 1)
 
+    def test_prose_sharing_one_token_is_no_match(self):
+        """Regression (2026-07-17): `search` used to keep anything scoring > 0, so a phrase
+        that is not a condition at all came back with confident-looking candidates —
+        "we grew the pathogen in the dark" starred `in vitro`. `no_match` must stay reachable:
+        it is what gap detection and --log-gaps key on."""
+        r = mc.search("we grew the pathogen in the dark", self.TERMS)
+        self.assertEqual(r.status, "no_match")
+
+    def test_star_means_exact_not_merely_first(self):
+        """A weak top hit displayed as ★ reads as a confident match."""
+        out = mc.format_human([mc.search("mycelium inoculation", self.TERMS)])
+        self.assertNotIn("★", out)          # a partial match, however well ranked
+        out = mc.format_human([mc.search("rich medium", self.TERMS)])
+        self.assertIn("★", out)             # an exact one
+
+    def test_min_score_is_honoured(self):
+        r = mc.search("rich medium", self.TERMS, min_score=101.0)
+        self.assertEqual(r.status, "no_match")
+
 
 class BundledOntologyTests(unittest.TestCase):
     """End-to-end against the real vendored phi-eco.obo."""

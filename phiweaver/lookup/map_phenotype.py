@@ -59,14 +59,14 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
 import re
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import List, Optional
 
 from phiweaver.common import utc_now
-from phiweaver.lookup import gap_log, term_context
+from phiweaver.lookup import gap_log, term_context, text_score
+from phiweaver.lookup.text_score import tokens as _tokens  # re-exported: tests/callers use it
 
 PHIPO_OBO_PATH = Path(__file__).resolve().parent / "data" / "phipo-base.obo"
 PHIPO_PREFIX = "PHIPO:"
@@ -82,7 +82,6 @@ DEFAULT_ROWS = 5
 # so it must stay reachable. See build_idf() for why an unweighted score cannot separate these.
 MIN_SCORE = 20.0
 
-_TOKEN_RE = re.compile(r"[a-z0-9]+")
 _SYN_RE = re.compile(r'"([^"]*)"')
 
 
@@ -127,10 +126,6 @@ class PhenotypeMapping:
         d = asdict(self)                 # nested Candidate dataclasses become dicts too
         d["ok"] = self.ok
         return d
-
-
-def _tokens(text: str) -> set:
-    return set(_TOKEN_RE.findall(text.lower()))
 
 
 def load_terms(path: Path = PHIPO_OBO_PATH) -> List[Term]:
@@ -194,72 +189,25 @@ def read_release(path: Path = PHIPO_OBO_PATH) -> Optional[str]:
     return None
 
 
-def build_idf(terms: List[Term]) -> dict:
-    """Inverse document frequency per token, over every label + synonym in the ontology.
+def _texts(term: Term) -> tuple:
+    return (term.name, *term.synonyms)
 
-    Why this is not optional: PHIPO's labels share a lot of generic vocabulary — "to" is in
-    39% of labels, "host" 25%, "pathogen" 24%. A plain token-overlap score (map_condition's,
-    which this module first borrowed) lets one shared generic word carry a match, so **nothing
-    ever returns `no_match`** — and `no_match` is what gap detection and `--log-gaps` key on.
-    Weighting by IDF means a term must cover the *informative* part of the query.
-    """
-    df: dict = {}
-    for t in terms:
-        seen = set()
-        for text in (t.name, *t.synonyms):
-            seen |= _tokens(text)
-        for tok in seen:
-            df[tok] = df.get(tok, 0) + 1
-    n = max(len(terms), 1)
-    return {tok: math.log(n / c) for tok, c in df.items()}
+
+def build_idf(terms: List[Term]) -> dict:
+    """IDF over every label + synonym in the ontology. See text_score.build_idf for why."""
+    return text_score.build_idf(_texts(t) for t in terms)
 
 
 def _max_idf(idf: dict) -> float:
-    """IDF for a token the ontology has never seen — maximally informative, by definition."""
-    return max(idf.values(), default=1.0)
+    return text_score.max_idf(idf)
 
 
 def _score(phrase: str, term: Term, idf: dict) -> float:
-    """Relevance of a term to a phrase, as **how much of the query's information it covers**.
-
-    Tiers: exact label/synonym (100) > query-inside-label (a real narrowing, 60+) >
-    IDF-weighted coverage (0–60). Deliberately simple beyond that: a human reads every
-    candidate (lesson L7), so recall matters more than ranking finesse.
-
-    Note the removed tier: the old scorer also matched **label-inside-query**, which let the
-    one-word label "phenotype" score 60 against any query containing that word. That is the
-    opposite of a narrowing, and it is what stopped `no_match` ever being reachable.
-    """
-    q = phrase.lower().strip()
-    qt = _tokens(phrase)
-    if not qt:
-        return 0.0
-    fallback = _max_idf(idf)
-    q_mass = sum(idf.get(t, fallback) for t in qt)
-    if q_mass <= 0:
-        return 0.0
-    best = 0.0
-    for text in (term.name, *term.synonyms):
-        cl = text.lower().strip()
-        if cl == q:
-            return 100.0
-        tt = _tokens(text)
-        shared = qt & tt
-        if not shared:
-            continue
-        cover = sum(idf.get(t, fallback) for t in shared) / q_mass
-        s = 60.0 * cover
-        if q in cl:
-            # The whole query sits inside a longer label: the term is a more specific
-            # version of what was asked for. A genuine hit regardless of coverage.
-            s = max(s, 60.0 + len(shared))
-        best = max(best, s)
-    return best
+    return text_score.score(phrase, _texts(term), idf)
 
 
 def _is_exact(phrase: str, term: Term) -> bool:
-    q = phrase.lower().strip()
-    return any(t.lower().strip() == q for t in (term.name, *term.synonyms))
+    return text_score.is_exact(phrase, _texts(term))
 
 
 class PhenotypeMapper:

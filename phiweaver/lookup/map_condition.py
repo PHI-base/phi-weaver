@@ -35,12 +35,24 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import List, Optional
 
-from phiweaver.lookup import gap_log
+from phiweaver.lookup import gap_log, text_score
+from phiweaver.lookup.text_score import tokens as _tokens  # re-exported for callers/tests
 
 PHI_ECO_OBO_PATH = Path(__file__).resolve().parent / "data" / "phi-eco.obo"
 PHI_ECO_SOURCE = "bundled phi-eco.obo"
 DEFAULT_ROWS = 5
-_TOKEN_RE = re.compile(r"[a-z0-9]+")
+# Minimum IDF-coverage score for a term to count as a candidate; below it, `no_match`.
+# Tuned empirically against PECO (2026-07-17), on the same day and by the same method as
+# map_phenotype's — the two were tuned *independently per corpus* and happened to agree; they
+# are separate constants because a refresh could move either.
+#   real conditions   32.7–100  ("potato dextrose agar at 25 C" = 32.7, lowest — the lesson-L6
+#                                case that correctly maps to the qualitative `rich medium`)
+#   prose / junk       0–14.4   ("the medium was supplemented at 25C" = 14.4, highest)
+# Before this threshold existed, `search` kept anything scoring > 0, so "we grew the pathogen
+# in the dark" returned five confident-looking PECO terms — with `in vitro` starred. PECO is a
+# flatter corpus than PHIPO (its commonest token, "inoculation", is in 7% of labels vs PHIPO's
+# "to" at 39%), so the failure was milder here, but `no_match` was equally unreachable.
+MIN_SCORE = 20.0
 _SYN_RE = re.compile(r'"([^"]*)"')
 
 
@@ -66,8 +78,13 @@ class ConditionMapping:
     source: str = PHI_ECO_SOURCE
 
 
-def _tokens(text: str) -> set:
-    return set(_TOKEN_RE.findall(text.lower()))
+def _texts(term: Term) -> tuple:
+    return (term.name, *term.synonyms)
+
+
+def build_idf(terms: List[Term]) -> dict:
+    """IDF over every label + synonym in PHI-ECO. See text_score.build_idf for why."""
+    return text_score.build_idf(_texts(t) for t in terms)
 
 
 def load_terms(path: Path = PHI_ECO_OBO_PATH) -> List[Term]:
@@ -109,28 +126,20 @@ def load_terms(path: Path = PHI_ECO_OBO_PATH) -> List[Term]:
     return terms
 
 
-def _score(phrase: str, term: Term) -> float:
-    """Relevance of a term to a phrase: exact > substring > token overlap (Jaccard)."""
-    q = phrase.lower().strip()
-    qt = _tokens(phrase)
-    best = 0.0
-    for text in (term.name, *term.synonyms):
-        cl = text.lower().strip()
-        if cl == q:
-            return 100.0
-        if q and (q in cl or cl in q):
-            best = max(best, 60.0 + len(qt & _tokens(text)))
-            continue
-        tt = _tokens(text)
-        if qt and tt:
-            overlap = len(qt & tt)
-            if overlap:
-                best = max(best, 20.0 * overlap * overlap / len(qt | tt))
-    return best
+def _score(phrase: str, term: Term, idf: dict) -> float:
+    return text_score.score(phrase, _texts(term), idf)
 
 
-def search(phrase: str, terms: List[Term], rows: int = DEFAULT_ROWS) -> ConditionMapping:
-    scored = [(s, t) for t in terms if (s := _score(phrase, t)) > 0]
+def search(phrase: str, terms: List[Term], rows: int = DEFAULT_ROWS,
+           idf: Optional[dict] = None, min_score: float = MIN_SCORE) -> ConditionMapping:
+    """Score every term, keep the best `rows` scoring at least `min_score`.
+
+    The threshold is what makes `no_match` reachable: without it any shared token — "in",
+    "pathogen" — returns a confident-looking list for a phrase that is not a condition at all.
+    """
+    if idf is None:
+        idf = build_idf(terms)
+    scored = [(s, t) for t in terms if (s := _score(phrase, t, idf)) >= min_score]
     scored.sort(key=lambda st: (-st[0], st[1].name))
     cands = [Candidate(t.obo_id, t.name, round(s, 2)) for s, t in scored[:rows]]
     return ConditionMapping(phrase, "matched" if cands else "no_match", cands)
@@ -147,8 +156,11 @@ def format_human(results: List[ConditionMapping]) -> str:
             out.append(f"❌ {r.phrase}  [no PECO match]")
             continue
         out.append(f"✅ {r.phrase}")
-        for i, c in enumerate(r.candidates):
-            out.append(f"    {'★' if i == 0 else '•'} {c.obo_id}  {c.label}")
+        for c in r.candidates:
+            # ★ means an *exact* label/synonym match, not merely "ranked first" — a weak
+            # top hit starred looks like a confident one, which is how "we grew the pathogen
+            # in the dark" came back starring `in vitro`. Matches map_phenotype's meaning.
+            out.append(f"    {'★' if c.score >= 100 else '•'} {c.obo_id}  {c.label}")
     matched = sum(1 for r in results if r.status == "matched")
     out.append(f"\n{matched}/{len(results)} phrase(s) matched a PECO term. Suggestions only — "
                "map the qualitative condition, keep numeric specifics in the comment; verify the "

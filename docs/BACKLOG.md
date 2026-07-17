@@ -31,9 +31,11 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
     detection. Fixed with **IDF weighting** (`build_idf`) + a tuned `MIN_SCORE = 20.0`: true matches
     score 35–100, prose/junk 0–12.7. **`map_condition` still has the unweighted scorer** — PECO is a
     different corpus so it may be fine, but nobody has checked. *(Candidate follow-up.)*
-  - *A genuine gap validated the threshold.* "abnormal conidiation" scores 14.1 (correctly below
-    MIN_SCORE): **PHIPO has no "conidiation" token at all** — it says "asexual spores" — which is
-    lesson L2's wording gap, and is already tracked below as a real coverage gap.
+  - *A wording gap validated the threshold.* "abnormal conidiation" scores 14.1, correctly below
+    MIN_SCORE: **PHIPO is species-neutral by design** (its own header says so — `dc:description
+    "Ontology of species-neutral phenotypes…"`), so the process noun "conidiation" appears **nowhere
+    in the file, not even as a synonym**. Retrying species-neutrally finds the term — which is
+    lesson L2 exactly. See "PHIPO is species-neutral" below; this find **corrected a false gap**.
 
   **Bonus: it simplifies the benchmark sandbox.** A bundled `phipo-base.obo` needs no network during a
   scored run, so the allowlist stays default-deny with **no PHIPO exception**. That matters because
@@ -241,10 +243,24 @@ decision and re-creating the term silently reopens it. See the `ontology-term-re
   **not** cyclobutrifluram, pydiflumetofen, fluxapyroxad, or isofetamid (PMID:42089373). Those four fell
   back to the generic PHIPO:0000021 (increased sensitivity to chemical) / PHIPO:0000022 (increased
   resistance to chemical) with the chemical named in conditions. Request per-chemical child terms.
-- [ ] **Complete loss of conidiation (free-living)** — only PHIPO:0000052 "decreased number of asexual
-  spores" and *within-host* absence terms (e.g. PHIPO:0000468) exist; there is no free-living
-  "absence/abolished asexual sporulation" phenotype term, so total conidiation loss (ΔFpSdhA/B/D +
-  double, PMID:42089373; "completely lost conidiation", PMID:41020836) is under-described.
+- [x] **Complete loss of conidiation (free-living) — terms exist** (corrected 2026-07-17; **curator
+  to confirm**). Earlier logged as a gap ("no free-living 'absence/abolished asexual sporulation'
+  term, so total conidiation loss is under-described"); **wrong on two counts**, both wording:
+  - **PHIPO:0000061 "asexual spores absent"** exists, is current, and is **free-living**
+    (`namespace: single_species_phenotype`, no "host" in the label). Its definition is "a
+    reproductive phenotype where asexual spores are absent", and it carries the **EXACT synonym
+    "conidia absent"** — so `map_phenotype "conidia absent"` returns it as an exact ★ hit. The
+    within-host counterpart the item cited (PHIPO:0000468) is the *other* context, not the only one.
+  - **Two wording steps hid it:** (1) *species-specific → species-neutral* — "conidiation" appears
+    **nowhere** in PHIPO, by design; (2) *process noun → entity noun* — for presence/absence PHIPO
+    models the **entity** ("asexual spores absent"), not the process ("sporulation abolished"). It
+    keeps the process form only for **timing** (PHIPO:0000053 delayed / PHIPO:0000054 premature
+    asexual sporulation). So "abolished asexual sporulation" still misses; "conidia absent" hits.
+
+  **Curator check:** is "asexual spores absent" an adequate description of "completely lost
+  conidiation" (PMID:41020836; ΔFpSdhA/B/D + double, PMID:42089373)? If yes, annotate PHIPO:0000061
+  and this is closed. Reopen if the *process* failing is a distinct phenotype from the *spores*
+  being absent. See "PHIPO is species-neutral" above and lesson L2.
 
 ## Curation workflow
 - [ ] **Confirm open clarifications from Hsin-Yun's 2026-07-15 review** (applied with sensible
