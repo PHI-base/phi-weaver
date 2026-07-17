@@ -124,6 +124,38 @@ Current solo workflow commits **directly to `main`** rather than using feature b
 requests. Pushing to `main` can trip an agent safety guardrail; the curator authorises the push
 (e.g. `! git push origin main`). Revisit if collaborators need review-before-merge.
 
+### Does PHIPO lookup use OLS or a local copy?
+**Local — from two different files, and the distinction matters.** `phipo-base.obo` (the **release
+artifact**) answers "give me a term for this phrase" and validates IDs, because that is the question
+a curator has: *can I annotate this?* `phipo-edit.owl` (the **working file**) is for **gap analysis
+only** — obsolete terms, sibling structure, hole sweeps — and must **never** be a source of
+suggestions: it contains unreleased terms PHI-Canto does not have, so suggesting one is a bug that
+looks like a feature. (`phipo.obo`, 7.3M, is the wrong file — it inlines GO/CHEBI.) Going local kills
+the blind spot that OLS **hides deprecated terms**, which is how phipo#452 was written unaware that
+PHIPO:0000503 already existed. **OLS is still used for GO** (not vendorable at any sane size).
+Cost: a cruder scorer than Solr — acceptable, since L7 says OLS's ranking is untrustworthy anyway and
+a human reads every candidate, so favour recall (generous `--rows`) over ranking.
+> **Status (2026-07-17): not yet — `map_phenotype.py:46` still searches OLS.** Tracked in
+> `docs/BACKLOG.md` ("Resolve PHIPO offline + sweep for structural holes"). Delete this line when it
+> lands. PECO / PHIDO / PHIPO_EXT / FYPO_EXT are **already** local.
+**See:** `docs/BACKLOG.md` (Tooling); `phiweaver/lookup/data/README.md`;
+`skills/ontology-term-request/SKILL.md` (step 5); `docs/CURATION-LESSONS.md` (L7).
+
+### Does the local PHIPO clone need updating, and how?
+Yes — this is the real cost of going local: OLS was self-updating, a clone is not. It lives at
+`/mnt/z/Computer/GITHUBrepositories/phipo` and goes stale silently, so **`git pull` before any gap
+analysis or term PR** — a stale clone can show a term as missing after someone has added it, or hide
+an obsoletion. Same practice as the vendored `.obo` files, which carry per-file refresh commands.
+```bash
+cd /mnt/z/Computer/GITHUBrepositories/phipo && git checkout master && git pull
+```
+**On the `z:` mount:** `git config` fails on its lock-file chmod, so **clone on the native fs and
+copy across**, then set `filemode = false` by editing `.git/config` directly. Never `sed -i` the
+`.owl` — in-place edits destroy files on `/mnt/z`. PRs target **`master`**, and CI runs the full ODK
+QC, so **no local `robot`/ODK install is needed** (confirmed on PR #454).
+**See:** `skills/ontology-term-request/SKILL.md` (step 5); `phiweaver/lookup/data/README.md`
+(refresh pattern for the vendored ontologies); `AGENTS.md` (file-safety rules).
+
 ### Can the PHI-Canto issues tracker feed PHI-Weaver's knowledge?
 **Mine it, don't ingest it.** The tracker holds useful convention decisions and ontology
 term-request threads, but bulk-loading it would contaminate context two ways: (a) issues are
