@@ -146,6 +146,13 @@ irrelevant candidate masks a real gap (lesson L7). Treat the two as complementar
 _Note the recurring shape: **#452** (free-living "absent DON") and the free-living conidiation item
 below are the same failure — a within-host term exists, the free-living branch stops short, and the
 search offers the within-host term anyway. `phipo#453` asks whether that split is even two-way._
+
+_**A third shape, found 2026-07-17 (PR #454): the term was obsoleted and never re-created.** OLS hides
+deprecated terms, so this is invisible to every search we run and records as a clean `no_match` — #452
+was written blind to PHIPO:0000503. **Grep `phipo-edit.owl` before calling anything a gap** (local
+clone: `/mnt/z/Computer/GITHUBrepositories/phipo`), then run the parallel-terms test: if the sibling
+concepts kept the dimension it is an oversight (fill it); if they all lost it, that was a modelling
+decision and re-creating the term silently reopens it. See the `ontology-term-request` skill, step 5._
 - [x] **Mycotoxin / DON production — terms exist** (corrected 2026-07-15). Earlier logged as a gap;
   **wrong** — PHIPO already has free-living DON phenotype terms: **PHIPO:0001445** decreased level of
   deoxynivalenol, **PHIPO:0001447** increased, **PHIPO:0001443** abnormal deoxynivalenol biosynthesis,
@@ -284,10 +291,20 @@ search offers the within-host term anyway. `phipo#453` asks whether that split i
 _Requests we have submitted and are now blocked on someone else (ontology team, curator). Chase
 periodically; move back to the owning section if reopened, or tick `[x]` when accepted/closed._
 - [ ] **Free-living "absent / abolished DON" term** — filed 2026-07-16 as
-  [PHI-base/phipo#452](https://github.com/PHI-base/phipo/issues/452). The free-living DON branch stops
-  at PHIPO:0001445 "decreased" (used as closest); the only "absent" DON term, PHIPO:0000234, is
-  *within-host* (wrong context for an in-vitro assay). Evidence: PMID:42089373 Table S4 (ΔFpSdhA/B/D +
-  ΔFpSdhC1&2, no detectable DON). Awaiting ontology-team action.
+  [PHI-base/phipo#452](https://github.com/PHI-base/phipo/issues/452); **superseded 2026-07-17 by a PR,
+  [PHI-base/phipo#454](https://github.com/PHI-base/phipo/pull/454)**, which closes #452. The free-living
+  DON branch stops at PHIPO:0001445 "decreased" (used as closest); the only "absent" DON term,
+  PHIPO:0000234, is *within-host* (wrong context for an in-vitro assay). Evidence: PMID:42089373 Table
+  S4 (ΔFpSdhA/B/D + ΔFpSdhC1&2, no detectable DON).
+
+  **What #452 missed:** the term **existed** as PHIPO:0000503 *deoxynivalenol absent from cell* and was
+  obsoleted in the 2019 substance-level refactor — invisible from OLS, which hides deprecated terms.
+  It is an **oversight, not a decision**: PHIPO:0001033 (pyocyanin) and PHIPO:0001105 (gliotoxin) both
+  still live under PHIPO:0001034 *substance absent from cell*, while DON's decreased/increased were
+  re-created in March 2025 and "absent" was missed. PR #454 re-creates it as PHIPO:0001456, patterned
+  verbatim on 0001033. **Open for James:** whether 0001456 is the right ID to take (`phipo-idranges.owl`
+  allocates by role, not editor, so there is no personal range), and whether PHIPO:0000503 should get a
+  `replaced_by` pointer. Awaiting review.
 - [ ] **Is the in-host / free-living split always two-way?** — filed 2026-07-17 as
   [PHI-base/phipo#453](https://github.com/PHI-base/phipo/issues/453). PHIPO states context in the term
   label ("within host", "on host surface" vs plain labels), so an in-vitro assay cannot use a

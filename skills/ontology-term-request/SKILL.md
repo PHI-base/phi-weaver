@@ -1,6 +1,6 @@
 ---
 name: ontology-term-request
-description: Turn ontology gaps met during curation into evidence-backed term or synonym requests for PHIPO / PHI-ECO (PECO) / PHIDO. Use when a phenotype or condition has no usable term, or periodically to triage the accumulated gap ledger. Gathers evidence for the ontology editors; never designs terms.
+description: Turn ontology gaps met during curation into evidence-backed term or synonym requests for PHIPO / PHI-ECO (PECO) / PHIDO. Use when a phenotype or condition has no usable term, or periodically to triage the accumulated gap ledger. Gathers evidence for the ontology editors; designs a term only when an existing sibling set already fixes every field, and then as a PR.
 backing_script:
   - phiweaver/lookup/gap_log.py
   - phiweaver/lookup/term_context.py
@@ -16,6 +16,7 @@ inputs:
 outputs:
   - a recorded gap event (docs/ontology-gaps.jsonl), or a reasoned decision that it is not a gap
   - a drafted term or synonym request, evidence-backed, for a human to file
+  - or, for a pattern extension: a drafted PR against phipo-edit.owl for a human to push
   - the tracker URL recorded back against the gap once filed
 ---
 
@@ -26,10 +27,29 @@ Curation is the best available detector of ontology gaps: it meets them on real 
 the evidence already in hand. This skill turns that into requests the PHIPO / PHI-ECO / PHIDO
 editors can act on, and — just as importantly — filters out the misses that are *not* gaps.
 
-**Scope: evidence, not design.** Produce "here is a need, here is what is missing, here are the
-papers that needed it". Do **not** propose a term's parent, write its formal definition, or
-place it in the hierarchy — that is the editors' expertise, and this project does not assert
-in-silico conclusions as fact (the same principle behind the team's ISS rejection).
+## Two routes: issue or PR
+Which one depends on **one test: does an existing sibling set already fix every field?**
+
+**Pattern extension → PR.** A missing dimension in a live sibling set (the set has `decreased`
+and `increased`, not `absent`) has no degrees of freedom left: the parent is the siblings'
+parent, the definition is a sibling's definition with one word swapped, the label and namespace
+follow. That is **copying a human's earlier decision, not making a new one**, and it is the case
+James Seager explicitly asked for as a PR against `phipo-edit.owl` (see
+[[phipo-local-clone]] — PRs target `master`; CI runs the ODK QC, so no local `robot` is needed;
+start from the wording of the existing definition). **Step 5 is mandatory before any PR** — it
+is what distinguishes a pattern with a hole from a pattern a human deliberately shaped.
+
+**Everything else → issue, evidence only.** A gap needing a new branch, a new parent, or a
+judgement about where it sits: produce "here is a need, here is what is missing, here are the
+papers that needed it", and do **not** propose the parent, definition or placement. That is the
+editors' expertise, and this project does not assert in-silico conclusions as fact (the same
+principle behind the team's ISS rejection).
+
+> **Open question (2026-07-17).** PHIPO's own `CONTRIBUTING.md` asks requesters to suggest
+> "label (name), definition, references, position in hierarchy" — so this skill's evidence-only
+> line is *stricter than PHIPO's house rule*, and was drawn against a constraint the ontology
+> team does not actually impose. Worth reconciling with Hsin-Yun deliberately rather than by
+> inheritance (see [[frame-curator-questions-as-discussion]]). Pending PR #454's reception.
 
 ## When to use
 - During curation, when a phenotype or condition has no usable term.
@@ -81,32 +101,63 @@ them out **before** recording anything.
      --pmid <PMID>
    ```
 
-5. **Name the closest existing term and why it fails.** A request without this reads as "I
-   couldn't find one" and will bounce. There are two failure shapes, both real:
+5. **Grep the edit file for an obsoleted term with the same meaning** — the search tools cannot
+   do this, because **OLS hides deprecated terms**, so a concept that once existed returns a
+   clean `no_match` and looks like a virgin gap.
+   ```
+   grep -i "<chemical/phenotype>" phipo-edit.owl | grep "rdfs:label"    # includes obsolete
+   ```
+   (Local clone: `/mnt/z/Computer/GITHUBrepositories/phipo`, file `src/ontology/phipo-edit.owl`.)
+
+   **An obsolete term is a fossil of a past decision, and the file usually does not say which
+   decision.** PHIPO's obsolete terms frequently carry no `replaced_by` or `consider` pointer, so
+   deprecation alone tells you nothing about *why*. Resolve it with the **parallel-terms test**:
+
+   - **Do the parallel terms still carry the dimension?** (other toxins, other substances, the
+     generic parent) → the concept is live, this one was **missed** → safe to fill by following
+     the pattern.
+   - **Did they all lose it too?** → that was a deliberate **modelling decision**, and re-creating
+     the term silently reopens it *while looking exactly like routine pattern-filling*. Do not
+     PR it. File an issue asking why.
+
+   Worked example (#452 → PR #454): free-living "absent DON" recorded as a clean gap, but
+   `PHIPO:0000503` *deoxynivalenol absent from cell* existed and had been obsoleted in the 2019
+   refactor. The parallel terms settled it — `PHIPO:0001033` (pyocyanin) and `PHIPO:0001105`
+   (gliotoxin) both still live under `PHIPO:0001034` *substance absent from cell*, while DON's
+   `decreased`/`increased` were re-created in 2025 and `absent` was simply missed. Oversight, not
+   decision → PR. **Had pyocyanin and gliotoxin also lost theirs, the identical-looking PR would
+   have been wrong.**
+
+6. **Name the closest existing term and why it fails.** A request without this reads as "I
+   couldn't find one" and will bounce. There are three failure shapes, all real:
    - **wrong context** — `PHIPO:0000234` *pathogen deoxynivalenol within host absent* exists,
      but is within-host and cannot describe an in-vitro assay;
-   - **missing granularity in an otherwise-present branch** — the free-living DON branch has
-     `decreased` (`PHIPO:0001445`) and `increased`, but no `absent`.
+   - **missing granularity in an otherwise-present branch** — DON had `decreased`
+     (`PHIPO:0001445`) and `increased` (`PHIPO:0001447`), but no `absent`;
+   - **obsoleted and never re-created** — the closest term is deprecated (step 5). Say so
+     explicitly and name it; it is the strongest evidence a request can carry, and the editors
+     cannot see it from OLS either.
 
-   PHI-base/phipo#452 is the worked example: it names both, and that is why it is a good request.
+   PHI-base/phipo#452 is the worked example of the first two; PR #454 adds the third.
 
-6. **Check it isn't already filed**, then record the gap with its evidence:
+7. **Check it isn't already filed**, then record the gap with its evidence:
    ```
    python3 -m phiweaver.lookup.gap_log report
    python3 -m phiweaver.lookup.gap_log record PHIPO "<phrase>" --pmid <PMID> \
      --context "<where in the paper; what was measured; closest term + why it fails>"
    ```
 
-7. **Draft the request** for a human to file, following #452: what is missing, the closest
-   existing term(s) and why each fails, the paper evidence (PMID + figure/table + the actual
-   measurement), and how many papers have hit it. Ranked frequency comes from `gap_log report`
-   — a gap several papers needed is a far stronger case than one paper's, and it is the
-   argument an editor responds to.
+8. **Draft the request** — issue or PR, decided by the test in "Two routes" above. Either way it
+   carries: what is missing, the closest existing term(s) and why each fails (including a
+   deprecated one, step 5), the paper evidence (PMID + figure/table + the actual measurement),
+   and how many papers have hit it. Ranked frequency comes from `gap_log report` — a gap several
+   papers needed is a far stronger case than one paper's, and it is the argument an editor
+   responds to.
 
-8. **After a human files it**, record the URL so it stops resurfacing as a new candidate:
+9. **After a human files/pushes it**, record the URL so it stops resurfacing as a new candidate:
    ```
    python3 -m phiweaver.lookup.gap_log record PHIPO "<same phrase>" \
-     --filed https://github.com/PHI-base/phipo/issues/NNN
+     --filed https://github.com/PHI-base/phipo/issues/NNN     # or /pull/NNN
    ```
 
 ## Expected outputs
@@ -114,18 +165,27 @@ them out **before** recording anything.
   the three cases it was.
 - For a genuine gap: a drafted request naming the closest existing term, why it fails, and the
   papers that needed it.
-- Never: a proposed parent, definition, or hierarchy placement.
+- For a **pattern extension**: a PR against `master` whose every field is traceable to a named
+  sibling term, plus the step-5 evidence that the hole is an oversight.
+- Never: a proposed parent, definition, or hierarchy placement **outside** a pattern extension.
 
 ## Quality-control checks
 - Alternate wordings were retried before the gap was recorded.
 - Every surviving candidate was read against the paper, not assumed to fit.
-- The closest existing term is named, with the reason it fails.
+- **`phipo-edit.owl` was grepped for an obsoleted term with the same meaning** — OLS would not
+  have shown one.
+- **If one exists: the parallel-terms test was run**, and the request says which way it came out.
+  A PR is only justified when the parallel terms kept the dimension.
+- The closest existing term is named, with the reason it fails — including if it is deprecated.
+- For a PR: every field cites the sibling term it was copied from; no field was invented.
 - Evidence cites PMID + location + what was measured.
 - `gap_log report` was checked for an existing filing.
 
 ## Human review
 - Every request is drafted for a curator to file, never filed automatically: a request is a
-  claim on the ontology team's attention, and a wrong one costs more than a missing one.
+  claim on the ontology team's attention, and a wrong one costs more than a missing one. **A PR
+  is a bigger claim than an issue, not a smaller one** — it asserts the answer, so the bar for
+  opening one is the step-5 evidence, not merely a plausible-looking pattern.
 - The ledger gathers evidence; the curator decides what is worth filing; the ontology editors
   decide what gets built.
 - The ledger **under-counts**: it records what curation happened to meet, and context-wrong
