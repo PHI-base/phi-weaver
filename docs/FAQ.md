@@ -156,6 +156,20 @@ QC, so **no local `robot`/ODK install is needed** (confirmed on PR #454).
 **See:** `skills/ontology-term-request/SKILL.md` (step 5); `phiweaver/lookup/data/README.md`
 (refresh pattern for the vendored ontologies); `AGENTS.md` (file-safety rules).
 
+### Is giving the benchmark access to PHIPO a leakage risk?
+**No — PHIPO is a tool, not an answer, and the sandbox must have full access to it.** A human curator
+works with the ontology open; withholding it doesn't make the benchmark harder, it measures a task
+nobody performs. Same for UniProt and GO. What **is** leakage is the **curated PHI-base datasets** —
+`phi-base.org` and the PHI-base **data** repos hold existing entries for the very papers under test,
+so a scored run reaching them is reading the answer key. **The line is not drawn by domain:**
+`github.com/PHI-base` hosts *both* the `phipo` ontology **and** the data repos, so "ontology yes, data
+no" can't be expressed as a domain rule. Today it doesn't bite (allowlist is default-deny to UniProt +
+OLS; PHIPO rides in on **EBI/OLS**, not GitHub), and **vendoring PHIPO removes the question entirely**
+— a bundled `phipo-base.obo` needs no network during a run. The `git pull` + re-vendor is
+**maintenance, outside scored runs**.
+**See:** `docs/BACKLOG.md` (sandbox-allowlist item; offline-PHIPO item);
+`07-Standards/curation-benchmarking/benchmark-sandbox.settings.json`.
+
 ### Can the PHI-Canto issues tracker feed PHI-Weaver's knowledge?
 **Mine it, don't ingest it.** The tracker holds useful convention decisions and ontology
 term-request threads, but bulk-loading it would contaminate context two ways: (a) issues are

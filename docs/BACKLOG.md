@@ -22,10 +22,17 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
   instructions in that dir's `README.md`). Today `map_phenotype.py:46` searches **OLS over the
   network**, and *OLS hides deprecated terms* — which is exactly how #452 was written blind to
   PHIPO:0000503 (see `ontology-term-request` skill step 5). Going local kills that failure mode
-  outright, makes lookups network-free (helping the benchmark-sandbox item below), and exposes what a
-  search cannot: the `SubClassOf` structure — parent, siblings, and which dimensions each sibling
-  carries. **Drop OLS for PHIPO entirely; keep it for GO** (not vendorable at any sane size —
-  `validate_ontology_ids` still needs it).
+  outright, makes lookups network-free, and exposes what a search cannot: the `SubClassOf` structure —
+  parent, siblings, and which dimensions each sibling carries. **Drop OLS for PHIPO entirely; keep it
+  for GO** (not vendorable at any sane size — `validate_ontology_ids` still needs it).
+
+  **Bonus: it simplifies the benchmark sandbox.** A bundled `phipo-base.obo` needs no network during a
+  scored run, so the allowlist stays default-deny with **no PHIPO exception**. That matters because
+  `github.com/PHI-base` hosts *both* the `phipo` ontology **and** the curated data repos (= the answer
+  key), so "ontology yes, data no" cannot be expressed at the domain level. **PHIPO is a tool, not an
+  answer** — a curator works with the ontology open — but the data must stay blocked. Vendoring means
+  the run never has to make that distinction. **Constraint: the `git pull` + re-vendor is maintenance
+  and must happen *outside* scored runs.** See the sandbox-allowlist item under Deferred.
 
   **⚠ Two files, two questions — do not collapse them.** "PHIPO" is three different things, and they
   diverge *right now*:
@@ -349,6 +356,27 @@ decision and re-creating the term silently reopens it. See the `ontology-term-re
   also covers PHI-base's **GitHub data repos** (`github.com/PHI-base`, `raw.githubusercontent.com`),
   which can't be cleanly domain-denied. The local `.claude/settings.json` WebFetch deny on
   `*.phi-base.org` is the interim (website-only) control.
+
+  **What is leakage and what is a tool** (clarified by the curator, 2026-07-17) — the line is *not*
+  drawn by domain:
+  - **PHIPO is a tool, not an answer. The sandbox must have full access to it.** A human curator sits
+    down with the ontology open; withholding it doesn't make the benchmark harder, it measures a task
+    nobody performs. Same for UniProt and GO.
+  - **The curated PHI-base datasets *are* the answers.** `phi-base.org` and the PHI-base **data**
+    repos hold existing entries for the very papers under test — a scored run that reaches them is
+    reading the answer key. **Blocked.**
+
+  **The coarseness problem:** `github.com/PHI-base` hosts *both* — the `phipo` ontology repo **and**
+  the data repos. So "ontology yes, data no" **cannot be expressed at the domain level**; don't try.
+  It doesn't bite today (the allowlist is default-deny to UniProt + OLS, and PHIPO rides in on
+  **OLS/EBI**, not GitHub), but it would the moment anything fetched PHIPO from GitHub at run time.
+
+  **Vendoring PHIPO dissolves this** (see the offline item under Tooling): a bundled `phipo-base.obo`
+  needs **no network at all** during a scored run, so the sandbox keeps default-deny with **no PHIPO
+  exception to get wrong**. The `git pull` + re-vendor is **maintenance, outside scored runs** — the
+  one moment PHIPO legitimately comes from `github.com/PHI-base`. Note the local clone
+  (`/mnt/z/Computer/GITHUBrepositories/phipo`) is ontology-only and is **not** a route to PHI-base
+  data.
 
 - [ ] **Automatic per-paper token logging**: `benchmark_report` can display curation tokens, but
   phiweaver does not measure them — they are supplied by hand in the `tokens` CSV column. Add a
