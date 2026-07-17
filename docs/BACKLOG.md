@@ -253,10 +253,12 @@ decision and re-creating the term silently reopens it. See the `ontology-term-re
     "conidia absent"** — so `map_phenotype "conidia absent"` returns it as an exact ★ hit. The
     within-host counterpart the item cited (PHIPO:0000468) is the *other* context, not the only one.
   - **Two wording steps hid it:** (1) *species-specific → species-neutral* — "conidiation" appears
-    **nowhere** in PHIPO, by design; (2) *process noun → entity noun* — for presence/absence PHIPO
-    models the **entity** ("asexual spores absent"), not the process ("sporulation abolished"). It
-    keeps the process form only for **timing** (PHIPO:0000053 delayed / PHIPO:0000054 premature
-    asexual sporulation). So "abolished asexual sporulation" still misses; "conidia absent" hits.
+    **nowhere** in PHIPO, by design; (2) *process noun → entity noun, for presence/absence* — both
+    forms exist but carry **different dimensions**: the *process* ("asexual sporulation") has quality
+    (`normal`/`abnormal`) and timing (PHIPO:0000053 `delayed` / PHIPO:0000054 `premature`) but **no
+    free-living absence term at all**, while the *entity* ("asexual spores") has count, size and
+    presence/absence. So "abolished asexual sporulation" misses — absence is not a dimension of the
+    process form — while "conidia absent" hits.
 
   **Curator ruling (2026-07-17):** *"asexual spores absent covers it"* — the **entity being absent
   covers the process having failed**; they are not distinct phenotypes for annotation. So

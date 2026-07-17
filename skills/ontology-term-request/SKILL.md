@@ -79,12 +79,17 @@ them out **before** recording anything.
      **But the species vocabulary lives in EXACT synonyms** (35 `conidi*` synonyms), so the
      search does find it — `map_phenotype "conidia absent"` → ★ `PHIPO:0000061 asexual spores
      absent`. Retry with the general term before concluding anything.
-   - **Process noun → entity noun.** For presence/absence PHIPO models the **entity**, not the
-     process: `asexual spores absent`, not "sporulation abolished". It keeps the process form
-     only for **timing** (`delayed`/`premature asexual sporulation`). So "abolished asexual
-     sporulation" misses while "conidia absent" hits. **Curator ruling (2026-07-17): the entity
-     being absent covers the process having failed — they are not distinct phenotypes**, so do
-     not request a "process abolished" term when the entity-absent term exists.
+   - **Process noun → entity noun, for presence/absence.** Both forms exist, but they carry
+     **different dimensions**, so the wrong form silently has no term to find:
+     | form | carries | absence? |
+     |---|---|---|
+     | process — `asexual sporulation` | quality (`normal`/`abnormal`), timing (`delayed`/`premature`) | **none, free-living** |
+     | entity — `asexual spores` | count, size, presence/absence (`absent`/`present`) | ✅ `PHIPO:0000061` |
+
+     So "abolished asexual sporulation" misses — absence is not a dimension of the process form —
+     while "conidia absent" hits. **Curator ruling (2026-07-17): the entity being absent covers
+     the process having failed — they are not distinct phenotypes**, so do not request a
+     "process abolished" term when the entity-absent term exists.
 
    Worked case (lesson L8): "Complete loss of conidiation (free-living)" sat in the backlog as a
    real gap. Both retries above find `PHIPO:0000061`, free-living, exact. **It was never a gap**
