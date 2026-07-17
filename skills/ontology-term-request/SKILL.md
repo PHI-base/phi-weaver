@@ -35,9 +35,10 @@ and `increased`, not `absent`) has no degrees of freedom left: the parent is the
 parent, the definition is a sibling's definition with one word swapped, the label and namespace
 follow. That is **copying a human's earlier decision, not making a new one**, and it is the case
 James Seager explicitly asked for as a PR against `phipo-edit.owl` (see
-[[phipo-local-clone]] — PRs target `master`; CI runs the ODK QC, so no local `robot` is needed;
-start from the wording of the existing definition). **Step 5 is mandatory before any PR** — it
-is what distinguishes a pattern with a hole from a pattern a human deliberately shaped.
+[[phipo-local-clone]] — PRs target `master`; **CI runs the full ODK QC on the PR, so no local
+`robot`/ODK install is needed** — confirmed green on PR #454, 2026-07-17; start from the wording
+of the existing definition). **Step 5 is mandatory before any PR** — it is what distinguishes a
+pattern with a hole from a pattern a human deliberately shaped.
 
 **Everything else → issue, evidence only.** A gap needing a new branch, a new parent, or a
 judgement about where it sits: produce "here is a need, here is what is missing, here are the
@@ -45,11 +46,11 @@ papers that needed it", and do **not** propose the parent, definition or placeme
 editors' expertise, and this project does not assert in-silico conclusions as fact (the same
 principle behind the team's ISS rejection).
 
-> **Open question (2026-07-17).** PHIPO's own `CONTRIBUTING.md` asks requesters to suggest
+> **Open question — tracked in `docs/BACKLOG.md` ("How much term *design* should a request
+> carry?", Curation workflow).** PHIPO's own `CONTRIBUTING.md` asks requesters to suggest
 > "label (name), definition, references, position in hierarchy" — so this skill's evidence-only
-> line is *stricter than PHIPO's house rule*, and was drawn against a constraint the ontology
-> team does not actually impose. Worth reconciling with Hsin-Yun deliberately rather than by
-> inheritance (see [[frame-curator-questions-as-discussion]]). Pending PR #454's reception.
+> line is *stricter than PHIPO's house rule*. For Hsin-Yun; supersede the routes above when she
+> answers. The default below works meanwhile.
 
 ## When to use
 - During curation, when a phenotype or condition has no usable term.

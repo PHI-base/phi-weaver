@@ -186,6 +186,21 @@ decision and re-creating the term silently reopens it. See the `ontology-term-re
   (D4) **filenames** keep the PMID/`FpSdh` basename (kept — cosmetic, renaming would orphan the
   queue/docx). Also the GO-no-biochem-evidence question (`CURATION-LESSONS.md` L3) is still open
   with her.
+- [ ] **How much term *design* should a request carry?** (raised 2026-07-17; for Hsin-Yun) — the
+  `ontology-term-request` skill's line is **"evidence, not design"**: never propose a term's parent,
+  definition or hierarchy placement, on the principle that this project does not assert in-silico
+  conclusions as fact (the same reasoning behind the ISS rejection). **But PHIPO's own
+  `CONTRIBUTING.md` asks requesters to suggest "label (name), definition, references, position in
+  hierarchy"** — so our guardrail is *stricter than the ontology team's house rule*, and was drawn
+  against a constraint they do not actually impose. James has since asked for AI-drafted **PRs**
+  (not issues) for the narrow pattern-extension case, and PR #454 duly proposed a label, definition
+  and parent — all three of the things the skill forbids. The skill now scopes the prohibition to
+  non-pattern-extension requests and records this as open. **Ask Hsin-Yun where the line should sit**,
+  framed as a discussion, not a ruling: is "evidence only" the right default for a request that needs
+  a *new* branch, given CONTRIBUTING.md invites more? Does the pattern-extension carve-out match how
+  she would want it bounded? **Blocks:** nothing — the skill has a working default. Supersede the
+  "Two routes" section + `## Purpose` guardrail in `skills/ontology-term-request/SKILL.md` when she
+  answers. Worked context: PR #454 / issue #452 (see "Waiting for response").
 - [ ] **Format convergence** — phiweaver *drafts* use the example-template body shape while *gold
   standards* use PHI-Canto's structure; converge them (toward PHI-Canto) so retrieval and
   benchmarking compare like-for-like. *Partly done 2026-07-04*: the example `annotation_types`
@@ -304,7 +319,8 @@ periodically; move back to the owning section if reopened, or tick `[x]` when ac
   re-created in March 2025 and "absent" was missed. PR #454 re-creates it as PHIPO:0001456, patterned
   verbatim on 0001033. **Open for James:** whether 0001456 is the right ID to take (`phipo-idranges.owl`
   allocates by role, not editor, so there is no personal range), and whether PHIPO:0000503 should get a
-  `replaced_by` pointer. Awaiting review.
+  `replaced_by` pointer. **ODK QC CI passed** (2026-07-17) — confirming a local `robot`/ODK install is
+  not needed to contribute terms. Awaiting James's review.
 - [ ] **Is the in-host / free-living split always two-way?** — filed 2026-07-17 as
   [PHI-base/phipo#453](https://github.com/PHI-base/phipo/issues/453). PHIPO states context in the term
   label ("within host", "on host surface" vs plain labels), so an in-vitro assay cannot use a
