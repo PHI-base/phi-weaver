@@ -6,6 +6,14 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
 `PLUGIN-ARCHITECTURE.md`.
 
 ## Tooling / bugs
+- [ ] **Make the "host" label rule self-checking** (added 2026-07-17).
+  `phiweaver/lookup/term_context.py` classifies a PHIPO term as in-host if its label contains the word
+  "host". That rule was **verified live** before relying on it — "host-free", "axenic" and
+  "free-living" all return `no_match`, so no PHIPO label negates the word — but nothing re-verifies it.
+  If PHIPO ever gains a label like "growth in host-free medium", the guard silently mislabels it and
+  the failure is invisible. The docstring says "re-check this rule", which is a comment, not a check.
+  The unit tests are network-free by design, so this needs either a separate online check or a step in
+  the `ontology-term-request` skill. **Silent staleness, not a live bug.**
 - [x] **PHIDO validation gap** (fixed 2026-07-04) — OLS4 does not host PHIDO, so every PHIDO ID
   used to return `not_found` (a false negative). Fixed by vendoring the ontology
   (`phiweaver/lookup/data/phido.obo`, from github.com/PHI-base/phido) and resolving PHIDO
@@ -128,6 +136,16 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
 ## Ontology coverage gaps (PHIPO term requests)
 _Curatable phenotypes seen in papers that have **no** PHIPO term — captured and flagged in the draft,
 not forced onto a wrong ID. Candidates to raise with the PHIPO/PHI-base ontology team._
+
+_Gaps met during drafting now also accumulate in **`docs/ontology-gaps.jsonl`** (`gap_log.py`,
+`ontology-term-request` skill), which ranks them by how many distinct papers needed each one —
+frequency being the argument an ontology editor responds to. That ledger **under-counts** and does not
+replace this hand-curated list: `no_match` cannot see a wrong-context match (the #452 shape), and one
+irrelevant candidate masks a real gap (lesson L7). Treat the two as complementary._
+
+_Note the recurring shape: **#452** (free-living "absent DON") and the free-living conidiation item
+below are the same failure — a within-host term exists, the free-living branch stops short, and the
+search offers the within-host term anyway. `phipo#453` asks whether that split is even two-way._
 - [x] **Mycotoxin / DON production — terms exist** (corrected 2026-07-15). Earlier logged as a gap;
   **wrong** — PHIPO already has free-living DON phenotype terms: **PHIPO:0001445** decreased level of
   deoxynivalenol, **PHIPO:0001447** increased, **PHIPO:0001443** abnormal deoxynivalenol biosynthesis,
@@ -270,6 +288,22 @@ periodically; move back to the owning section if reopened, or tick `[x]` when ac
   at PHIPO:0001445 "decreased" (used as closest); the only "absent" DON term, PHIPO:0000234, is
   *within-host* (wrong context for an in-vitro assay). Evidence: PMID:42089373 Table S4 (ΔFpSdhA/B/D +
   ΔFpSdhC1&2, no detectable DON). Awaiting ontology-team action.
+- [ ] **Is the in-host / free-living split always two-way?** — filed 2026-07-17 as
+  [PHI-base/phipo#453](https://github.com/PHI-base/phipo/issues/453). PHIPO states context in the term
+  label ("within host", "on host surface" vs plain labels), so an in-vitro assay cannot use a
+  within-host term — the #452 failure. Asks whether two contexts are enough, or whether detached-leaf /
+  host-extract / host-cell-culture assays need their own; whether a canonical in-host vs free-living
+  branch list exists (we infer it from the label); and whether "on host surface" is a third context.
+  **Blocks:** lesson L7's binary `free-living`/`in-host` assay-context split is weaver's proposal
+  pending this answer — if a third context is needed, supersede L7 and widen
+  `phiweaver/lookup/term_context.py`. Awaiting curator/ontology-team answer.
+- [ ] **GO evidence code ISO — reopen the ISS-family ruling?** (raised by Hsin-Yu on
+  `phi-weaver#8`, 2026-07-17; **not yet filed**). The team rejected ISS as too predictive/in-silico
+  (`#246`), and ISO was assumed covered by that. But ISO is stricter: GO requires a `with/from` field
+  naming the specific ortholog, the ortholog's own annotation must be experimentally supported, and it
+  cannot chain off another ISS/IEA — so an ISO annotation traces to a real experiment in a named
+  organism, which is the property ISS was rejected for lacking. Fits PHI-base's shape (the
+  characterised ortholog is often in yeast). Decide whether to raise it as its own issue.
 
 ## Deferred (see DESIGN-DECISIONS.md D11 / PLUGIN-ARCHITECTURE.md)
 - [ ] Full machine-readable curation-record schema (first slice done: the draft `auto_check` block).
