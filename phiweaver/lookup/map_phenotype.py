@@ -41,6 +41,7 @@ from pathlib import Path
 from typing import Callable, List, Optional
 
 from phiweaver.common import ResponseCache, make_getter, utc_now
+from phiweaver.lookup import gap_log, term_context
 
 OLS_SEARCH_URL = "https://www.ebi.ac.uk/ols4/api/search"
 PHIPO_ONTOLOGY = "phipo"
@@ -186,6 +187,16 @@ def main(argv=None) -> int:
     p.add_argument("--no-cache", action="store_true", help="bypass the local cache")
     p.add_argument("--cache", default=os.environ.get("PHENOTYPE_CACHE", str(DEFAULT_CACHE)),
                    help="cache file path (or set PHENOTYPE_CACHE)")
+    p.add_argument("--log-gaps", action="store_true",
+                   help="append each no_match to the ontology gap ledger. Use only after "
+                        "retrying alternate wordings — an un-retried miss is often a wording "
+                        "gap, not a term gap (see the phipo-mapping skill).")
+    p.add_argument("--pmid", help="with --log-gaps: the paper that needed the term")
+    p.add_argument("--context", help="with --log-gaps: where in the paper, and what was measured")
+    p.add_argument("--assay-context", choices=term_context.ASSAY_CONTEXTS,
+                   help="where the phenotype was measured. With 'free-living', in-host terms "
+                        "are flagged as contextually wrong — a match the search cannot know "
+                        "is unusable (see term_context.py, PHI-base/phipo#452).")
     args = p.parse_args(argv)
 
     phrases: List[str] = list(args.phrases)
@@ -204,10 +215,34 @@ def main(argv=None) -> int:
     if cache:
         cache.close()
 
+    reviews = [term_context.review(r.candidates, args.assay_context)
+               if (args.assay_context and r.candidates) else None
+               for r in results]
+
+    if args.log_gaps:
+        # Only no_match is auto-recorded. A context-wrong result is *not* auto-recorded as a
+        # gap: deciding the surviving candidates are irrelevant needs to know what the paper
+        # measured, so --assay-context warns and a curator records the gap deliberately.
+        for r in results:
+            if r.status == "no_match" and r.query:
+                gap_log.record("PHIPO", r.query, pmid=args.pmid, context=args.context)
+
     if args.json:
-        print(json.dumps([r.to_dict() for r in results], indent=2))
+        payload = []
+        for r, rev in zip(results, reviews):
+            d = r.to_dict()
+            if rev:
+                d["assay_context"] = args.assay_context
+                d["candidates"] = term_context.annotate_dicts(r.candidates,
+                                                              args.assay_context)
+                d["usable_candidates"] = len(rev.usable)
+            payload.append(d)
+        print(json.dumps(payload, indent=2))
     else:
         print(format_human(results))
+        for r, rev in zip(results, reviews):
+            if rev and (warning := term_context.format_warning(r.query, rev)):
+                print(warning)
     # Exit reflects whether the search ran, not whether it matched: only errors fail.
     return 0 if all(r.ok for r in results) else 1
 

@@ -36,10 +36,21 @@ described in a paper, without inventing term IDs.
    the EBI Ontology Lookup Service and returns real term IDs, never invented ones:
    `python3 -m phiweaver.lookup.map_phenotype "reduced virulence"`
    (a phrase with no hit is reported as `no_match`, not mapped to a guess).
-5. Verify the chosen term ID exists and is current (not obsolete):
+   **Declare where the phenotype was measured** — `--assay-context free-living` (in-vitro
+   culture) or `--assay-context in-host` (in planta). PHIPO states context in the label
+   (`within host`, `on host surface`), and a free-living assay cannot use an in-host term:
+   `absent DON` in culture matches `PHIPO:0000234` *pathogen deoxynivalenol within host
+   absent*, which is a confident, wrong answer. Without the flag nothing marks it.
+5. **Read the surviving candidates against the paper.** A search pads its result with terms
+   that merely share a word — the same `absent DON` search returns `PHIPO:0000939 asexual
+   spore lysis absent`, which is host-free (so unflagged) and irrelevant. A candidate that
+   survives the context check has not thereby been shown to fit.
+6. Verify the chosen term ID exists and is current (not obsolete):
    `python3 -m phiweaver.lookup.validate_ontology_ids PHIPO:XXXXXXX`.
-6. Propose the best term(s) with rationale and confidence. If none fit well, say so and
-   describe the gap rather than forcing a term.
+7. Propose the best term(s) with rationale and confidence. If none fit well, say so and
+   describe the gap rather than forcing a term. Retry alternate wordings ("level of X",
+   "abnormal X biosynthesis") before calling anything a gap — lesson L2 — then hand it to
+   the `ontology-term-request` skill, which records it with its evidence.
 
 ## Expected outputs
 - Verbatim phenotype text + source location.
@@ -50,6 +61,7 @@ described in a paper, without inventing term IDs.
 ## Quality-control checks
 - Every proposed term ID is verified to exist and be non-obsolete.
 - The term's meaning matches the phenotype (no over-/under-specification).
+- The term's **context** matches the assay: no in-host term for a free-living phenotype.
 - Source evidence is attached; interpretation is labelled as such.
 
 ## Human review

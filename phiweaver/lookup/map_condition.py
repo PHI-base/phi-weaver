@@ -35,6 +35,8 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import List, Optional
 
+from phiweaver.lookup import gap_log
+
 PHI_ECO_OBO_PATH = Path(__file__).resolve().parent / "data" / "phi-eco.obo"
 PHI_ECO_SOURCE = "bundled phi-eco.obo"
 DEFAULT_ROWS = 5
@@ -162,6 +164,12 @@ def main(argv=None) -> int:
     ap.add_argument("--file", help="read one condition phrase per line from a file")
     ap.add_argument("--rows", type=int, default=DEFAULT_ROWS, help="max candidates per phrase")
     ap.add_argument("--json", action="store_true", help="emit machine-readable JSON")
+    ap.add_argument("--log-gaps", action="store_true",
+                    help="append each no_match to the ontology gap ledger. Use only after "
+                         "retrying alternate wordings — an un-retried miss is often a wording "
+                         "gap, not a term gap.")
+    ap.add_argument("--pmid", help="with --log-gaps: the paper that needed the term")
+    ap.add_argument("--context", help="with --log-gaps: where in the paper, and what was measured")
     args = ap.parse_args(argv)
 
     phrases = list(args.phrases)
@@ -172,6 +180,12 @@ def main(argv=None) -> int:
 
     terms = load_terms()
     results = [search(p, terms, rows=args.rows) for p in phrases]
+
+    if args.log_gaps:
+        for r in results:
+            if r.status == "no_match" and r.phrase:
+                gap_log.record("PECO", r.phrase, pmid=args.pmid, context=args.context)
+
     if args.json:
         print(json.dumps([asdict(r) for r in results], indent=2))
     else:
