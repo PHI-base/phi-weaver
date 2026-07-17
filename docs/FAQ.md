@@ -29,38 +29,21 @@ field. Don't collapse a consequence into an expression level.
 **See:** `07-Standards/judge-core-primer.md` (rule 6); `skills/genotype-creation/SKILL.md`.
 
 ### Why doesn't PHIPO have "conidiation" / "appressorium" / "mycelium"?
-**By design — PHIPO is species-neutral**, and says so in its own header: *"Ontology of
-species-neutral phenotypes observed in pathogen-host interactions."* A term has to hold across
-pathogens: *conidiation* only exists in some fungi, *asexual spores* in most organisms. So
-`conidiation`, `conidia`, `appressorium`, `haustorium`, `sclerotium`, `mycelium`, `ascospore` and
-`urediniospore` have **zero** primary-label hits. PHIPO says **asexual spores**, **sexual spores**,
-**hyphae**, and **pathogen penetration structure** (the appressorium's job) instead. **The species
-vocabulary is not missing** — it lives in **EXACT synonyms** (35 `conidi*` ones), so the search still
-finds it: `map_phenotype "conidia absent"` → ★ `PHIPO:0000061 asexual spores absent`. Only the
-*process* noun `conidiation` is absent outright, so "conidiation completely lost" is an honest
-`no_match`.
-**See:** `docs/CURATION-LESSONS.md` (L8); `skills/ontology-term-request/SKILL.md` ("not a gap" #1).
+**By design — PHIPO is species-neutral:** a term must hold across pathogens, and *conidiation* only
+exists in some fungi while *asexual spores* covers most organisms. PHIPO says **asexual spores**,
+**sexual spores**, **hyphae**, **pathogen penetration structure**. The species vocabulary is **not
+missing** — it lives in EXACT synonyms, so `map_phenotype "conidia absent"` → ★ `PHIPO:0000061`.
+**See:** `skills/ontology-term-request/SKILL.md` ("not a gap" #1) — full vocabulary, the two retries,
+and the release-specific caveat; `docs/CURATION-LESSONS.md` (L8).
 
 ### My phenotype phrase found nothing. Which retries should I try first?
-**Two, before any other — both systematic, not guesswork:**
-1. **Species-specific → species-neutral** ("conidiation" → "asexual spores"). See the entry above.
-2. **Process noun → entity noun, for presence/absence.** Both forms exist, but they carry
-   *different dimensions*:
-   - **process** (`asexual sporulation`) — **quality** (`normal`/`abnormal`) and **timing**
-     (`delayed`/`premature`). **No absence term exists, free-living.**
-   - **entity** (`asexual spores`) — **count** (`increased`/`decreased`/`normal number`), **size**,
-     and **presence/absence** (`asexual spores absent`, `asexual spores present`).
-
-   So "sporulation abolished" misses because absence is simply not a dimension of the process form.
-   **Curator ruling (2026-07-17): the entity being absent covers the process having failed** — they
-   are not distinct phenotypes, so don't request a "process abolished" term when the entity-absent
-   term exists.
-
-A curator's natural phrasing ("conidiation abolished") misses on **both** axes at once, which reads
-exactly like a gap. It isn't. This already put a real term — `PHIPO:0000061`, free-living, exact —
-in the backlog as a phantom gap for weeks.
-**See:** `docs/CURATION-LESSONS.md` (L8, and L2 for the general wording-gap shape);
-`skills/ontology-term-request/SKILL.md` (step 4).
+**Two, before any other — both systematic, not guesswork:** (1) **species-specific →
+species-neutral** ("conidiation" → "asexual spores"); (2) **process noun → entity noun** for
+presence/absence ("sporulation abolished" → "asexual spores absent") — absence is not a dimension of
+the process form. Natural phrasing misses on **both axes at once**, which reads exactly like a gap;
+this already put a real term in the backlog as a phantom gap. Then check `--include-obsolete`: the
+term may exist but be deprecated, which OLS's search hides.
+**See:** `skills/ontology-term-request/SKILL.md` (steps 4–5); `docs/CURATION-LESSONS.md` (L2, L8).
 
 ### What if a phenotype has no suitable PHIPO term?
 Don't drop it. A valid curation **records the phenotype with a note that a new PHIPO term should

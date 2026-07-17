@@ -91,6 +91,10 @@ them out **before** recording anything.
      the process having failed — they are not distinct phenotypes**, so do not request a
      "process abolished" term when the entity-absent term exists.
 
+   > **These counts are release-specific** (verified against `phipo-base.obo`, release
+   > 2026-03-12). Re-check them after a refresh — if PHIPO ever adds species-specific labels,
+   > the "zero hits" claim above is what goes stale first.
+
    Worked case (lesson L8): "Complete loss of conidiation (free-living)" sat in the backlog as a
    real gap. Both retries above find `PHIPO:0000061`, free-living, exact. **It was never a gap**
    — two wording steps hid it, and the curator closed it.
