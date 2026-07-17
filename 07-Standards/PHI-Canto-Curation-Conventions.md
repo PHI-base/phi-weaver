@@ -43,6 +43,21 @@ any single rule as current — some were reversed at least once before settling.
 - **Do NOT use ISS** (Inferred from Sequence or Structural Similarity). It was considered as a
   TAS substitute and **rejected** by the team as too predictive / in-silico in nature; it is
   not enabled in PHI-Canto's GO configuration. (`#246`)
+- **TAS requires an explicit author statement, not a UniProt term.** The justification for TAS
+  is that the paper's authors state the function *and* it matters to the paper's experimental
+  design. The fact that UniProt carries a GO term is **not** grounds for TAS: most UniProt GO
+  annotations are pipeline predictions (InterPro2GO and similar, evidence code IEA) with no
+  author behind them, so transferring them wholesale would dress a prediction as an author
+  statement. The emphasis stays on experimentally verified annotations; TAS is a narrow,
+  deliberate exception. (`phi-weaver#8`)
+- **No biochemistry ≠ no molecular-function term.** When a paper demonstrates a gene only by
+  knockout phenotypes, still annotate:
+  - the **molecular function** by TAS, *if* it clears the bar above (e.g. PMID:42089373 —
+    succinate dehydrogenase activity `GO:0000104` is the premise of the study, and the authors
+    state it outright);
+  - the **biological processes the deletions actually demonstrate** by IMP (Inferred from
+    Mutant Phenotype) — for the same paper: growth, conidiation, DON production.
+  MF-by-TAS and BP-by-IMP are complementary, not alternatives. (`phi-weaver#8`)
 
 ## Allele typing
 
