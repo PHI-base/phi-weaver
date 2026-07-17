@@ -21,10 +21,36 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
   **(a) Vendor PHIPO offline**, the way PHIDO already is (`phiweaver/lookup/data/phido.obo`, refresh
   instructions in that dir's `README.md`). Today `map_phenotype.py:46` searches **OLS over the
   network**, and *OLS hides deprecated terms* — which is exactly how #452 was written blind to
-  PHIPO:0000503 (see `ontology-term-request` skill step 5). Resolving against `phipo-edit.owl`
-  (local clone: `/mnt/z/Computer/GITHUBrepositories/phipo`) would **kill that failure mode outright**,
-  make lookups network-free, and expose what a search cannot: the `SubClassOf` structure — parent,
-  siblings, and which dimensions each sibling carries.
+  PHIPO:0000503 (see `ontology-term-request` skill step 5). Going local kills that failure mode
+  outright, makes lookups network-free (helping the benchmark-sandbox item below), and exposes what a
+  search cannot: the `SubClassOf` structure — parent, siblings, and which dimensions each sibling
+  carries. **Drop OLS for PHIPO entirely; keep it for GO** (not vendorable at any sane size —
+  `validate_ontology_ids` still needs it).
+
+  **⚠ Two files, two questions — do not collapse them.** "PHIPO" is three different things, and they
+  diverge *right now*:
+
+  | source | what it is | use for |
+  |---|---|---|
+  | `phipo-base.obo` (618K, repo root) | the **release artifact** — PHIPO's own terms | **annotation lookup + ID validation** |
+  | `phipo-edit.owl` | the **working file** — contains **unreleased** terms | **gap analysis only** |
+  | OLS | the release as OLS loaded it | — (nothing, once local) |
+
+  Use `phipo-base.obo` for "give me a term for this phrase", because that is the question a curator
+  actually has: *can I annotate this?* Use `phipo-edit.owl` only for "is this a gap, and why" —
+  obsolete terms, sibling structure, the sweeps in (b). **`phipo-edit.owl` must never be a source of
+  suggestions to a curator.** Concretely: it contains PHIPO:0001456 today (PR #454, unreleased,
+  absent from PHI-Canto) — suggesting it would be a bug that looks exactly like a feature. Note
+  `phipo.obo` (7.3M) is the **wrong file** — it inlines GO, CHEBI and other imports.
+
+  **On search quality (the honest cost).** OLS is Solr-backed with stemming and synonym expansion;
+  the offline scorer in `map_condition.py` is exact > substring > token-overlap (Jaccard), and cruder.
+  Acceptable, because **lesson L7 establishes OLS's ranking is not trustworthy anyway** — it
+  confidently returned within-host PHIPO:0000234 for an in-vitro phrase and `asexual spore lysis
+  absent` for a DON query. A human reads every candidate regardless, so **recall matters and ranking
+  does not**: favour a generous `--rows` over clever scoring. The real cost is **staleness** — the
+  clone needs a `git pull` + re-vendor where OLS was self-updating. PHIDO already carries that
+  burden (refresh instructions in `data/README.md`), so it is an existing practice, not a new one.
 
   **(b) Sweep the structure for holes**, which (a) makes mechanical. Everything done by hand for PR
   #454 was: grep for an obsoleted term, walk up to the parent, enumerate siblings, diff the
