@@ -14,6 +14,33 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
   the failure is invisible. The docstring says "re-check this rule", which is a comment, not a check.
   The unit tests are network-free by design, so this needs either a separate online check or a step in
   the `ontology-term-request` skill. **Silent staleness, not a live bug.**
+- [ ] **Resolve PHIPO offline + sweep for structural holes** (added 2026-07-17; **sequence after
+  phipo#454's ruling**, which may change what the pattern-extension route looks like). Two parts,
+  the first enabling the second.
+
+  **(a) Vendor PHIPO offline**, the way PHIDO already is (`phiweaver/lookup/data/phido.obo`, refresh
+  instructions in that dir's `README.md`). Today `map_phenotype.py:46` searches **OLS over the
+  network**, and *OLS hides deprecated terms* — which is exactly how #452 was written blind to
+  PHIPO:0000503 (see `ontology-term-request` skill step 5). Resolving against `phipo-edit.owl`
+  (local clone: `/mnt/z/Computer/GITHUBrepositories/phipo`) would **kill that failure mode outright**,
+  make lookups network-free, and expose what a search cannot: the `SubClassOf` structure — parent,
+  siblings, and which dimensions each sibling carries.
+
+  **(b) Sweep the structure for holes**, which (a) makes mechanical. Everything done by hand for PR
+  #454 was: grep for an obsoleted term, walk up to the parent, enumerate siblings, diff the
+  dimensions across sibling chemicals. Two sweeps worth having:
+  - *"which chemicals have `decreased`+`increased` but no `absent`?"* — **would have found the DON
+    hole with no paper at all**;
+  - *"which obsolete terms have no `replaced_by`/`consider`?"* — the hygiene gap that kept
+    PHIPO:0000503 invisible for five years. Useful to hand PHIPO in its own right.
+
+  **The limit, and why this does not automate gap detection.** A sweep generates **candidates, not
+  judgements**. A hole in a branch may be deliberate (the parallel-terms test says the *dimension* is
+  live, not that *this* chemical should carry it) or may simply be something nobody has ever
+  measured, in which case there is no evidence to file. The shape stays: **the sweep finds structural
+  holes, curation supplies the evidence that a hole matters, a human decides.** Lesson L7's corollary
+  — gap detection cannot be automated — is unchanged; this makes the first third free, not the last.
+  The ledger still under-counts.
 - [x] **PHIDO validation gap** (fixed 2026-07-04) — OLS4 does not host PHIDO, so every PHIDO ID
   used to return `not_found` (a false negative). Fixed by vendoring the ontology
   (`phiweaver/lookup/data/phido.obo`, from github.com/PHI-base/phido) and resolving PHIDO
