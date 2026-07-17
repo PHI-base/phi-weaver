@@ -82,11 +82,13 @@ them out **before** recording anything.
    - **Process noun → entity noun.** For presence/absence PHIPO models the **entity**, not the
      process: `asexual spores absent`, not "sporulation abolished". It keeps the process form
      only for **timing** (`delayed`/`premature asexual sporulation`). So "abolished asexual
-     sporulation" misses while "conidia absent" hits.
+     sporulation" misses while "conidia absent" hits. **Curator ruling (2026-07-17): the entity
+     being absent covers the process having failed — they are not distinct phenotypes**, so do
+     not request a "process abolished" term when the entity-absent term exists.
 
-   Worked case (2026-07-17): "Complete loss of conidiation (free-living)" sat in the backlog as
-   a real gap. Both retries above find `PHIPO:0000061`, free-living, exact. **It was never a
-   gap** — two wording steps hid it.
+   Worked case (lesson L8): "Complete loss of conidiation (free-living)" sat in the backlog as a
+   real gap. Both retries above find `PHIPO:0000061`, free-living, exact. **It was never a gap**
+   — two wording steps hid it, and the curator closed it.
 2. **A granularity miss in PHI-ECO.** PECO is deliberately qualitative: "potato dextrose agar
    at 25 °C" correctly maps to `rich medium`, with the numerics staying in the annotation
    comment (lesson L6). A qualitative term that fits is not a gap.

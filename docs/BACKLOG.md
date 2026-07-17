@@ -243,9 +243,10 @@ decision and re-creating the term silently reopens it. See the `ontology-term-re
   **not** cyclobutrifluram, pydiflumetofen, fluxapyroxad, or isofetamid (PMID:42089373). Those four fell
   back to the generic PHIPO:0000021 (increased sensitivity to chemical) / PHIPO:0000022 (increased
   resistance to chemical) with the chemical named in conditions. Request per-chemical child terms.
-- [x] **Complete loss of conidiation (free-living) — terms exist** (corrected 2026-07-17; **curator
-  to confirm**). Earlier logged as a gap ("no free-living 'absence/abolished asexual sporulation'
-  term, so total conidiation loss is under-described"); **wrong on two counts**, both wording:
+- [x] **Complete loss of conidiation (free-living) — terms exist** (corrected + **closed by the
+  curator 2026-07-17**: *"asexual spores absent covers it"* — annotate **PHIPO:0000061**). Earlier
+  logged as a gap ("no free-living 'absence/abolished asexual sporulation' term, so total conidiation
+  loss is under-described"); **wrong on two counts**, both wording:
   - **PHIPO:0000061 "asexual spores absent"** exists, is current, and is **free-living**
     (`namespace: single_species_phenotype`, no "host" in the label). Its definition is "a
     reproductive phenotype where asexual spores are absent", and it carries the **EXACT synonym
@@ -257,10 +258,11 @@ decision and re-creating the term silently reopens it. See the `ontology-term-re
     keeps the process form only for **timing** (PHIPO:0000053 delayed / PHIPO:0000054 premature
     asexual sporulation). So "abolished asexual sporulation" still misses; "conidia absent" hits.
 
-  **Curator check:** is "asexual spores absent" an adequate description of "completely lost
-  conidiation" (PMID:41020836; ΔFpSdhA/B/D + double, PMID:42089373)? If yes, annotate PHIPO:0000061
-  and this is closed. Reopen if the *process* failing is a distinct phenotype from the *spores*
-  being absent. See "PHIPO is species-neutral" above and lesson L2.
+  **Curator ruling (2026-07-17):** *"asexual spores absent covers it"* — the **entity being absent
+  covers the process having failed**; they are not distinct phenotypes for annotation. So
+  PMID:41020836 ("completely lost conidiation") and PMID:42089373 (ΔFpSdhA/B/D + double) annotate to
+  **PHIPO:0000061**, and no term request was ever needed. Generalised as **lesson L8**. See "PHIPO is
+  species-neutral" above and lesson L2.
 
 ## Curation workflow
 - [ ] **Confirm open clarifications from Hsin-Yun's 2026-07-15 review** (applied with sensible
