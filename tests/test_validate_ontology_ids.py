@@ -73,15 +73,16 @@ class ValidateTests(unittest.TestCase):
         self.assertTrue(r.ok)
 
     def test_obsolete_fails(self):
+        # GO, not PHIPO: PHIPO moved offline on 2026-07-17 and no longer takes this path.
         val = v.OntologyValidator(
-            http_get=ols_getter([term("PHIPO:0000001", "old term", obsolete=True)]))
-        r = val.validate("PHIPO:0000001")
+            http_get=ols_getter([term("GO:0009405", "old term", obsolete=True)]))
+        r = val.validate("GO:0009405")
         self.assertEqual(r.existence, "obsolete")
         self.assertFalse(r.ok)
 
     def test_not_found_fails(self):
         val = v.OntologyValidator(http_get=ols_getter([]))
-        r = val.validate("PHIPO:0009999")
+        r = val.validate("GO:0009999")
         self.assertEqual(r.existence, "not_found")
         self.assertFalse(r.ok)
 
@@ -169,6 +170,49 @@ class ValidateTests(unittest.TestCase):
         self.assertFalse(first.from_cache)
         self.assertTrue(second.from_cache)
         self.assertEqual(getter.calls, 1)
+
+
+class PhipoOfflineTests(unittest.TestCase):
+    """PHIPO moved offline on 2026-07-17 (was OLS), resolving against the bundled
+    `phipo-base.obo` — the **release artifact**, i.e. the same content OLS serves, so this is
+    not a downgrade. Going local also removes OLS's blind spot that its *search* hides
+    deprecated terms (phipo#452 / PHIPO:0000503)."""
+
+    INDEX = {
+        "PHIPO:0001445": ("decreased level of deoxynivalenol", False),
+        "PHIPO:0000503": ("obsolete deoxynivalenol absent from cell", True),
+    }
+
+    def _validator(self, index):
+        def boom(url, params):
+            raise AssertionError("PHIPO must not hit OLS/the network")
+        return v.OntologyValidator(http_get=boom, phipo_index=index)
+
+    def test_existing_phipo_passes(self):
+        r = self._validator(self.INDEX).validate("PHIPO:0001445")
+        self.assertEqual(r.existence, "exists")
+        self.assertEqual(r.label, "decreased level of deoxynivalenol")
+        self.assertEqual(r.source, v.PHIPO_SOURCE)
+        self.assertTrue(r.ok)
+
+    def test_obsolete_phipo_fails(self):
+        r = self._validator(self.INDEX).validate("PHIPO:0000503")
+        self.assertEqual(r.existence, "obsolete")
+        self.assertFalse(r.ok)
+
+    def test_missing_phipo_is_not_found(self):
+        r = self._validator(self.INDEX).validate("PHIPO:0009999")
+        self.assertEqual(r.existence, "not_found")
+        self.assertFalse(r.ok)
+
+    def test_unreleased_term_does_not_validate(self):
+        """The two-file rule, as a test. `phipo-edit.owl` carries terms that are not in the
+        release — PHI-Canto does not have them, so a curator cannot annotate to one. Validation
+        must resolve against the **release**, so an edit-file-only term is honestly not_found.
+        (Real case: PHIPO:0001456, added by PR #454 and unreleased at the time of writing.)"""
+        r = self._validator(self.INDEX).validate("PHIPO:0001456")
+        self.assertEqual(r.existence, "not_found")
+        self.assertFalse(r.ok)
 
 
 class PhidoOfflineTests(unittest.TestCase):

@@ -14,17 +14,26 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
   the failure is invisible. The docstring says "re-check this rule", which is a comment, not a check.
   The unit tests are network-free by design, so this needs either a separate online check or a step in
   the `ontology-term-request` skill. **Silent staleness, not a live bug.**
-- [ ] **Resolve PHIPO offline + sweep for structural holes** (added 2026-07-17; **sequence after
-  phipo#454's ruling**, which may change what the pattern-extension route looks like). Two parts,
-  the first enabling the second.
+- [ ] **Resolve PHIPO offline + sweep for structural holes** (added 2026-07-17). **(a) done
+  2026-07-17; (b) still open**, sequenced after phipo#454's ruling.
 
-  **(a) Vendor PHIPO offline**, the way PHIDO already is (`phiweaver/lookup/data/phido.obo`, refresh
-  instructions in that dir's `README.md`). Today `map_phenotype.py:46` searches **OLS over the
-  network**, and *OLS hides deprecated terms* — which is exactly how #452 was written blind to
-  PHIPO:0000503 (see `ontology-term-request` skill step 5). Going local kills that failure mode
-  outright, makes lookups network-free, and exposes what a search cannot: the `SubClassOf` structure —
-  parent, siblings, and which dimensions each sibling carries. **Drop OLS for PHIPO entirely; keep it
-  for GO** (not vendorable at any sane size — `validate_ontology_ids` still needs it).
+  **(a) Vendor PHIPO offline** — ✅ **done 2026-07-17.** `phiweaver/lookup/data/phipo-base.obo`
+  (release 2026-03-12, 1327 terms / 210 obsolete); both `map_phenotype` and `validate_ontology_ids`
+  resolve `PHIPO:` offline; **OLS dropped for PHIPO, kept for GO**. Verified at vendoring that OLS
+  served the *same* release, so nothing was lost. `map_phenotype --include-obsolete` now surfaces
+  deprecated terms (the #452 blind spot) and prints the `data-version` on every search. Refresh
+  command + the `phipo-base.obo` vs `phipo-edit.owl` rule: `phiweaver/lookup/data/README.md`.
+  **Two things found on the way, worth knowing:**
+  - *The borrowed scorer could not return `no_match`.* `map_condition`'s exact/substring/Jaccard
+    scorer let one shared generic token carry a match ("to" is in 39% of PHIPO labels, "host" 25%),
+    and its label-inside-query tier let the one-word label "phenotype" match any query containing the
+    word. Since **`no_match` is what gap detection and `--log-gaps` key on**, that silently broke gap
+    detection. Fixed with **IDF weighting** (`build_idf`) + a tuned `MIN_SCORE = 20.0`: true matches
+    score 35–100, prose/junk 0–12.7. **`map_condition` still has the unweighted scorer** — PECO is a
+    different corpus so it may be fine, but nobody has checked. *(Candidate follow-up.)*
+  - *A genuine gap validated the threshold.* "abnormal conidiation" scores 14.1 (correctly below
+    MIN_SCORE): **PHIPO has no "conidiation" token at all** — it says "asexual spores" — which is
+    lesson L2's wording gap, and is already tracked below as a real coverage gap.
 
   **Bonus: it simplifies the benchmark sandbox.** A bundled `phipo-base.obo` needs no network during a
   scored run, so the allowlist stays default-deny with **no PHIPO exception**. That matters because

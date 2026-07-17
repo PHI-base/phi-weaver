@@ -70,7 +70,7 @@ OBO_PREFIXES = {"PHIPO", "PHIPO_EXT", "GO", "PHIDO", "MOD", "BTO", "PECO", "FYPO
 # (PECO here = the PHI-base experimental-conditions ontology / PHI-ECO — NOT the Planteome
 # "peco" on OLS, a different ontology that happens to share the prefix.) MOD is PSI-MOD;
 # BTO is the BRENDA Tissue Ontology, used for the host-tissue (infects_tissue) extension.
-OLS_ONTOLOGY = {"PHIPO": "phipo", "GO": "go", "MOD": "mod", "BTO": "bto"}
+OLS_ONTOLOGY = {"GO": "go", "MOD": "mod", "BTO": "bto"}
 
 # Bundled offline ontologies (vendored from PHI-base repos — see data/README.md).
 PHIDO_OBO_PATH = Path(__file__).resolve().parent / "data" / "phido.obo"
@@ -79,6 +79,14 @@ PHI_ECO_OBO_PATH = Path(__file__).resolve().parent / "data" / "phi-eco.obo"
 PHI_ECO_SOURCE = "bundled phi-eco.obo"
 PHIPO_EXT_OBO_PATH = Path(__file__).resolve().parent / "data" / "phipo_ext.obo"
 PHIPO_EXT_SOURCE = "bundled phipo_ext.obo"
+# PHIPO moved offline 2026-07-17 (was OLS). The bundled file is the **release artifact**
+# (`phipo-base.obo`) — the same content OLS serves, so this is not a downgrade — and going
+# local removes OLS's blind spot that its *search* hides deprecated terms (phipo#452 /
+# PHIPO:0000503). Do NOT point this at `phipo-edit.owl`: the working file carries unreleased
+# terms PHI-Canto does not have, so validating against it would pass an ID a curator cannot
+# use. See map_phenotype.py and docs/FAQ.md.
+PHIPO_OBO_PATH = Path(__file__).resolve().parent / "data" / "phipo-base.obo"
+PHIPO_SOURCE = "bundled phipo-base.obo"
 FYPO_EXT_OBO_PATH = Path(__file__).resolve().parent / "data" / "fypo_extension.obo"
 FYPO_EXT_SOURCE = "bundled fypo_extension.obo"
 
@@ -227,6 +235,12 @@ def _peco_index() -> Optional[Dict[str, Tuple[Optional[str], bool]]]:
 
 
 @lru_cache(maxsize=1)
+def _phipo_index() -> Optional[Dict[str, Tuple[Optional[str], bool]]]:
+    """Module-level cache of the parsed bundled PHIPO release (None if unavailable)."""
+    return _load_phido(PHIPO_OBO_PATH)
+
+
+@lru_cache(maxsize=1)
 def _phipo_ext_index() -> Optional[Dict[str, Tuple[Optional[str], bool]]]:
     """Module-level cache of the parsed bundled PHIPO_EXT ontology (None if unavailable)."""
     return _load_phido(PHIPO_EXT_OBO_PATH)
@@ -244,7 +258,7 @@ class OntologyValidator:
     def __init__(self, cache: Optional[ResponseCache] = None,
                  http_get: Optional[Callable] = None,
                  phido_index=_UNSET, peco_index=_UNSET, phipo_ext_index=_UNSET,
-                 fypo_ext_index=_UNSET):
+                 fypo_ext_index=_UNSET, phipo_index=_UNSET):
         self.cache = cache
         self._http_get = http_get or _requests_get
         # Injectable for tests; falls back to the bundled ontology when not supplied.
@@ -252,6 +266,7 @@ class OntologyValidator:
         self._peco_index = peco_index
         self._phipo_ext_index = phipo_ext_index
         self._fypo_ext_index = fypo_ext_index
+        self._phipo_index = phipo_index
 
     def _get(self, url: str, params: dict, use_cache: bool):
         key = url + "?" + json.dumps(params, sort_keys=True)
@@ -287,6 +302,11 @@ class OntologyValidator:
             return ValidationResult(raw, prefix, True, "not_checked",
                                     None, None, False, None, None)
 
+        if prefix == "PHIPO":
+            # PHIPO moved offline 2026-07-17: the bundled phipo-base.obo is the release
+            # artifact — the same content OLS serves — and going local also removes OLS's
+            # hidden-deprecated-terms blind spot. See PHIPO_OBO_PATH above.
+            return self._validate_phipo(raw)
         if prefix == "PHIDO":
             # PHIDO is not on OLS4 — resolve offline against the bundled ontology.
             return self._validate_phido(raw)
@@ -327,6 +347,11 @@ class OntologyValidator:
                                     "term is obsolete; do not use")
         return ValidationResult(raw, prefix, True, "exists",
                                 label, OLS_BASE_URL, cached, _now())
+
+    def _validate_phipo(self, raw: str) -> ValidationResult:
+        """Resolve a PHIPO ID offline against the bundled release."""
+        index = _phipo_index() if self._phipo_index is _UNSET else self._phipo_index
+        return self._validate_offline(raw, "PHIPO", index, PHIPO_SOURCE, PHIPO_OBO_PATH)
 
     def _validate_phido(self, raw: str) -> ValidationResult:
         """Resolve a PHIDO ID offline against the bundled ontology."""

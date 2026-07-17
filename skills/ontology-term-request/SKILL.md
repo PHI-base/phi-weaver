@@ -102,13 +102,23 @@ them out **before** recording anything.
      --pmid <PMID>
    ```
 
-5. **Grep the edit file for an obsoleted term with the same meaning** — the search tools cannot
-   do this, because **OLS hides deprecated terms**, so a concept that once existed returns a
-   clean `no_match` and looks like a virgin gap.
+5. **Look for an obsoleted term with the same meaning.** A concept that once existed and was
+   deprecated is invisible to OLS's search, so it returns a clean `no_match` and looks like a
+   virgin gap. Since 2026-07-17 PHIPO resolves offline, so **the tool can show you**:
    ```
-   grep -i "<chemical/phenotype>" phipo-edit.owl | grep "rdfs:label"    # includes obsolete
+   python3 -m phiweaver.lookup.map_phenotype "<phrase>" --include-obsolete --rows 10
    ```
-   (Local clone: `/mnt/z/Computer/GITHUBrepositories/phipo`, file `src/ontology/phipo-edit.owl`.)
+   Obsolete hits come back flagged `⚠️ OBSOLETE — not annotatable; gap-analysis only`, and the
+   same result conveniently lists the **parallel terms** you need for the test below.
+
+   For the **unreleased** last mile — a term merged to `master` but not yet in a release, which
+   the bundled file cannot know about — grep the clone
+   (`/mnt/z/Computer/GITHUBrepositories/phipo`, `git pull` first):
+   ```
+   grep -i "<chemical/phenotype>" src/ontology/phipo-edit.owl | grep "rdfs:label"
+   ```
+   This is the "already added, don't file twice" check — **not** a source of suggestions: an
+   edit-file term is one PHI-Canto does not have, so a curator cannot annotate to it.
 
    **An obsolete term is a fossil of a past decision, and the file usually does not say which
    decision.** PHIPO's obsolete terms frequently carry no `replaced_by` or `consider` pointer, so

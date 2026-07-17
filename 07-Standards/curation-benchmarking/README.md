@@ -106,8 +106,14 @@ claude --settings 07-Standards/curation-benchmarking/benchmark-sandbox.settings.
   unsandboxed by accident.
 - Use it **only for scored benchmark drafting** — it blocks GitHub, so don't push/develop in it.
 - **Test once** after installing bwrap: in a session started with this profile, confirm
-  `python3 -m phiweaver.lookup.map_phenotype "reduced virulence"` still works (UniProt/OLS
-  reachable) and that fetching a PHI-base URL is blocked, before relying on it for scoring.
+  `python3 -m phiweaver.lookup.query_uniprot P0A7B8` still works (UniProt reachable) and that
+  fetching a PHI-base URL is blocked, before relying on it for scoring. **Note (2026-07-17):**
+  `map_phenotype` is **no longer a reachability test** — PHIPO is now bundled
+  (`data/phipo-base.obo`) and needs no network, so it works even with networking off. That is
+  the point: **PHIPO is a tool, not an answer**, and vendoring it means the allowlist needs no
+  PHIPO exception — which matters because `github.com/PHI-base` hosts both the phipo ontology
+  and the curated data repos (= the answer key), so "ontology yes, data no" can't be expressed
+  as a domain rule. GO still needs OLS.
 
 ## Report / visualisation (for the team)
 ```

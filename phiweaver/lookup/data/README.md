@@ -1,5 +1,59 @@
 # Bundled ontology data
 
+## `phipo-base.obo` — PHIPO (the main phenotype ontology)
+
+Both `map_phenotype` (phrase → candidate terms) and `validate_ontology_ids` (`PHIPO:` IDs)
+resolve **offline** against this file. **PHIPO moved off OLS on 2026-07-17** — unlike the
+other bundled ontologies below, it *is* on OLS4, so this was a deliberate switch, for three
+reasons in order of weight:
+
+1. **OLS's search hides deprecated terms**, so a concept that once existed returns a clean
+   `no_match` and looks like a virgin gap. That is exactly how PHI-base/phipo#452 was written
+   unaware `PHIPO:0000503` already existed and had been obsoleted. Here obsolete terms are in
+   the file: excluded from suggestions by default, surfaced by `map_phenotype
+   --include-obsolete` for gap analysis (see the `ontology-term-request` skill, step 5).
+2. **The benchmark sandbox.** No network during a scored run means the allowlist stays
+   default-deny with no PHIPO exception — which matters because `github.com/PHI-base` hosts
+   *both* the phipo ontology **and** the curated data repos (= the answer key), so "ontology
+   yes, data no" cannot be expressed at the domain level. **PHIPO is a tool, not an answer.**
+3. Deterministic and fast: no network flake, no cache staleness.
+
+> **⚠ Which file — `phipo-base.obo`, never `phipo-edit.owl`.** This is the **release
+> artifact**: the same content OLS serves, and approximately what PHI-Canto has loaded. It
+> answers the question a curator actually has — *can I annotate this?* The **working file**
+> `phipo-edit.owl` (in a clone of PHI-base/phipo) carries **unreleased** terms that PHI-Canto
+> does **not** have, so suggesting or validating one is a bug that looks like a feature. Use
+> the edit file for **gap analysis only**. Live example: at vendoring time the edit file held
+> `PHIPO:0001456` (PR #454) and `PHIPO:0001455`, neither in this release nor on OLS.
+> Also not `phipo.obo` (7.3M) — it inlines GO, CHEBI and other imports.
+
+- **Source**: <https://github.com/PHI-base/phipo> (`master` branch), file `phipo-base.obo` at
+  the repo root (a committed release artifact, not built locally).
+- **Downloaded**: 2026-07-17 — release **2026-03-12** (`data-version:
+  phipo/releases/2026-03-12/phipo-base.owl`), 1327 terms, 210 obsolete.
+- **Verified at vendoring:** OLS served this same release — `PHIPO:0001455` (created
+  2026-06-22) was absent from *both*, so going local lost nothing.
+
+### Refreshing
+
+The real cost of going local: OLS was self-updating, this is not. Re-download after a PHIPO
+release (terms merged to `master` are **not** enough — they must be *released*, or a curator
+cannot annotate to them):
+
+```bash
+curl -sL https://raw.githubusercontent.com/PHI-base/phipo/master/phipo-base.obo \
+  -o phiweaver/lookup/data/phipo-base.obo
+grep '^data-version' phiweaver/lookup/data/phipo-base.obo   # confirm it moved
+python3 -m unittest tests.test_map_phenotype tests.test_validate_ontology_ids   # still green
+```
+
+**Do this outside a scored benchmark run** — it is the one moment PHIPO legitimately comes
+from `github.com/PHI-base`, which a scored run must not reach. `map_phenotype` prints the
+`data-version` on every search, so a stale bundle is visible rather than silent.
+
+`map_phenotype` uses its own parser (it needs synonyms and the obsolete flag for scoring);
+`validate_ontology_ids` reuses the `_load_phido` `[Term]`-block parser.
+
 ## `phido.obo` — PHIDO (PHI-base disease-name ontology)
 
 PHIDO is **not hosted by EBI OLS4**, so `validate_ontology_ids` cannot verify PHIDO

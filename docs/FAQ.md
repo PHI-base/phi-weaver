@@ -135,10 +135,11 @@ the blind spot that OLS **hides deprecated terms**, which is how phipo#452 was w
 PHIPO:0000503 already existed. **OLS is still used for GO** (not vendorable at any sane size).
 Cost: a cruder scorer than Solr — acceptable, since L7 says OLS's ranking is untrustworthy anyway and
 a human reads every candidate, so favour recall (generous `--rows`) over ranking.
-> **Status (2026-07-17): not yet — `map_phenotype.py:46` still searches OLS.** Tracked in
-> `docs/BACKLOG.md` ("Resolve PHIPO offline + sweep for structural holes"). Delete this line when it
-> lands. PECO / PHIDO / PHIPO_EXT / FYPO_EXT are **already** local.
-**See:** `docs/BACKLOG.md` (Tooling); `phiweaver/lookup/data/README.md`;
+Bundled as `phiweaver/lookup/data/phipo-base.obo` (release 2026-03-12) since 2026-07-17 — as are
+PECO / PHIDO / PHIPO_EXT / FYPO_EXT. `map_phenotype --include-obsolete` surfaces deprecated terms for
+gap analysis; every search prints the `data-version`, so a stale bundle is visible rather than silent.
+**The clone needs refreshing** — see the next entry.
+**See:** `phiweaver/lookup/data/README.md` (refresh command); `docs/BACKLOG.md` (Tooling);
 `skills/ontology-term-request/SKILL.md` (step 5); `docs/CURATION-LESSONS.md` (L7).
 
 ### Does the local PHIPO clone need updating, and how?
