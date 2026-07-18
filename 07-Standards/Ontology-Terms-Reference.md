@@ -11,6 +11,8 @@ project: PHI-Canto
 
 Quick reference guide for ontologies and controlled vocabularies used in PHI-Canto curation. Essential for consistent annotation across the community.
 
+> For the full map of where ontology material lives (tools, bundled data, gap ledger, term-request workflow), see **[Ontology-INDEX.md](Ontology-INDEX.md)**.
+
 ## PHIPO (Pathogen-Host Interaction Phenotype Ontology)
 
 ### Structure and Organization

@@ -22,7 +22,14 @@ PHI-Canto-ready annotation **drafts** and tracks curation progress.
 - Tracking database: SQLite at `11-CLAUDE-AI/db/phi_canto_tracking.db` (gitignored).
 - At session start, read `11-CLAUDE-AI/SESSION-LOGS/INDEX.md` for prior context.
 - Key ontologies: PHIPO (phenotype), PHIDO (disease), GO, BRENDA tissue, UniProtKB, PHI-ECO
-  (experimental conditions, prefix `PECO:` — see `07-Standards/Ontology-Terms-Reference.md`).
+  (experimental conditions, prefix `PECO:`). Map of all ontology material (reference, tools,
+  bundled data, gap ledger, term requests): `07-Standards/Ontology-INDEX.md`.
+- **Indexes** (this section is the map of maps; each index below is the map for its area):
+  - `skills/REGISTRY.md` — reusable curation modules (skill → backing tool → tests); *generated*
+  - `07-Standards/Ontology-INDEX.md` — where all ontology material lives (reference, tools, data, gaps)
+  - `07-Standards/curation-examples/INDEX.md` — the gold-standard curation-example library
+  - `11-CLAUDE-AI/SESSION-LOGS/INDEX.md` — prior session context (read at session start)
+  - `content-links/literature-index.md` — the external literature corpus
 - When a recurring question gets resolved, add a short Q/A + a `See:` pointer to
   `docs/FAQ.md` (a lookup layer over the canonical docs — keep answers short, don't duplicate).
 
