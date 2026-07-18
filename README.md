@@ -1,8 +1,8 @@
 # PHI-Weaver
 
-🧬 **AI-Powered Pathogen-Host Interaction Curation System**
+🧬 **AI-Assisted Ontology-Based Curation and Term-Suggestion Tool for Pathogen-Host Interactions**
 
-A comprehensive framework for automating [PHI-base](http://phi-base.org/) and [PHI-Canto](https://curation.phi-base.org/) curation workflows using Large Language Models and intelligent automation tools.
+A comprehensive framework that assists [PHI-base](http://phi-base.org/) and [PHI-Canto](https://curation.phi-base.org/) curation workflows using Large Language Models and intelligent automation tools, keeping the curator in the loop.
 
 > 📂 **New colleague? Start with [docs/STORAGE-CONFIGURATION.md](docs/STORAGE-CONFIGURATION.md)** — it explains
 > where the pipeline reads/writes literature files and how to point it at your own location
