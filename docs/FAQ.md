@@ -145,6 +145,29 @@ standalone file in `scripts/`.) Today phiweaver has 7 packages holding ~25 modul
 Current solo workflow commits **directly to `main`** rather than using feature branches + pull
 requests. Pushing to `main` can trip an agent safety guardrail; the curator authorises the push
 (e.g. `! git push origin main`). Revisit if collaborators need review-before-merge.
+**Keep commits simple:** a coherent unit of work is **one commit** — don't split into
+micro-commits or agonise over logical separation unless asked; stage only the task's files
+(leave unrelated dirty files like `.obsidian/` alone).
+**See:** `AGENTS.md` §5 (File Safety Rules).
+
+### How should I link between things — `[[wikilinks]]` or markdown paths?
+By **what you point at**, not by file. An Obsidian `[[slug]]` wikilink for a **note in the same
+store** (vault → vault, or Claude-memory → memory); a markdown path link `[path](path)` (or a
+backtick path) for a **code/data/config file, or anything opened by path** — including from
+AI-facing files like `AGENTS.md`. **Never `[[link]]` across stores:** Claude's memory lives
+*outside* the vault (`~/.claude/.../memory/`), so a vault note that `[[links]]` a memory slug is a
+dangling link in Obsidian — restate it in prose or link the real file/URL.
+**See:** `AGENTS.md` §1 (Link conventions).
+
+### Why were the two `INDEX.md` files renamed, and how should I name notes?
+Obsidian labels graph nodes, the quick-switcher, and `[[links]]` by **basename**, so two
+`INDEX.md` files showed as one ambiguous "INDEX" node. Give every explorable note a
+**vault-unique, descriptive basename**; for a folder's index/meta note, prefix the subject
+(`Curation-Examples-INDEX.md`, not `INDEX.md`). `SKILL.md` / `README.md` are exempt convention
+files — **don't rename them**; hide them from the graph with a view filter (`-file:SKILL
+-file:README`). A smoke-test guard (`python3 -m phiweaver.vault_names --check`) fails on any new
+non-exempt collision.
+**See:** `AGENTS.md` §1 (Note naming); `phiweaver/vault_names.py`.
 
 ### Can PHI-Weaver help with PHIPO ontology development?
 **Yes, within limits.** Curation is the best gap detector — it meets gaps on real papers with the
