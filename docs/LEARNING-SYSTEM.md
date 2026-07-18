@@ -4,7 +4,17 @@ type: documentation
 tags: [docs]
 project: PHI-Weaver
 ---
-
+```table-of-contents
+title: 
+style: nestedList # TOC style (nestedList|nestedOrderedList|inlineFirstLevel)
+minLevel: 0 # Include headings from the specified level
+maxLevel: 0 # Include headings up to the specified level
+include: 
+exclude: 
+includeLinks: true # Make headings clickable
+hideWhenEmpty: false # Hide TOC if no headings are found
+debugInConsole: false # Print debug info in Obsidian console
+```
 # PHI-Weaver Learning System — dynamic learning & relearning
 
 **Purpose of this doc:** an explicit, diagram-ready description of how PHI-Weaver improves over
@@ -32,6 +42,11 @@ time*, **not** by fine-tuning a model. Consequences that shape the whole design:
 - `A3` **Freeform notes** — meetings / email; weakest provenance (paraphrase, no permalink).
 
 **B. Intake & triage**
+- `B0` **Inbox drop zone + triage skill** — `00-Inbox/for-weaver/` (raw, non-authoritative drop
+  zone, outside the drafting/benchmark read path) processed by the `inbox-triage` skill. The
+  concrete front door for `A2`/`A3` (and dropped `A1` reviews): identify source + provenance, check
+  whether the point is already covered, and **propose** a `B1` row + the durable edit for human
+  sign-off. Processed items move to `done/` with their `L`-id. Never auto-applies.
 - `B1` **Curation-lessons ledger** — `docs/CURATION-LESSONS.md`: typed (`issue` / `paper-review` /
   `meeting` / `email` / `note`), **append-only**, stable IDs (`L1`, `L2`, …).
 - `B2` **Triage** — classify each lesson: general rule vs. tool/ontology gap vs. worked example vs.
@@ -63,7 +78,10 @@ time*, **not** by fine-tuning a model. Consequences that shape the whole design:
   drafts (recuration-comparison workflow, `docs/BACKLOG.md`).
 
 ## Flows (edges — use these directly for the diagram)
-- `A1, A2, A3 → B1` — feedback lands in the ledger (typed).
+- `A2, A3 → B0` — dropped feedback lands raw in the inbox; `inbox-triage` processes it. (A dropped
+  `A1` review can enter the same way.)
+- `B0 → B1` — the skill proposes a typed ledger row (after the already-covered check), on human
+  sign-off. `A1 → B1` a curator review can also be logged directly.
 - `B1 → B2` — each logged lesson is triaged.
 - `B2 → C1` general rule · `B2 → C2` workflow change · `B2 → C3` worked example · `B2 → C4` gap ·
   `B2 → D7` "paper-specific only → fix this draft, not the pipeline".
@@ -96,6 +114,7 @@ flowchart TB
     A3[A3 Freeform notes\nmeetings / email]
   end
 
+  B0[/B0 Inbox drop zone + inbox-triage\n00-Inbox/for-weaver → propose row/]
   B1[[B1 Curation-lessons ledger\nCURATION-LESSONS.md\ntyped, append-only, IDs]]
   B2{B2 Triage the lesson}
 
@@ -114,8 +133,9 @@ flowchart TB
   D6-->D7[DRAFT + entry queue\n.md + .docx]
 
   A1-->B1
-  A2-->B1
-  A3-->B1
+  A2-->B0
+  A3-->B0
+  B0-->|sign-off|B1
   B1-->B2
   B2-->|general rule|C1
   B2-->|workflow change|C2
@@ -142,6 +162,7 @@ flowchart TB
 ## Node → file index
 | Node | Implemented by |
 | --- | --- |
+| B0 inbox + triage | `00-Inbox/for-weaver/` (+ `README.md`) + `skills/inbox-triage/SKILL.md` |
 | B1 ledger | `docs/CURATION-LESSONS.md` |
 | C1 conventions | `07-Standards/PHI-Canto-Curation-Conventions.md` |
 | C2 skills | `skills/` (paper-triage, uniprot-lookup, genotype-creation, phenotype-annotation, phipo-mapping, gene-for-gene, curation-qc, canto-entry-queue, benchmark, gold-standard-import) |
