@@ -90,6 +90,10 @@ PHI-Canto-ready annotation **drafts** and tracks curation progress.
 - Git: commit when asked; pushing to `PHI-base/phi-weaver` is allowed. On the `z:` Windows
   mount, `git config` / `git remote set-url` fail (lock-file chmod) — edit `.git/config`
   directly.
+- **Keep commits simple.** A coherent unit of work is **one commit** — don't split into
+  micro-commits or agonise over logical separation unless asked. Commit straight to `main`;
+  stage only the task's files (leave unrelated dirty files like `.obsidian/` alone). Short
+  imperative subject; add a brief body only when the *why* isn't obvious.
 
 ## 6. Reusable Workflows (skills)
 
