@@ -4,7 +4,8 @@ type: quick-reference
 tags: [ontology, phipo, go, phido, reference-card]
 project: PHI-Canto
 ---
-
+```table-of-contents
+```
 # Common Ontology Terms - Quick Reference
 
 ## 🧪 PHIPO: Single-Species Phenotypes

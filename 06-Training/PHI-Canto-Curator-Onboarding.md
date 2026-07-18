@@ -4,7 +4,8 @@ type: training
 tags: [onboarding, curator-training, phi-canto]
 project: PHI-Canto
 ---
-
+```table-of-contents
+```
 # PHI-Canto Curator Onboarding Guide
 
 ## Welcome to PHI-Canto Curation

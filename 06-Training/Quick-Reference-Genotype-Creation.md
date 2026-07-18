@@ -4,7 +4,8 @@ type: quick-reference
 tags: [genotype, alleles, reference-card]
 project: PHI-Canto
 ---
-
+```table-of-contents
+```
 # Genotype Creation - Quick Reference
 
 ## 🧬 Single Allele Creation

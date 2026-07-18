@@ -4,7 +4,8 @@ type: documentation
 tags: [docs]
 project: PHI-Weaver
 ---
-
+```table-of-contents
+```
 # Curation Lessons — feeding curator feedback back into weaver
 
 **What this is:** a running log of **general** curation lessons — rules that should improve
