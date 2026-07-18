@@ -1,26 +1,8 @@
 # PHI-Canto Vault .gitignore - Colleague Sharing Configuration
 # =============================================================
 
-# OBSIDIAN PERSONAL CONFIGURATIONS
-# Exclude all personal workspace and plugin data
-.obsidian/workspace.json
-.obsidian/workspace-mobile.json
-.obsidian/cache
-.obsidian/graph.json
-.obsidian/starred.json
-.obsidian/bookmarks.json
-
-# Plugin directories and data files - EXCLUDE ALL for colleague sharing
-.obsidian/plugins/
-.obsidian/themes/
-
-# Personal Obsidian settings — local-only (change on every use / per-machine)
-.obsidian/app.json
-.obsidian/community-plugins.json
-
-# Keep only the stable shared settings (community can configure their own)
-!.obsidian/core-plugins.json
-!.obsidian/core-plugins-migration.json
+# OBSIDIAN — ignore the entire config dir (per-machine; each user configures their own)
+.obsidian/
 
 # Obsidian plugin-managed personal notes (Daily Notes, etc.) — local-only scratch
 __Obsidian-SYSTEM/
