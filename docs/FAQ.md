@@ -296,3 +296,44 @@ and (b) it lives on GitHub, already a **benchmark-leakage** source, so it must s
 blind/scored runs. Instead: mine a **resolved** decision → write it into the owning
 skill/standard/FAQ with a `See:` issue-number pointer → the pipeline reads the curated convention,
 never the raw issue. *(This FAQ + `docs/BACKLOG.md` are the record for this decision.)*
+
+### What is end-to-end (E2E) testing here, and how is it different from the smoke/unit tests?
+Three different questions. **Unit** (`tests/`): is one function correct in isolation? **Smoke**
+(`phiweaver.smoke`): on a fresh checkout, is the whole thing *alive* — imports, wiring, storage,
+DB? **E2E** (`scripts/e2e/`): does the *real flow*, run start to finish, produce the *correct
+final output*? In one line — smoke checks the machine turns on; E2E checks it makes the right
+product. It's good for failures that live in the **whole chain** (an unresolved accession, an
+obsolete PHIPO/PHIDO term, a malformed Canto block) that a unit test on one prompt won't catch.
+Note a distinction: telling Claude "curate paper X" is an end-to-end **run**; it's a **test** only
+when a harness launches it unattended and reduces it to a pass/fail against a known answer. A
+gold standard is only **half** of an E2E test — the answer key; the automated *producer* is the
+other half (the reason the draft step had to be "wrapped").
+**See:** `phiweaver/smoke.py`; `scripts/e2e/`; `skills/benchmark/SKILL.md`.
+
+### What does `scripts/e2e/` do, and what does its score actually measure?
+`e2e-curate.sh <paper.md> <gold.md>` launches a headless, blind-sandboxed `claude -p` to curate
+one paper, prefills the scorecard, then runs `score_against_gold.py` — a stdlib-only
+precision/recall/F1 over the identifiers (PHIPO/GO/PHIDO/FYPO/PECO/UniProtKB); exit code is the
+pass/fail on overall F1. **It measures identifier overlap only** (did it find the right genes,
+phenotypes, disease terms, without inventing any) — the cheap, CI-able *floor*. It does **not**
+judge curation nuance (genotype correctness, evidence codes, extensions, annotation-type
+attachment), so a perfect ID F1 is **not** a flawless curation — that deeper layer is the human
+scorecard + the judge-in-design. Verified end-to-end on PMID39787257 (FgKnr4): 16/16 ids, F1
+1.00. **Gotcha:** the blind sandbox needs **`socat` as well as `bubblewrap`** (`sudo apt install
+socat`) or it refuses to start — this bites the `benchmark` skill too.
+**See:** `scripts/e2e/e2e-curate.sh`; `07-Standards/curation-benchmarking/README.md`;
+`docs/judge-rules-PROPOSED-for-review.md`.
+
+### Can I use the E2E harness to curate real new papers, or is it test-only?
+The drafting *engine* is production-usable; the *script* is test-shaped (it requires a gold
+standard and ends by scoring, which a new paper has no answer for). For **real curation at small
+volume, just use the Claude CLI** — it already is the agent that runs the skills; the wrapper only
+matters when you want it unattended or as a scored test. Run it in a **normal (un-sandboxed)**
+session so it *can* use the curation-example library + PHI-base for retrieval (the blind sandbox is
+a testing constraint), and remember the output is a **review-ready draft, not an auto-submission** —
+a human still confirms flagged items and enters it into PHI-Canto. To **batch ~10 papers over
+several days without hitting usage limits**, use a drop-folder not a scheduler: PDFs into an inbox,
+drafts land in an outbox, **"done" = the draft is in the outbox** (that folder is the progress
+tracker), do a fixed few per day and come back tomorrow — resumable, and no rate-limit code to get
+stuck. For consistency across days, capture the instruction once as a small `batch-curate` skill.
+**See:** `scripts/e2e/`; `skills/canto-entry-queue/SKILL.md`.
