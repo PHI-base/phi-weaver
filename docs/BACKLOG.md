@@ -1,3 +1,10 @@
+---
+created: 2026-07-03
+type: documentation
+tags: [docs]
+project: PHI-Weaver
+---
+
 # PHI-Weaver Backlog
 
 Durable to-do / known-gaps list. (The harness's in-session task tools don't persist across

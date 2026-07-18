@@ -1,3 +1,10 @@
+---
+created: 2026-04-18
+type: standards
+tags: [standards]
+project: PHI-Canto
+---
+
 process_term 	
 term_id	term_name
 GO:0140404	effector-mediated perturbation of host innate immune response by symbiont

@@ -1,3 +1,10 @@
+---
+created: 2026-07-06
+type: documentation
+tags: [docs]
+project: PHI-Weaver
+---
+
 # Build spec — Route 1: PHI-Canto assisted-entry queue
 
 **Status:** built, then simplified. Route 1 of [[CANTO-SUBMISSION-ROUTES]] (recommended first

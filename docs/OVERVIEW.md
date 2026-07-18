@@ -1,3 +1,10 @@
+---
+created: 2026-06-11
+type: documentation
+tags: [docs]
+project: PHI-Weaver
+---
+
 # PHI-Weaver — One-Page Overview
 
 **What it is:** an AI-assisted biocuration toolkit for the **PHI-base / PHI-Canto**

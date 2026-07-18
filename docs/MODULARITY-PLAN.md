@@ -1,3 +1,10 @@
+---
+created: 2026-06-11
+type: documentation
+tags: [docs]
+project: PHI-Weaver
+---
+
 # PHI-Weaver Modularity & Refactor Plan
 
 **Status:** ✅ complete — all phases P1–P7 landed 2026-06-11 · **Created:** 2026-06-11

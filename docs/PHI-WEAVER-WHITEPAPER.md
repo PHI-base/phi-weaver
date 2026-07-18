@@ -1,3 +1,10 @@
+---
+created: 2026-07-12
+type: documentation
+tags: [docs]
+project: PHI-Weaver
+---
+
 # PHI-Weaver: An AI-Assisted Biocuration Toolkit for Pathogen–Host Interaction Databases
 
 *A descriptive overview: what the system is, why it exists, how it was built, and what it consumes and produces.*

@@ -1,3 +1,10 @@
+---
+created: 2026-07-15
+type: standards
+tags: [standards]
+project: PHI-Canto
+---
+
 # PHI-Canto Curation Conventions (from the team decision log)
 
 **What this is:** durable curation rules the PHI-base/PHI-Canto team settled through

@@ -1,3 +1,10 @@
+---
+created: 2026-05-07
+type: reference
+tags: [operations]
+project: PHI-Weaver
+---
+
 # PHI-Canto Automation Guide
 
 > ℹ️ Project rules and conventions live in **[AGENTS.md](../AGENTS.md)** (the source of

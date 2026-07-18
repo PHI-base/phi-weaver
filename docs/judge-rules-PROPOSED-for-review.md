@@ -1,3 +1,10 @@
+---
+created: 2026-07-09
+type: documentation
+tags: [docs]
+project: PHI-Weaver
+---
+
 # Proposed judge rules — PENDING CURATOR REVIEW (not yet authoritative)
 
 These rules were suggested for the LLM-judge core primer (from a ChatGPT review of the

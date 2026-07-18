@@ -1,3 +1,10 @@
+---
+created: 2026-07-10
+type: standards
+tags: [standards]
+project: PHI-Canto
+---
+
 # Completeness-scoring prompt (for the GPT reviewer)
 
 Use this when you want a completeness score but have **no finished PHI-Canto gold standard** —

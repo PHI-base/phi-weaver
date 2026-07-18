@@ -1,3 +1,10 @@
+---
+created: 2026-07-12
+type: training
+tags: [training]
+project: PHI-Canto
+---
+
 # Reviewing PHI-Weaver Drafts — a guide for collaborating biocurators
 
 *You receive PHI-Weaver drafts and enter the curation into PHI-Canto yourself. This guide explains what the draft contains, how to work through it, and — most importantly — how to read the flags that tell you where the tool stopped and your judgement takes over. It assumes you already know PHI-Canto curation; it does not teach the biology or the tool's internals.*

@@ -1,3 +1,10 @@
+---
+created: 2026-05-07
+type: reference
+tags: [tooling]
+project: PHI-Weaver
+---
+
 # PDF-Convert Skill Documentation
 
 ## Overview

@@ -1,3 +1,10 @@
+---
+created: 2026-07-02
+type: documentation
+tags: [docs]
+project: PHI-Weaver
+---
+
 # PHI-Weaver Plug-in Architecture
 
 **Status:** design / strawman — not yet implemented · **Created:** 2026-07-02

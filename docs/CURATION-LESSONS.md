@@ -1,3 +1,10 @@
+---
+created: 2026-07-15
+type: documentation
+tags: [docs]
+project: PHI-Weaver
+---
+
 # Curation Lessons — feeding curator feedback back into weaver
 
 **What this is:** a running log of **general** curation lessons — rules that should improve

@@ -1,3 +1,10 @@
+---
+created: 2026-05-07
+type: documentation
+tags: [docs]
+project: PHI-Weaver
+---
+
 # PDF to Obsidian Converter - Direct Usage
 
 Simple, clean access to the advanced PDF converter without complex frameworks.

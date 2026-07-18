@@ -1,3 +1,10 @@
+---
+created: 2026-07-05
+type: documentation
+tags: [docs]
+project: PHI-Weaver
+---
+
 # Benchmark runbook — test run, 10 already-curated articles (2026-07-05)
 
 A short, concrete runbook for a **first benchmark**: curate 10 papers with phiweaver,

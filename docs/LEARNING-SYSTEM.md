@@ -1,3 +1,10 @@
+---
+created: 2026-07-15
+type: documentation
+tags: [docs]
+project: PHI-Weaver
+---
+
 # PHI-Weaver Learning System — dynamic learning & relearning
 
 **Purpose of this doc:** an explicit, diagram-ready description of how PHI-Weaver improves over

@@ -1,3 +1,10 @@
+---
+created: 2026-07-06
+type: documentation
+tags: [docs]
+project: PHI-Weaver
+---
+
 # Getting phiweaver drafts into PHI-Canto — routes & recommendation
 
 **Status:** planning note (2026-07-06). No code written yet. Decision pending on Canto server access.

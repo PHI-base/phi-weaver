@@ -1,3 +1,10 @@
+---
+created: 2026-07-15
+type: standards
+tags: [standards]
+project: PHI-Canto
+---
+
 # PHI-Canto curation framework — Cuzick et al. 2023 (reference extract)
 
 **Authoritative published source for the curation model this project implements.** This is

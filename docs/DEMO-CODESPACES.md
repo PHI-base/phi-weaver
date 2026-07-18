@@ -1,3 +1,10 @@
+---
+created: 2026-06-10
+type: documentation
+tags: [docs]
+project: PHI-Weaver
+---
+
 # 🚀 Demo: Curate an Article in GitHub Codespaces
 
 This walkthrough lets a colleague run the curation pipeline end-to-end **in the browser**,

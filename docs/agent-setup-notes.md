@@ -1,3 +1,10 @@
+---
+created: 2026-06-10
+type: documentation
+tags: [docs]
+project: PHI-Weaver
+---
+
 # Agent Setup Notes
 
 How PHI-Weaver's portable agent-instruction structure is organised, and how each tool

@@ -1,3 +1,10 @@
+---
+created: 2026-04-11
+type: training
+tags: [training]
+project: PHI-Canto
+---
+
 
 ##### You said:
 

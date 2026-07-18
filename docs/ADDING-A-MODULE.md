@@ -1,3 +1,10 @@
+---
+created: 2026-06-11
+type: documentation
+tags: [docs]
+project: PHI-Weaver
+---
+
 # Adding a specialised curation module
 
 PHI-Weaver is built so a new curation capability plugs in by following one **module

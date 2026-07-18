@@ -1,3 +1,10 @@
+---
+created: 2026-07-09
+type: documentation
+tags: [docs]
+project: PHI-Weaver
+---
+
 # PHI-Weaver FAQ
 
 * A human-facing record only*

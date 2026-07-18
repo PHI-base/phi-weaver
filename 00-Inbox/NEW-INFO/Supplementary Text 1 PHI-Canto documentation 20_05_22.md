@@ -1,3 +1,10 @@
+---
+created: 2026-05-07
+type: inbox
+tags: [inbox]
+project: PHI-Canto
+---
+
 # PHI-Canto documentation
 
 This document contains the new documentation pages that were written for PHI-Canto (as of 5 May 2022). Note that most of the pages in PHI-Canto’s documentation are reused from the version of Canto used by PomBase, and those pages are not included here. The complete documentation can be viewed online at <https://canto.phi-base.org/docs/index>.

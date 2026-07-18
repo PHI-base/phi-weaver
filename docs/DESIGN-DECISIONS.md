@@ -1,3 +1,10 @@
+---
+created: 2026-07-03
+type: documentation
+tags: [docs]
+project: PHI-Weaver
+---
+
 # PHI-Weaver — Design Decisions & System Record
 
 **Purpose:** the *why* behind PHI-Weaver — the key design decisions and their rationale, plus a
