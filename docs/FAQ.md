@@ -176,6 +176,21 @@ files — **don't rename them**; hide them from the graph with a view filter (`-
 non-exempt collision.
 **See:** `AGENTS.md` §1 (Note naming); `phiweaver/vault_names.py`.
 
+### Can I use Obsidian content plugins (Table of Contents, Daily Notes, Calendar…)?
+**Yes — content-*adding* plugins are safe.** Weaver reads files as text and never executes
+fenced blocks, and its frontmatter parsers **stop at the closing `---`**, so an inert block like
+```` ```table-of-contents ```` beneath the frontmatter is ignored; the contract checks only parse
+`SKILL.md` / curation-example frontmatter, never note bodies. **Two cautions:** (1) plugin-rendered
+blocks (a TOC) only render *in Obsidian* — on GitHub or inside a generated bundle they show as an
+empty code block, so keep them out of GitHub-facing docs and any source doc a generator concatenates;
+(2) never add plugin content to the **generated** files (`skills/REGISTRY.md`, the two `*-INDEX.md`,
+`Article-Registry.md`, `DEVELOPMENT-TIMELINE.md`) — regeneration wipes it. **Avoid auto-rewriter
+plugins** (linters / formatters / front-matter managers) on generated or contract files: they can
+clobber the indexes or reformat contract frontmatter and fail `--check`. Daily Notes / Calendar / TOC
+add content, they don't rewrite it — fine. `smoke_test.py` catches any contract breakage.
+*(This FAQ is the canonical note for this decision.)*
+**See:** `phiweaver/registry.py` (`parse_frontmatter`); `scripts/smoke_test.py`.
+
 ### Can PHI-Weaver help with PHIPO ontology development?
 **Yes, within limits.** Curation is the best gap detector — it meets gaps on real papers with the
 evidence in hand — so weaver **records** them (`docs/ontology-gaps.jsonl`, ranked by how many papers
