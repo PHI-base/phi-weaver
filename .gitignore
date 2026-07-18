@@ -20,6 +20,9 @@
 !.obsidian/core-plugins-migration.json
 !.obsidian/community-plugins.json
 
+# Obsidian plugin-managed personal notes (Daily Notes, etc.) — local-only scratch
+__Obsidian-SYSTEM/
+
 # Temporary files and trash
 .tmp/
 *.tmp
