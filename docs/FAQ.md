@@ -155,6 +155,30 @@ worked example. It does **not** design terms otherwise, and it **cannot decide**
 proof of a gap, so a human rules on every request. Most "gaps" so far were wording or obsoletion.
 **See:** `skills/ontology-term-request/SKILL.md` (the two routes, and the checks before either).
 
+### Could weaver ever develop PHIPO terms without a human — can recurrence confer legitimacy?
+**Partly, and this is the real frontier — but the honest answer is "human ratifies patterns, not
+terms," not "no human."** Curating at scale manufactures **warrant**: recurrence across independent
+papers (`docs/ontology-gaps.jsonl`, ranked by demand) is genuine evidence a concept is real and
+in-demand, and that is a large share of what an editorial review actually checks. So warrant is
+automatable, and it shrinks the human's job. But recurrence confers warrant for **existence and
+demand**, not for **design**: frequency is orthogonal to *granularity* (N mentions don't say whether
+"X" is one term, three conflated, or a subtype), to *placement* (the leaf recurs; the parent doesn't
+fall out of a count), and to *scope* (a molecular readout mentioned 50 times is still a qualifier, not
+a phenotype — high recurrence just lends a category error false confidence). Worse, a **systematic**
+bias produces a *consistent* false positive that looks *more* legitimate, not less: if a
+species-specific phrasing keeps evading the L2 retry, weaver sees a recurring "gap" that is a recurring
+*retry-failure*, and mining our own curations for patterns risks **manufactured consensus** —
+recurrence that reflects weaver's phrasing, not the biology. So `no_match` at scale is still not proof
+of a gap. The constructive move: recurrence should **promote a pattern into a ratified template** — a
+human rules **once**, at the pattern level (as in phipo#454's sibling grid), and matching instances
+then auto-mint with no human per term. That moves the decision from **per-term** to **per-pattern**,
+rarely — autonomy from the curator's chair while keeping an accountable ratifier where a shared
+standard needs one. In one line: weaver can automate a term's **generation**; legitimacy is
+*granted*, not computed, and dropping the last guardrail just relabels the model as the authority
+someone still has to choose to trust.
+**See:** the entry above; `docs/CURATION-LESSONS.md` (L2, L7); `skills/ontology-term-request/SKILL.md`
+(the pattern-extension route).
+
 ### Does PHIPO lookup use OLS or a local copy?
 **Local — from two different files, and the distinction matters.** `phipo-base.obo` (the **release
 artifact**) answers "give me a term for this phrase" and validates IDs, because that is the question
