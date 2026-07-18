@@ -5,7 +5,7 @@ the curation engine. The engine is the importable [`phiweaver/`](../phiweaver/RE
 package (`lookup`, `tracking`, `pipeline`, `pdf`, `common`, `registry`).
 
 ## What lives here
-- **`SESSION-LOGS/`** — Claude Code session history (read `SESSION-LOGS/INDEX.md` at the
+- **`SESSION-LOGS/`** — Claude Code session history (read `SESSION-LOGS/Session-Logs-INDEX.md` at the
   start of each session).
 - **`vault-ops/`** — the **vault-operational tools**, grouped in one place:
   - `generate_dev_timeline.py` / `update_timeline_incremental.py` — build the development

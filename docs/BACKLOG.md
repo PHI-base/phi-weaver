@@ -290,6 +290,32 @@ decision and re-creating the term silently reopens it. See the `ontology-term-re
   she would want it bounded? **Blocks:** nothing — the skill has a working default. Supersede the
   "Two routes" section + `## Purpose` guardrail in `skills/ontology-term-request/SKILL.md` when she
   answers. Worked context: PR #454 / issue #452 (see "Waiting for response").
+- [ ] **Curator-triggered term-design proposals → GitHub issue** (requested 2026-07-17; **sequence
+  after the ruling above**, which sets how much design a proposal should carry). Wanted: *"when I
+  trigger it, PHIPO design suggestions are obtained, then logged as a GitHub issue for human curator
+  review."* This fills the case the skill currently does **not** cover — it is written as a binary
+  (pattern extension → PR; everything else → evidence-only issue) and is silent on *"the curator
+  explicitly asked for a draft anyway"*.
+
+  **Why the trigger is the whole design.** The guardrail's principle is "do not **assert** in-silico
+  conclusions as fact" (the ISS reasoning) — not "never write a proposal". An explicit trigger makes
+  the output a **proposal the curator requested**, not something weaver volunteered; the issue keeps
+  the **editors deciding**. So the guardrail survives intact: weaver still never files design unasked.
+  PHIPO's `CONTRIBUTING.md` already asks requesters for "label, definition, references, position in
+  hierarchy", so the *artifact* is what the ontology team wants anyway.
+
+  **Design notes (for whoever builds it):**
+  - **Extend `ontology-term-request`, don't fork it** — as a third route. Steps 1–7 (retries, the
+    obsolete + parallel-terms checks, the ledger dedup) must run **first and unchanged**: on this
+    session's evidence the majority of "gaps" are wording or obsoletion, so a proposal drafted before
+    those checks would mostly be **designing terms that already exist**. That is the main failure mode.
+  - **State the confidence honestly, and what it was patterned on** — or that there was **no pattern**.
+    A pattern extension has zero degrees of freedom (PR #454); outside that, weaver is *guessing* at
+    the parent and the genus-differentia definition, which is exactly the editors' expertise. A
+    confident-looking draft with no pattern behind it is the dangerous artifact.
+  - **Issue, not PR.** PRs are for pattern extensions only (James's offer). A design proposal is a
+    claim on the editors' judgement, so it goes where judgement lives.
+  - Record the issue URL back against the gap (`gap_log record --filed`) so it stops resurfacing.
 - [ ] **Format convergence** — phiweaver *drafts* use the example-template body shape while *gold
   standards* use PHI-Canto's structure; converge them (toward PHI-Canto) so retrieval and
   benchmarking compare like-for-like. *Partly done 2026-07-04*: the example `annotation_types`
@@ -306,7 +332,7 @@ decision and re-creating the term silently reopens it. See the `ontology-term-re
   topic; `physical_interaction` is one of the 12 tracked annotation types.
 - [x] **All 12 PHI-Canto annotation types covered** (2026-07-04) — the gold-standard library now
   has ≥1 validated example for every PHI-Canto annotation type (`annotation_types` vocabulary in
-  `TAGS.md`). Live tracker: the auto-generated "Coverage" table in `curation-examples/INDEX.md`
+  `TAGS.md`). Live tracker: the auto-generated "Coverage" table in `curation-examples/Curation-Examples-INDEX.md`
   shows **12/12**. Five examples: PMID:26177154, 39787257, 35468894, 23498959, 37177781. Ongoing:
   keep adding examples for **depth** (more cases per type / more pathosystems), not breadth.
 - [ ] **Recuration-comparison workflow** (biocurator vs phiweaver; future). Distinct from the

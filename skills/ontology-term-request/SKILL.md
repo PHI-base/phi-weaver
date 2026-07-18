@@ -34,8 +34,8 @@ Which one depends on **one test: does an existing sibling set already fix every 
 and `increased`, not `absent`) has no degrees of freedom left: the parent is the siblings'
 parent, the definition is a sibling's definition with one word swapped, the label and namespace
 follow. That is **copying a human's earlier decision, not making a new one**, and it is the case
-James Seager explicitly asked for as a PR against `phipo-edit.owl` (see
-[[phipo-local-clone]] — PRs target `master`; **CI runs the full ODK QC on the PR, so no local
+James Seager explicitly asked for as a PR against `phipo-edit.owl` (the PHIPO repo
+`github.com/PHI-base/phipo` — PRs target `master`; **CI runs the full ODK QC on the PR, so no local
 `robot`/ODK install is needed** — confirmed green on PR #454, 2026-07-17; start from the wording
 of the existing definition). **Step 5 is mandatory before any PR** — it is what distinguishes a
 pattern with a hole from a pattern a human deliberately shaped.

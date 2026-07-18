@@ -3,7 +3,7 @@
 phiweaver.curation_examples — the validated curation-example library.
 
 Reads the human-validated worked examples under ``07-Standards/curation-examples/`` (each a
-markdown file with machine-readable tag frontmatter) and regenerates ``INDEX.md`` — an
+markdown file with machine-readable tag frontmatter) and regenerates ``Curation-Examples-INDEX.md`` — an
 enumerable, topic-grouped index. phiweaver retrieves the best-matching examples from this
 library as references when drafting a new curation of a similar case; a curator browses the
 same index.
@@ -17,8 +17,8 @@ Tag values come from ``07-Standards/curation-examples/TAGS.md`` (a small control
 vocabulary); the shape of an example is in ``_TEMPLATE.md``.
 
 Usage (from the repo root):
-    python3 -m phiweaver.curation_examples          # rewrite INDEX.md
-    python3 -m phiweaver.curation_examples --check   # verify INDEX current + contract (no writes)
+    python3 -m phiweaver.curation_examples          # rewrite Curation-Examples-INDEX.md
+    python3 -m phiweaver.curation_examples --check   # verify index current + contract (no writes)
 """
 
 from __future__ import annotations
@@ -31,10 +31,10 @@ from phiweaver import repo_root
 from phiweaver.registry import parse_frontmatter   # reuse the frontmatter parser
 
 EXAMPLES_DIR = "07-Standards/curation-examples"
-INDEX_PATH = EXAMPLES_DIR + "/INDEX.md"
+INDEX_PATH = EXAMPLES_DIR + "/Curation-Examples-INDEX.md"
 REQUIRED_FIELDS = ("type", "status", "topics", "source")
 VALID_STATUS = ("draft", "validated")
-_SKIP_NAMES = {"INDEX.md", "TAGS.md"}
+_SKIP_NAMES = {"Curation-Examples-INDEX.md", "TAGS.md"}
 
 # PHI-Canto's own annotation types — the coverage target for the gold-standard library.
 # (name, sessions-with-this-type) from canto.phi-base.org/tools/sessions_with_type_list;
@@ -213,7 +213,7 @@ def check(root: Optional[Path] = None) -> List[str]:
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(description="PHI-Weaver curation-example index.")
     p.add_argument("--check", action="store_true",
-                   help="validate the contract and that INDEX.md is current (no writes)")
+                   help="validate the contract and that the index is current (no writes)")
     args = p.parse_args(argv)
 
     root = repo_root()

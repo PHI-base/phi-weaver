@@ -218,14 +218,14 @@ The system uses SQLite for tracking:
 ### **Technical Documentation**
 - **[PDF Conversion System](11-CLAUDE-AI/pdf-convert-skill/PDF-CONVERT-SKILL.md)**
 - **[Tracking Database (SQLite)](11-CLAUDE-AI/db/README.md)** - schema, scripts, and example queries
-- **[Session Logs](11-CLAUDE-AI/SESSION-LOGS/INDEX.md)** - Development history and context
+- **[Session Logs](11-CLAUDE-AI/SESSION-LOGS/Session-Logs-INDEX.md)** - Development history and context
 
 ## 🤝 **Contributing**
 
 We welcome contributions to improve PHI-Weaver!
 
 ### **Getting Started**
-1. **Read the session logs** in `11-CLAUDE-AI/SESSION-LOGS/INDEX.md` for context
+1. **Read the session logs** in `11-CLAUDE-AI/SESSION-LOGS/Session-Logs-INDEX.md` for context
 2. **Check the development timeline** for current priorities
 3. **Review the architecture documentation** in `CLAUDE.md`
 

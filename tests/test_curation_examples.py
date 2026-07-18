@@ -51,7 +51,7 @@ class DiscoverTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             d = write_dir(tmp, {"a.md": EXAMPLE_A, "b.md": EXAMPLE_B,
                                 "other.md": NOT_AN_EXAMPLE, "_TEMPLATE.md": EXAMPLE_A,
-                                "INDEX.md": "x", "TAGS.md": "x"})
+                                "Curation-Examples-INDEX.md": "x", "TAGS.md": "x"})
             names = sorted(e.name for e in ce.discover_examples(d))
             self.assertEqual(names, ["a", "b"])  # template/index/tags/other excluded
 

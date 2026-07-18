@@ -17,7 +17,8 @@ the registry is authoritative.
 Ontologies in scope: **PHIPO** (phenotype), **PHIDO** (disease), **GO**, **BRENDA tissue
 (BTO)**, **PSI-MOD**, **PHI-ECO / PECO** (experimental conditions), plus the PHI-base
 extension ontologies **PHIPO_EXT** and **FYPO_EXT** (annotation-extension values, *not*
-part of PHIPO). See [[phi-eco-conditions-ontology]] for PECO background.
+part of PHIPO). See the *Experimental Conditions — PHI-ECO (PECO)* section of
+`Ontology-Terms-Reference.md` for PECO background.
 
 ---
 
@@ -61,12 +62,15 @@ PHI-base/canto. See that folder's `README.md` for provenance and refresh steps.
 | `docs/ontology-gaps.jsonl` | Append-only ledger of gaps met during curation (phrase, context, PMID, outcome, tracker URL once filed). |
 | `skills/ontology-term-request/` | Turns a gap into an evidence-backed term/synonym request — or, when a sibling set already fixes every field, a drafted PR against `phipo-edit.owl`. |
 
-Species-neutrality and obsolete-term caveats before calling something a gap:
-[[phipo-is-species-neutral]], [[obsolete-terms-are-fossils]].
+Two caveats before recording something as a gap:
+- **PHIPO is species-neutral** — species-specific terms (e.g. "conidiation", "appressorium")
+  are absent *by design*. Retry species-neutrally (asexual spores, hyphae) before calling it a gap.
+- **Obsolete terms are fossils** — OLS hides deprecated terms, so a "missing" sibling may
+  actually exist as an obsoleted term. Grep the ontology for the deprecated term first.
 
 ## The ontologies themselves (external / upstream)
 
-- PHIPO — `github.com/PHI-base/phipo` · local clone: [[phipo-local-clone]] (PRs target `master`)
+- PHIPO — `github.com/PHI-base/phipo` — PRs target `master` (a local clone exists on the working machine)
 - PHIDO — `github.com/PHI-base/phido`
 - PHI-ECO (PECO) — `github.com/PHI-base/phi-eco`
 - Browsing: OLS4 (`ebi.ac.uk/ols4`) for GO/PHIPO/BTO/MOD; QuickGO for GO.

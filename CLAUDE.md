@@ -8,7 +8,7 @@ This file is a short bridge for Claude Code and intentionally does not duplicate
   **[AGENTS.md](AGENTS.md)**.
 - Reusable task workflows: **`./skills/`** (one folder per skill, each with a `SKILL.md`).
   Invoke via the Skill tool when a skill's "when to use" applies.
-- Prior session context: read `11-CLAUDE-AI/SESSION-LOGS/INDEX.md` at session start.
+- Prior session context: read `11-CLAUDE-AI/SESSION-LOGS/Session-Logs-INDEX.md` at session start.
 - Deep operational references: `11-CLAUDE-AI/AUTOMATION-GUIDE.md`, `docs/`.
 
 ## Claude Code specifics

@@ -1,7 +1,7 @@
 # HANDOFF — continue phiweaver
 
 Concise "start here" pointer. Full history is the latest session log
-(`11-CLAUDE-AI/SESSION-LOGS/INDEX.md` → newest row) and `docs/DESIGN-DECISIONS.md`.
+(`11-CLAUDE-AI/SESSION-LOGS/Session-Logs-INDEX.md` → newest row) and `docs/DESIGN-DECISIONS.md`.
 
 ## Where things stand (2026-07-08)
 - **Phase 4 complete:** all **10 benchmark drafts** have a structured `canto` block and a

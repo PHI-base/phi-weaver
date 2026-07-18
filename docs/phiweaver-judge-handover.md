@@ -39,7 +39,7 @@ PHI-Weaver curation drafts.*
 | 1 | core | CORE JUDGE PRIMER (authoritative) — purpose, operating rules, output contract | `07-Standards/judge-core-primer.md` |
 | 2 | appendix | Scorecard rubric — the criteria the judge grades against | `07-Standards/curation-benchmarking/README.md` |
 | 3 | appendix | Controlled vocabulary (annotation types, topics, evidence) used in examples | `07-Standards/curation-examples/TAGS.md` |
-| 4 | appendix | Index of the worked examples + PHI-Canto annotation-type coverage | `07-Standards/curation-examples/INDEX.md` |
+| 4 | appendix | Index of the worked examples + PHI-Canto annotation-type coverage | `07-Standards/curation-examples/Curation-Examples-INDEX.md` |
 | 5 | appendix | Template showing the shape of a worked curation example | `07-Standards/curation-examples/_TEMPLATE.md` |
 | 6 | appendix | Ontology reference (PHIPO / PHIDO / GO / BRENDA) conventions | `07-Standards/Ontology-Terms-Reference.md` |
 | 7 | appendix | How genes/proteins are resolved to UniProtKB accessions | `07-Standards/UniProtKB-Gene-Identification-Guide.md` |
@@ -431,7 +431,7 @@ carry that type (a rough prevalence, so gold-standard coverage can be prioritise
 
 <!-- ===== FILE 4/16 :: appendix ===== -->
 ## 4. [APPENDIX (reference only)] Index of the worked examples + PHI-Canto annotation-type coverage
-**Vault path:** `07-Standards/curation-examples/INDEX.md`
+**Vault path:** `07-Standards/curation-examples/Curation-Examples-INDEX.md`
 
 ````markdown
 # Curation Example Library

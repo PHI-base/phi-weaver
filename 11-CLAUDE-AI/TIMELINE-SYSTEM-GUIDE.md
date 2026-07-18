@@ -18,7 +18,7 @@ The timeline system automatically tracks PHI-Canto system development milestones
 ### **Timeline Files**
 - **`11-CLAUDE-AI/DEVELOPMENT-TIMELINE.md`** - Main detailed timeline (auto-generated)
 - **`content-links/dev-timeline-daily.md`** - Quick daily bullet points (manual)
-- **`11-CLAUDE-AI/SESSION-LOGS/INDEX.md`** - Complete session index (includes content work)
+- **`11-CLAUDE-AI/SESSION-LOGS/Session-Logs-INDEX.md`** - Complete session index (includes content work)
 
 ### **Generator Scripts**
 - **`11-CLAUDE-AI/vault-ops/update_timeline_incremental.py`** - Incremental updater (recommended)
@@ -200,7 +200,7 @@ self.content_keywords = ['curation', 'effector', ...] # Add exclusions
 ls 11-CLAUDE-AI/SESSION-LOGS/*.md
 
 # Check index file
-cat 11-CLAUDE-AI/SESSION-LOGS/INDEX.md | tail -5
+cat 11-CLAUDE-AI/SESSION-LOGS/Session-Logs-INDEX.md | tail -5
 
 # Debug with check-only
 python3 11-CLAUDE-AI/vault-ops/update_timeline_incremental.py --check-only
@@ -227,7 +227,7 @@ diff 11-CLAUDE-AI/DEVELOPMENT-TIMELINE-backup.md 11-CLAUDE-AI/DEVELOPMENT-TIMELI
 ## 📚 **Integration with Other Systems**
 
 ### **Session Logs**
-- Timeline generated from `SESSION-LOGS/INDEX.md`
+- Timeline generated from `SESSION-LOGS/Session-Logs-INDEX.md`
 - Session logs provide detailed technical information
 - Timeline provides high-level milestone tracking
 
@@ -287,7 +287,7 @@ alias timeline-view="cat /path/to/phi-weaver/11-CLAUDE-AI/DEVELOPMENT-TIMELINE.m
 ## 📞 **Support and Documentation**
 
 - **Main Documentation**: `CLAUDE.md` (timeline section)
-- **Session Logs**: `11-CLAUDE-AI/SESSION-LOGS/INDEX.md`
+- **Session Logs**: `11-CLAUDE-AI/SESSION-LOGS/Session-Logs-INDEX.md`
 - **Usage Examples**: This guide and script help text
 - **Source Code**: Generator scripts with inline documentation
 

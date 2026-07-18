@@ -50,7 +50,7 @@ class DevTimelineGenerator:
 
     def parse_session_index(self):
         """Parse the session logs index for development sessions"""
-        index_file = self.session_logs_dir / "INDEX.md"
+        index_file = self.session_logs_dir / "Session-Logs-INDEX.md"
 
         if not index_file.exists():
             print(f"❌ Session index not found: {index_file}")
@@ -192,7 +192,7 @@ python3 11-CLAUDE-AI/generate_dev_timeline.py
 
 **Excluded**: Content curation, literature processing, paper annotations (tracked separately in session logs)
 
-*For complete activity including content work, see: [[SESSION-LOGS/INDEX]]*
+*For complete activity including content work, see: [[SESSION-LOGS/Session-Logs-INDEX]]*
 """
 
         # Write to file

@@ -36,7 +36,7 @@ FILES = [
      "Scorecard rubric — the criteria the judge grades against"),
     ("07-Standards/curation-examples/TAGS.md", "appendix",
      "Controlled vocabulary (annotation types, topics, evidence) used in examples"),
-    ("07-Standards/curation-examples/INDEX.md", "appendix",
+    ("07-Standards/curation-examples/Curation-Examples-INDEX.md", "appendix",
      "Index of the worked examples + PHI-Canto annotation-type coverage"),
     ("07-Standards/curation-examples/_TEMPLATE.md", "appendix",
      "Template showing the shape of a worked curation example"),

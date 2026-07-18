@@ -134,6 +134,14 @@ def check_skill_contract():
         raise AssertionError("; ".join(problems))
 
 
+def check_note_names():
+    """No two explorable notes share a basename (they'd collide in Obsidian's graph)."""
+    from phiweaver import vault_names
+    problems = vault_names.check(REPO_ROOT)
+    if problems:
+        raise AssertionError("; ".join(problems))
+
+
 def check_unit_tests():
     """The bundled unit-test suite passes (run from the repo root)."""
     proc = subprocess.run(
@@ -151,6 +159,7 @@ CHECKS = [
     ("DB schema create + query", check_db_schema),
     ("offline tools", check_offline_tooling),
     ("skill contract + registry", check_skill_contract),
+    ("unique note names", check_note_names),
     ("unit-test suite", check_unit_tests),
 ]
 

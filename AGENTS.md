@@ -20,16 +20,33 @@ PHI-Canto-ready annotation **drafts** and tracks curation progress.
   (default `../PHI-Canto-Literature/`, override with `PHI_LITERATURE_ROOT`; in
   Codespaces a `demo-literature/` folder is used). See `docs/STORAGE-CONFIGURATION.md`.
 - Tracking database: SQLite at `11-CLAUDE-AI/db/phi_canto_tracking.db` (gitignored).
-- At session start, read `11-CLAUDE-AI/SESSION-LOGS/INDEX.md` for prior context.
+- At session start, read `11-CLAUDE-AI/SESSION-LOGS/Session-Logs-INDEX.md` for prior context.
 - Key ontologies: PHIPO (phenotype), PHIDO (disease), GO, BRENDA tissue, UniProtKB, PHI-ECO
   (experimental conditions, prefix `PECO:`). Map of all ontology material (reference, tools,
-  bundled data, gap ledger, term requests): `07-Standards/Ontology-INDEX.md`.
+  bundled data, gap ledger, term requests): [07-Standards/Ontology-INDEX.md](07-Standards/Ontology-INDEX.md).
 - **Indexes** (this section is the map of maps; each index below is the map for its area):
-  - `skills/REGISTRY.md` — reusable curation modules (skill → backing tool → tests); *generated*
-  - `07-Standards/Ontology-INDEX.md` — where all ontology material lives (reference, tools, data, gaps)
-  - `07-Standards/curation-examples/INDEX.md` — the gold-standard curation-example library
-  - `11-CLAUDE-AI/SESSION-LOGS/INDEX.md` — prior session context (read at session start)
-  - `content-links/literature-index.md` — the external literature corpus
+  - [skills/REGISTRY.md](skills/REGISTRY.md) — reusable curation modules (skill → backing tool → tests); *generated*
+  - [07-Standards/Ontology-INDEX.md](07-Standards/Ontology-INDEX.md) — where all ontology material lives (reference, tools, data, gaps)
+  - [07-Standards/curation-examples/Curation-Examples-INDEX.md](07-Standards/curation-examples/Curation-Examples-INDEX.md) — the gold-standard curation-example library
+  - [11-CLAUDE-AI/SESSION-LOGS/Session-Logs-INDEX.md](11-CLAUDE-AI/SESSION-LOGS/Session-Logs-INDEX.md) — prior session context (read at session start)
+  - [content-links/literature-index.md](content-links/literature-index.md) — the external literature corpus
+- **Link conventions.** Pick the link style by what you point at, not by file:
+  - Pointing at a **note in the same store** (vault-note → vault-note, or memory → memory):
+    use an Obsidian `[[slug]]` wikilink.
+  - Pointing at a **code/data/config file, or anything to open by path** (incl. from AI-facing
+    files like this one): use a markdown path link `[path](path)` or a backtick path.
+  - **Never `[[link]]` across stores.** Claude's memory (`~/.claude/.../memory/`) lives *outside*
+    the vault, so a vault note that `[[links]]` a memory slug is a dangling link in Obsidian.
+    Restate the fact in prose, or link the real file/URL instead.
+- **Note naming (graph-friendly).** Obsidian labels graph nodes, the quick-switcher, and
+  `[[links]]` by a note's *basename*, so two notes with the same basename collide (they show as
+  indistinguishable nodes and make a `[[link]]` ambiguous). Give every explorable note a
+  **vault-unique, descriptive basename**; for a folder's index/meta note, prefix the folder's
+  subject (`Curation-Examples-INDEX.md`, not `INDEX.md`). Fixed-name convention files
+  (`SKILL.md`, `README.md`) are exempt — don't rename them; hide them from the graph with a view
+  filter instead (e.g. `-path:skills -file:README`). Enforced by
+  `python3 -m phiweaver.vault_names --check` (also a smoke-test check); add a justified
+  exemption to `EXEMPT_BASENAMES` only when a name is dictated by a tool or platform.
 - When a recurring question gets resolved, add a short Q/A + a `See:` pointer to
   `docs/FAQ.md` (a lookup layer over the canonical docs — keep answers short, don't duplicate).
 
