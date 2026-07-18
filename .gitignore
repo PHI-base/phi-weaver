@@ -14,11 +14,13 @@
 .obsidian/plugins/
 .obsidian/themes/
 
-# Keep only essential Obsidian settings (community can configure their own)
-!.obsidian/app.json
+# Personal Obsidian settings — local-only (change on every use / per-machine)
+.obsidian/app.json
+.obsidian/community-plugins.json
+
+# Keep only the stable shared settings (community can configure their own)
 !.obsidian/core-plugins.json
 !.obsidian/core-plugins-migration.json
-!.obsidian/community-plugins.json
 
 # Obsidian plugin-managed personal notes (Daily Notes, etc.) — local-only scratch
 __Obsidian-SYSTEM/
