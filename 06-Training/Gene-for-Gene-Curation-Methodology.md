@@ -4,7 +4,8 @@ type: training
 tags: [training]
 project: PHI-Canto
 ---
-
+```table-of-contents
+```
 # Gene-for-Gene Pathogen–Host Interaction Curation — Methodology
 
 > **Source:** curator methodology document by **Hsin-Yu Chang**, 2026-07-07
