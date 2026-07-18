@@ -199,11 +199,13 @@ all ~287 tests (~30–45 s) and, on an unchanged checkout, tells you nothing new
 run**; code-editing sessions are already covered by the "verify before committing" rule
 (`AGENTS.md` §4). A pure curation session doesn't need it — and the things that actually bite
 curation (network availability, a **stale PHIPO clone**) are what smoke *doesn't* check (it's
-network-free). **Automated option (set up locally):** a `SessionStart` hook runs smoke **only when
-git `HEAD` moved since the last green run** — silent on ordinary sessions, ~30–45 s once after a
-pull/commit. It stores the last-green HEAD in `.git/last-smoke-head` and always exits 0 (warns on
-failure, never blocks). The hook + script live in the gitignored `.claude/`, so they're per-machine,
-not shared. *(This FAQ is the canonical note for this decision.)*
+network-free). **Automated option (set up locally):** a `SessionStart` hook runs smoke **only when a
+code change has landed** — HEAD moved *and* the move touched `phiweaver/`, `scripts/`, `tests/`, or
+`pyproject.toml`. Docs / frontmatter / FAQ commits (and docs-only pulls) advance the baseline
+silently, since smoke tests none of that; only a code-touching pull/commit triggers the ~30–45 s run.
+It stores the last-checked HEAD in `.git/last-smoke-head` and always exits 0 (warns on failure, never
+blocks). The hook + script live in the gitignored `.claude/`, so they're per-machine, not shared.
+*(This FAQ is the canonical note for this decision.)*
 **See:** `.claude/session-start-smoke.sh` (local, gitignored); `scripts/smoke_test.py`; `AGENTS.md` §4.
 
 ### Can PHI-Weaver help with PHIPO ontology development?
