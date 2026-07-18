@@ -4,7 +4,8 @@ type: documentation
 tags: [docs]
 project: PHI-Weaver
 ---
-
+```table-of-contents
+```
 # PHI-Weaver FAQ
 
 * A human-facing record only*
@@ -190,6 +191,20 @@ clobber the indexes or reformat contract frontmatter and fail `--check`. Daily N
 add content, they don't rewrite it — fine. `smoke_test.py` catches any contract breakage.
 *(This FAQ is the canonical note for this decision.)*
 **See:** `phiweaver/registry.py` (`parse_frontmatter`); `scripts/smoke_test.py`.
+
+### Should the smoke test run at the start of every weaver session?
+**No — run it when the code or environment could have changed, not as a ritual.** Smoke re-runs
+all ~287 tests (~30–45 s) and, on an unchanged checkout, tells you nothing new. Run it **after
+`git pull`** (collaborator code), after an environment change, and **before a scored benchmark
+run**; code-editing sessions are already covered by the "verify before committing" rule
+(`AGENTS.md` §4). A pure curation session doesn't need it — and the things that actually bite
+curation (network availability, a **stale PHIPO clone**) are what smoke *doesn't* check (it's
+network-free). **Automated option (set up locally):** a `SessionStart` hook runs smoke **only when
+git `HEAD` moved since the last green run** — silent on ordinary sessions, ~30–45 s once after a
+pull/commit. It stores the last-green HEAD in `.git/last-smoke-head` and always exits 0 (warns on
+failure, never blocks). The hook + script live in the gitignored `.claude/`, so they're per-machine,
+not shared. *(This FAQ is the canonical note for this decision.)*
+**See:** `.claude/session-start-smoke.sh` (local, gitignored); `scripts/smoke_test.py`; `AGENTS.md` §4.
 
 ### Can PHI-Weaver help with PHIPO ontology development?
 **Yes, within limits.** Curation is the best gap detector — it meets gaps on real papers with the
