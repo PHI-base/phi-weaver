@@ -78,6 +78,16 @@ artifact.
 
 ## Project & tooling
 
+### Can input PDFs and output documents live on Google Drive?
+Yes — the storage layer is a single filesystem path, so anything that makes Drive look like a
+folder works with **no code change**. With Google Drive for Desktop on Windows + WSL, Drive
+mounts as a Windows drive (e.g. `D:\GoogleDrivePHI` → `/mnt/d/GoogleDrivePHI`); set
+`export PHI_LITERATURE_ROOT="/mnt/d/GoogleDrivePHI/PHI-Canto-Literature"` and the pipeline
+creates `active/` (input), `completed/` (output), `media/` under it (verified live 2026-07-19).
+**Keep the SQLite tracking DB off Drive** (it stays local at `11-CLAUDE-AI/db/`; SQLite + sync
+risks corruption); mind sync latency, `media/` quota, and use a *private* Drive folder.
+**See:** `docs/STORAGE-CONFIGURATION.md` ("Storage on Google Drive").
+
 ### Is "LLM-as-a-judge" a valid way to score curation quality?
 Yes — it's a mainstream evaluation technique. Caveats: a judge must be **ground-truthed** before
 its scores are trusted; without a per-paper gold standard it is a **reference-free critic**
