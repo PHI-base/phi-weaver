@@ -24,6 +24,18 @@ For each paper you will typically get two markdown files that share a name stem:
 
 **Work from the entry queue.** It is laid out to be followed top to bottom with PHI-Canto open beside it, ticking each row as you enter it. Keep the draft open as the reference you consult when you need the evidence behind a row — for example when you are deciding whether to accept a proposed phenotype term.
 
+## Where the files live
+
+Input papers and output drafts are exchanged through a **shared Google Drive folder** (`PHI-Canto-Literature`), synced with Google Drive for Desktop so you work from your normal file explorer — no repository checkout needed. It has three sub-folders:
+
+- **`active/` — drop input here.** Put the paper PDF you want curated into `active/`. This is also where the converted markdown and extracted figures for a paper in progress appear.
+- **`completed/` — collect output here.** When a paper is drafted, its `…-phiweaver-DRAFT.md` and `…-phi-canto-entry-queue.md` (the two files described above) are placed in `completed/`, alongside the original PDF. This is the folder you review from.
+- **`media/`** — extracted images and figures the drafts reference.
+
+A file may take a moment to appear after it is added, while Google Drive finishes syncing it to your machine. If a paper you expect isn't there yet, give the sync a minute before asking. You only ever read from and write papers into this Drive folder; nothing about the tool itself needs to be installed on your side.
+
+**See:** `docs/STORAGE-CONFIGURATION.md` ("Storage on Google Drive") for the one-time setup and the exact folder path.
+
 ## How the entry queue is laid out
 
 Every entry queue opens with a header line naming the paper and the biological system, for example:
