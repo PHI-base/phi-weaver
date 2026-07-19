@@ -67,17 +67,45 @@ PHI_LITERATURE_ROOT=/path/to/your/literature \
 export PHI_LITERATURE_ROOT="$HOME/phi-literature"
 ```
 
-**Verify what the pipeline will use:**
+**Verify what the pipeline will use** (run from the repo root):
 ```bash
 PHI_LITERATURE_ROOT=/path/to/check python3 -c "
-import sys; sys.path.insert(0, '11-CLAUDE-AI')
-from curation_pipeline import CurationPipeline
+from phiweaver.pipeline.curation_pipeline import CurationPipeline
 p = CurationPipeline()
 print('storage root:', p.external_storage)
 print('  input :', p.inbox_path)
 print('  output:', p.literature_path)
+print('  media :', p.media_path)
 "
 ```
+
+## Storage on Google Drive (verified 2026-07-19)
+
+Because the storage root is just a filesystem path, you can keep input PDFs and output
+documents on **Google Drive** and have them sync across machines — **no code change**, just
+point `PHI_LITERATURE_ROOT` at the synced folder.
+
+**With Google Drive for Desktop on Windows + WSL** (the setup this was verified on): Drive is
+mounted as a Windows drive (here `D:\GoogleDrivePHI`), which WSL exposes under `/mnt/`. Set:
+
+```bash
+export PHI_LITERATURE_ROOT="/mnt/d/GoogleDrivePHI/PHI-Canto-Literature"
+```
+
+The pipeline creates `active/`, `completed/`, and `media/` underneath it (verified: folders
+created and files round-tripped on the Drive mount). Drop PDFs into `active/` from any device;
+outputs land in `completed/` and sync everywhere. On Linux-only machines the equivalent is an
+`rclone mount` / `google-drive-ocamlfuse` path, then the same env var.
+
+**Caveats:**
+- **Keep the tracking DB *off* Drive.** The SQLite DB at `11-CLAUDE-AI/db/` is separate from the
+  literature root (good) — don't relocate it onto a syncing drive; SQLite + file-sync risks
+  corruption. The literature root holds only PDFs / markdown / images, which sync fine.
+- **Sync latency** — a file isn't readable until Drive finishes pulling it down. Fine for
+  interactive curation; relevant only if you script a folder-watch auto-process.
+- **`media/` can grow** (extracted figures per paper) — watch your Drive quota on big batches.
+- **Use a *private* Drive folder**, not a public/shared link — the unpublished-material rule
+  (below) still applies.
 
 ## Notes
 

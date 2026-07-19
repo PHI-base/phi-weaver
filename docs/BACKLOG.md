@@ -274,6 +274,18 @@ decision and re-creating the term silently reopens it. See the `ontology-term-re
   species-neutral" above and lesson L2.
 
 ## Curation workflow
+- [x] **Store input PDFs + output docs on Google Drive** (added + **verified 2026-07-19**; user has
+  Google Drive for Desktop on Windows). **Low effort, no code change** — the pipeline's whole storage
+  layer is a single filesystem path (`PHI_LITERATURE_ROOT` → `active/` input, `completed/` output,
+  `media/` figures). **Verified live:** `D:\GoogleDrivePHI` is visible in WSL at
+  `/mnt/d/GoogleDrivePHI`; `CurationPipeline` resolves `PHI_LITERATURE_ROOT=/mnt/d/GoogleDrivePHI/
+  PHI-Canto-Literature` and the `active/`/`completed/`/`media/` folders were created + file
+  round-tripped on the Drive mount. The tracking DB (`11-CLAUDE-AI/db/`) stays local (not sent to the
+  literature root). Documented in `docs/STORAGE-CONFIGURATION.md` ("Storage on Google Drive"); fixed
+  the stale verify snippet there (imported the old shim class path). **Caveats (in the doc):** keep
+  the SQLite DB off Drive; sync latency before a file is readable; `media/` quota on big batches; use
+  a **private** Drive folder. **Deferred harder option:** a native Drive-API storage adapter
+  (headless, no mounted FS) — only needed for the future ROGER orchestrator; not worth it now.
 - [ ] **Confirm open clarifications from Hsin-Yun's 2026-07-15 review** (applied with sensible
   defaults; fold her answers into `07-Standards/PHI-Canto-Curation-Conventions.md`): (D1) canonical
   **gene-symbol source** — UniProtKB gene name vs. "strip the species prefix" (drafted as
