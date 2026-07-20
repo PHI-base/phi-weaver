@@ -494,6 +494,26 @@ periodically; move back to the owning section if reopened, or tick `[x]` when ac
   characterised ortholog is often in yeast). Decide whether to raise it as its own issue.
 
 ## Deferred (see DESIGN-DECISIONS.md D11 / PLUGIN-ARCHITECTURE.md)
+- [ ] **Semantic recall over accumulated curation knowledge** (raised 2026-07-20). Today's memory —
+  the flat `MEMORY.md` index, `LEARNING-SYSTEM.md`, the typed `CURATION-LESSONS.md` ledger, and the
+  curation-example library — is read **linearly**: a human or the LLM scans it. That is the right
+  tool while the corpus is small and it keeps every fact **human-auditable and git-versioned**. An
+  embeddings-backed store (cf. the user's `gbrain`/Hermes stack: Postgres + pgvector, typed pages,
+  `[[wikilink]]` graph edges, MCP) would add *semantic* retrieval — "have I decided something like
+  this before?" across lessons, gene-for-gene cases and ontology rulings — which a flat index
+  cannot do. **Do not adopt the full container stack now:** the corpus is a few dozen facts, and
+  gbrain's autonomous nightly `dream` enrichment (an LLM silently rewriting/re-linking stored
+  facts) conflicts with weaver's **declarative, reversible, human-approved** learning rule
+  (`LEARNING-SYSTEM.md`) and the scientific-accuracy requirement that stored facts be
+  provenance-tracked — it would have to be disabled to adopt safely.
+  - **Trigger to reconsider:** when the lessons ledger / example library grows past what fits in
+    context **and** we catch a draft (or ourselves) re-deciding something already ruled on — i.e.
+    linear reading starts *missing* relevant priors. That is when semantic recall earns its keep.
+  - **Proportionate move when the trigger fires:** keep markdown as the source of truth and add an
+    **embeddings index over the existing markdown as a read-only layer** (retrieval only; `dream`
+    off) — not the 3-container stack. Runs local on ROGER (D7) rather than via an external
+    embeddings API, keeping unpublished curation data off third-party services. Aligns with the
+    plug-in-host direction (D6) — a retrieval module, not core.
 - [ ] Full machine-readable curation-record schema (first slice done: the draft `auto_check` block).
 - [ ] Plug-in host + local AI on ROGER (long-term; needs collaborator / research-computing help).
 - [ ] Optional: UniProt mapping for Zhang-2024 from its genome IDs; read Zhang supplementary S1–S7.
