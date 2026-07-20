@@ -158,8 +158,15 @@ them out **before** recording anything.
    deprecation alone tells you nothing about *why*. Resolve it with the **parallel-terms test**:
 
    - **Do the parallel terms still carry the dimension?** (other toxins, other substances, the
-     generic parent) → the concept is live, this one was **missed** → safe to fill by following
-     the pattern.
+     generic parent) → the concept is live, this one was **missed**. Now decide *how* to fill it:
+     - **A correct obsolete term already exists** (step 5 found one whose definition still holds)
+       → **restore it** — un-obsolete the original ID (remove `owl:deprecated`, drop the
+       `obsolete ` label prefix, re-attach the parent). Do **not** mint a new ID for a concept
+       that already has one: OBO term-stability
+       ([fp-019](https://obofoundry.org/principles/fp-019-term-stability.html)) requires reusing
+       the original. *PR #454 wrongly minted `PHIPO:0001456`; corrected by restoring `0000503`
+       in PR #455.*
+     - **No correct obsolete term exists** → create a new term following the pattern.
    - **Did they all lose it too?** → that was a deliberate **modelling decision**, and re-creating
      the term silently reopens it *while looking exactly like routine pattern-filling*. Do not
      PR it. File an issue asking why.
@@ -169,8 +176,10 @@ them out **before** recording anything.
    refactor. The parallel terms settled it — `PHIPO:0001033` (pyocyanin) and `PHIPO:0001105`
    (gliotoxin) both still live under `PHIPO:0001034` *substance absent from cell*, while DON's
    `decreased`/`increased` were re-created in 2025 and `absent` was simply missed. Oversight, not
-   decision → PR. **Had pyocyanin and gliotoxin also lost theirs, the identical-looking PR would
-   have been wrong.**
+   decision — but the fix is to **restore the obsolete `PHIPO:0000503`, not mint a new ID** (fp-019
+   above): PR #454 wrongly created `PHIPO:0001456` and was closed, and PR #455 restores `0000503`
+   instead. **Had pyocyanin and gliotoxin also lost theirs, the identical-looking PR would have
+   been wrong.**
 
 6. **Name the closest existing term and why it fails.** A request without this reads as "I
    couldn't find one" and will bounce. There are three failure shapes, all real:
