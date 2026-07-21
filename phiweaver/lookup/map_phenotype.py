@@ -60,7 +60,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import List, Optional
 
@@ -89,12 +89,71 @@ class PhenotypeSearchError(RuntimeError):
     """Raised when the bundled ontology cannot be read or parsed."""
 
 
+# --- Annotation usage, from PHIPO's own `subset:` tags -----------------------------
+#
+# A PHIPO term can exist, be non-obsolete, and *still* be unusable as a phenotype
+# annotation. PHI-Canto refuses two categories, and PHIPO marks both in the ontology
+# file itself (174 tagged terms in the 2026-03-12 release):
+#
+#   qc_do_not_annotate (67) / qc_do_not_manually_annotate (56)
+#       High-level grouping terms — "pathogenicity phenotype", "tissue phenotype",
+#       "single species phenotype". Real terms, but too general to annotate to.
+#   qc_extension_only (13)
+#       Terms that are legal only as an annotation *extension value*, never as the
+#       primary term: "reduced virulence", "loss of pathogenicity", "increased
+#       virulence", "unaffected pathogenicity". These are among the most common
+#       phrases in PHI-base papers, which is exactly why mislabelling them matters —
+#       `reduced virulence` belongs in `infective_ability → PHIPO:0000015`, not in the
+#       phenotype slot.
+#
+# **Why the tags and not `canto_config`.** PHI-Canto's `ontology_namespace_config`
+# carries the equivalent list, but it lives in `canto_deploy.yaml`, which is gitignored
+# (private repo — see data/README.md). Driving the filter from a file that is present on
+# one machine and absent on another would make the same phrase return different
+# candidates for different curators, which is unacceptable for reproducible curation.
+# PHIPO's own subset tags ship with the committed ontology, so they are the same
+# everywhere. `canto_config.do_not_annotate_subsets` remains the cross-check.
+#
+# NOTE (open question for PHI-base): PHI-Canto's config names GO's spellings —
+# `gocheck_do_not_annotate` / `gocheck_do_not_manually_annotate` — plus
+# `qc_do_not_annotate`, but NOT PHIPO's `qc_do_not_manually_annotate`. We exclude the
+# latter here because PHI-Canto is a manual curation tool and 56 PHIPO terms carry it.
+# Worth confirming with James/Hsin-Yu that the config omission is an oversight.
+DO_NOT_ANNOTATE_SUBSETS = frozenset({
+    "qc_do_not_annotate",
+    "qc_do_not_manually_annotate",
+    "gocheck_do_not_annotate",
+    "gocheck_do_not_manually_annotate",
+    "canto_root_subset",
+})
+EXTENSION_ONLY_SUBSETS = frozenset({"qc_extension_only"})
+
+USAGE_PRIMARY = "primary"                # annotatable as the phenotype term
+USAGE_EXTENSION_ONLY = "extension_only"  # legal only as an extension value
+USAGE_GROUPING = "grouping"              # too general / not annotatable at all
+
+
+def usage_of(subsets) -> str:
+    """Classify a term by what PHI-Canto will let a curator do with it."""
+    s = set(subsets or ())
+    if s & DO_NOT_ANNOTATE_SUBSETS:
+        return USAGE_GROUPING
+    if s & EXTENSION_ONLY_SUBSETS:
+        return USAGE_EXTENSION_ONLY
+    return USAGE_PRIMARY
+
+
 @dataclass(frozen=True)
 class Term:
     obo_id: str
     name: str
     synonyms: tuple
     obsolete: bool = False
+    subsets: tuple = ()
+
+    @property
+    def usage(self) -> str:
+        return usage_of(self.subsets)
 
 
 @dataclass
@@ -104,6 +163,7 @@ class Candidate:
     exact: bool               # phrase equals the term's label or an exact synonym
     score: float = 0.0
     obsolete: bool = False    # only ever True when --include-obsolete was passed
+    usage: str = USAGE_PRIMARY
 
 
 @dataclass
@@ -115,6 +175,11 @@ class PhenotypeMapping:
     retrieved_at: Optional[str]
     release: Optional[str] = None     # the ontology's data-version
     error: Optional[str] = None
+    # Grouping terms that scored but were withheld as non-annotatable. Reported, never
+    # silently dropped: a phrase whose only matches are grouping terms would otherwise
+    # come back as a bare no_match and read as an ontology gap — the phantom-gap failure
+    # this module exists to avoid (lessons L2/L8, phipo#452).
+    withheld: List[Candidate] = field(default_factory=list)
 
     @property
     def ok(self) -> bool:
@@ -151,7 +216,8 @@ def load_terms(path: Path = PHIPO_OBO_PATH) -> List[Term]:
         # PHIPO marks obsoletion two ways: an `is_obsolete: true` line, and an "obsolete "
         # label prefix. Some terms carry only the label form, so check both.
         obsolete = bool(cur.get("obsolete")) or name.lower().startswith("obsolete ")
-        terms.append(Term(oid, name, tuple(cur.get("syn", [])), obsolete))
+        terms.append(Term(oid, name, tuple(cur.get("syn", [])), obsolete,
+                          tuple(cur.get("subset", []))))
 
     for line in raw.splitlines():
         line = line.strip()
@@ -167,6 +233,8 @@ def load_terms(path: Path = PHIPO_OBO_PATH) -> List[Term]:
             cur["name"] = line[5:].strip()
         elif line.startswith("is_obsolete:"):
             cur["obsolete"] = line.split(":", 1)[1].strip().lower() == "true"
+        elif line.startswith("subset:"):
+            cur.setdefault("subset", []).append(line.split(":", 1)[1].strip())
         elif line.startswith("synonym:"):
             m = _SYN_RE.search(line)
             if m:
@@ -234,7 +302,8 @@ class PhenotypeMapper:
 
     def map(self, phrase: str, rows: int = DEFAULT_ROWS,
             include_obsolete: bool = False,
-            min_score: float = MIN_SCORE) -> PhenotypeMapping:
+            min_score: float = MIN_SCORE,
+            include_grouping: bool = False) -> PhenotypeMapping:
         phrase = (phrase or "").strip()
         src = str(self.path)
         if not phrase:
@@ -245,38 +314,80 @@ class PhenotypeMapper:
         except PhenotypeSearchError as exc:
             return PhenotypeMapping(phrase, "error", [], src, utc_now(),
                                     self._release, str(exc))
-        candidates = _search(phrase, terms, idf, rows, include_obsolete, min_score)
+        candidates, withheld = _search(phrase, terms, idf, rows, include_obsolete,
+                                       min_score, include_grouping)
         status = "matched" if candidates else "no_match"
         return PhenotypeMapping(phrase, status, candidates, src, utc_now(),
-                                self._release)
+                                self._release, withheld=withheld)
 
 
 def _search(phrase: str, terms: List[Term], idf: dict, rows: int = DEFAULT_ROWS,
             include_obsolete: bool = False,
-            min_score: float = MIN_SCORE) -> List[Candidate]:
+            min_score: float = MIN_SCORE,
+            include_grouping: bool = False) -> tuple:
     """Score every term, keep the best `rows` above `min_score`. Exact first, then by score.
 
-    Obsolete terms are dropped unless `include_obsolete` — a curator cannot annotate to an
-    obsolete term, so suggesting one is wrong; but a *gap* analysis needs to see them (the
-    #452 lesson), which is what the flag is for."""
+    Returns `(candidates, withheld)`.
+
+    Three exclusions, each treated differently on purpose:
+
+    * **Obsolete** — dropped unless `include_obsolete`. A curator cannot annotate to an
+      obsolete term, so suggesting one is wrong; a *gap* analysis needs to see them (the
+      #452 lesson), which is what the flag is for.
+    * **Grouping** (`qc_do_not_annotate` &c.) — moved to `withheld` rather than dropped,
+      unless `include_grouping`. They must stay visible: a phrase whose only matches are
+      grouping terms would otherwise return a bare `no_match`, which reads as an ontology
+      gap and invites a duplicate term request.
+    * **Extension-only** (`qc_extension_only`) — **kept as candidates and labelled**, not
+      filtered. "Reduced virulence" really is PHIPO:0000015; it just belongs in
+      `infective_ability → …` rather than the phenotype slot. Hiding it would turn the
+      single most common PHI-base phrase into a false gap.
+    """
     scored = []
+    withheld = []
     for t in terms:
         if t.obsolete and not include_obsolete:
             continue
         s = _score(phrase, t, idf)
-        if s >= min_score:
+        if s < min_score:
+            continue
+        if t.usage == USAGE_GROUPING and not include_grouping:
+            withheld.append((s, t))
+        else:
             scored.append((s, t))
-    # Exact first, then score desc, then id — deterministic for equal scores.
-    scored.sort(key=lambda st: (not _is_exact(phrase, st[1]), -st[0], st[1].obo_id))
-    return [Candidate(obo_id=t.obo_id, label=t.name, exact=_is_exact(phrase, t),
-                      score=round(s, 2), obsolete=t.obsolete)
-            for s, t in scored[:rows]]
+
+    def _rank(pair):
+        # Exact first, then score desc, then id — deterministic for equal scores.
+        return (not _is_exact(phrase, pair[1]), -pair[0], pair[1].obo_id)
+
+    def _mk(pair):
+        s, t = pair
+        return Candidate(obo_id=t.obo_id, label=t.name, exact=_is_exact(phrase, t),
+                         score=round(s, 2), obsolete=t.obsolete, usage=t.usage)
+
+    scored.sort(key=_rank)
+    withheld.sort(key=_rank)
+    return [_mk(p) for p in scored[:rows]], [_mk(p) for p in withheld[:rows]]
 
 
 def read_phrases(path: str) -> List[str]:
     """Read one phenotype phrase per line; skip blank lines and ``#`` comments."""
     lines = Path(path).read_text(encoding="utf-8").splitlines()
     return [ln.strip() for ln in lines if ln.strip() and not ln.strip().startswith("#")]
+
+
+def _append_withheld(lines: List[str], r: PhenotypeMapping) -> None:
+    """Show grouping terms that matched but are not annotatable.
+
+    Stated explicitly so a curator can tell "PHIPO has nothing for this" (a real gap,
+    worth a term request) from "PHIPO has only a parent term for this" (not a gap — the
+    concept exists, it is just too general, and requesting a term would duplicate it).
+    """
+    if not r.withheld:
+        return
+    lines.append("    — matched only as non-annotatable grouping term(s); NOT a gap:")
+    for c in r.withheld:
+        lines.append(f"        ({c.obo_id}  {c.label or ''})")
 
 
 def format_human(results: List[PhenotypeMapping]) -> str:
@@ -289,13 +400,22 @@ def format_human(results: List[PhenotypeMapping]) -> str:
             continue
         if r.status == "no_match":
             lines.append(f"❌ {r.query}  [no PHIPO match]")
+            _append_withheld(lines, r)
             continue
         rel = f" {r.release}" if r.release else ""
         lines.append(f"✅ {r.query}  (offline via phipo-base.obo{rel})")
         for c in r.candidates:
             mark = "★" if c.exact else "•"
-            obs = "  ⚠️ OBSOLETE — not annotatable; gap-analysis only" if c.obsolete else ""
-            lines.append(f"    {mark} {c.obo_id}  {c.label or ''}{obs}")
+            note = ""
+            if c.obsolete:
+                note = "  ⚠️ OBSOLETE — not annotatable; gap-analysis only"
+            elif c.usage == USAGE_EXTENSION_ONLY:
+                note = ("  ⚠️ EXTENSION VALUE ONLY — not a primary phenotype term; "
+                        "use it as an annotation extension (e.g. infective_ability → …)")
+            elif c.usage == USAGE_GROUPING:
+                note = "  ⚠️ GROUPING TERM — too general to annotate to"
+            lines.append(f"    {mark} {c.obo_id}  {c.label or ''}{note}")
+        _append_withheld(lines, r)
     matched = sum(1 for r in results if r.status == "matched")
     lines.append("")
     lines.append(f"{matched}/{len(results)} phrase(s) matched at least one PHIPO term. "
@@ -322,6 +442,12 @@ def main(argv=None) -> int:
                         "deprecated terms, so a concept that was obsoleted looks like a "
                         "virgin gap (phipo#452 / PHIPO:0000503). See the "
                         "ontology-term-request skill, step 5.")
+    p.add_argument("--include-grouping", action="store_true",
+                   help="also return high-level grouping terms (PHIPO's "
+                        "qc_do_not_annotate / qc_do_not_manually_annotate subsets) as "
+                        "normal candidates. NOT for annotation — PHI-Canto rejects them "
+                        "as too general. By default they are listed separately so that a "
+                        "parent-only match is not mistaken for an ontology gap.")
     p.add_argument("--ontology", default=str(PHIPO_OBO_PATH),
                    help="path to the PHIPO .obo to search (default: the bundled release)")
     p.add_argument("--log-gaps", action="store_true",
@@ -346,7 +472,8 @@ def main(argv=None) -> int:
         p.error("provide one or more phenotype phrases, or --file")
 
     mapper = PhenotypeMapper(path=Path(args.ontology))
-    results = [mapper.map(ph, rows=args.rows, include_obsolete=args.include_obsolete)
+    results = [mapper.map(ph, rows=args.rows, include_obsolete=args.include_obsolete,
+                          include_grouping=args.include_grouping)
                for ph in phrases]
 
     reviews = [term_context.review(r.candidates, args.assay_context)

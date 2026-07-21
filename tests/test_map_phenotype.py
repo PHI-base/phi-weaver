@@ -144,6 +144,48 @@ class BundledOntologyTests(unittest.TestCase):
             self.assertTrue(t.obo_id.startswith("PHIPO:"))
 
 
+class AnnotationUsageTests(unittest.TestCase):
+    """PHI-Canto refuses some terms that exist and are not obsolete (PHIPO subset tags)."""
+
+    def test_usage_classification(self):
+        self.assertEqual(m.usage_of(["qc_do_not_annotate"]), m.USAGE_GROUPING)
+        self.assertEqual(m.usage_of(["qc_do_not_manually_annotate"]), m.USAGE_GROUPING)
+        self.assertEqual(m.usage_of(["qc_extension_only"]), m.USAGE_EXTENSION_ONLY)
+        self.assertEqual(m.usage_of(["pathogen_phenotype"]), m.USAGE_PRIMARY)
+        self.assertEqual(m.usage_of([]), m.USAGE_PRIMARY)
+
+    def test_subsets_are_parsed_from_the_obo(self):
+        by_id = {t.obo_id: t for t in m.load_terms()}
+        # "pathogenicity phenotype" is a grouping term; "reduced virulence" extension-only.
+        self.assertEqual(by_id["PHIPO:0000006"].usage, m.USAGE_GROUPING)
+        self.assertEqual(by_id["PHIPO:0000015"].usage, m.USAGE_EXTENSION_ONLY)
+
+    def test_extension_only_terms_are_returned_but_labelled(self):
+        """The most common PHI-base phrase must not become a false gap."""
+        r = m.PhenotypeMapper().map("reduced virulence")
+        top = r.candidates[0]
+        self.assertEqual(top.obo_id, "PHIPO:0000015")
+        self.assertTrue(top.exact)
+        self.assertEqual(top.usage, m.USAGE_EXTENSION_ONLY)
+
+    def test_grouping_terms_are_withheld_not_dropped(self):
+        r = m.PhenotypeMapper().map("pathogenicity phenotype")
+        ids = {c.obo_id for c in r.candidates}
+        withheld = {c.obo_id for c in r.withheld}
+        self.assertNotIn("PHIPO:0000006", ids)       # not offered for annotation
+        self.assertIn("PHIPO:0000006", withheld)     # but still reported
+
+    def test_include_grouping_promotes_them(self):
+        r = m.PhenotypeMapper().map("pathogenicity phenotype", include_grouping=True)
+        self.assertIn("PHIPO:0000006", {c.obo_id for c in r.candidates})
+        self.assertEqual(r.withheld, [])
+
+    def test_withheld_terms_are_shown_to_the_curator(self):
+        """A parent-only match must read as 'not a gap', not as a bare no_match."""
+        r = m.PhenotypeMapper().map("pathogenicity phenotype")
+        self.assertIn("NOT a gap", m.format_human([r]))
+
+
 class ReadPhrasesTests(unittest.TestCase):
     def test_reads_nonempty_noncomment_lines(self):
         with tempfile.TemporaryDirectory() as d:
