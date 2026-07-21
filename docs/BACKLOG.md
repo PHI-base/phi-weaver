@@ -211,6 +211,61 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
     stub — do NOT source the full ontologies or the real extension config from there. FYPO_EXT is the
     lone exception because the ontology is genuinely tiny.
 
+- [ ] **Repo is public with no LICENSE; finish `CITATION.cff`** (added 2026-07-21). Verified live:
+  `gh api repos/PHI-base/phi-weaver` returns **`license: null, visibility: public`**, and no LICENSE
+  exists anywhere in git history (`git log --all -- LICENSE` is empty) — so this isn't a stale clone.
+  **No license means "all rights reserved":** public visibility grants nobody any rights, so anyone
+  at another institution who wants to build on the standards or run the skills will be blocked by
+  their own legal review. Looks open, legally isn't.
+  - **Pick a license.** The repo is a **hybrid** — `phiweaver/` is code, but most of the content
+    (`07-Standards/`, `skills/`, `docs/`, gold-standard examples) is documentation and curated data.
+    Normal practice is to dual-license: **MIT or Apache-2.0 for code, CC BY 4.0 for content**, stated
+    in the README. **House norm:** PHIPO ships **CC BY 3.0 Unported**, `phipo_ext` is CC BY 4.0 — so
+    CC BY is the org convention on the content side, and 4.0 is the current version to match.
+  - **⚠ Not our call alone.** Copyright almost certainly sits with **Rothamsted** (institutional,
+    BBSRC-funded work), and PHI-base likely has an existing position. **Ask James / Rothamsted what
+    the org applies and match it**, rather than choosing on the merits.
+  - **`CITATION.cff` drafted 2026-07-21** (repo root). GitHub auto-detects the filename and adds a
+    "Cite this repository" button (APA + BibTeX); Zenodo reads it to pre-fill a release deposition.
+    Four things are deliberately left out so the file doesn't assert anything untrue — each needs a
+    human decision: **(1)** the placeholder **ORCID**; **(2)** the **co-author list** (Hsin-Yu, James,
+    Alayne? — authorship isn't ours to assign); **(3)** `license:` (blocked on the above); **(4)**
+    `version`/`date-released` (omitted rather than left to go stale) and the Zenodo **concept DOI**
+    once a release is minted. Add a `preferred-citation:` block if a PHI-Weaver paper is ever
+    published, so citations point at the article instead of the repo.
+  - **Validate before relying on it** — a YAML typo silently kills the GitHub button with no error.
+    `cffconvert` or the `cff-validator` Action.
+
+- [ ] **PMC full text as an input format (PMID→PMCID check + JATS parser)** (added 2026-07-21).
+  Today the only ingest route is PDF (`phiweaver/pdf/pdf_convert.py`, PyMuPDF). For open-access
+  papers — most of what PHI-base curates — **PMC's JATS XML is a strictly better input**: sections,
+  tables and references are already tagged, so gene symbols, strain IDs and table structure survive
+  instead of being reconstructed from page layout. Two pieces, and (a) is useful on its own:
+
+  **(a) Resolve PMID → PMCID.** One call to NCBI's ID Converter
+  (`https://www.ncbi.nlm.nih.gov/pmc/utils/idconv/v1.0/?ids=<PMID>&format=json`) answers "is there
+  full text?" definitively, so the PDF-vs-PMC choice stops being a guess. Worth checking **Europe
+  PMC** too — it mirrors PMC and adds content PMC doesn't carry, which matters for the UK/European
+  plant-pathology journals we curate from.
+
+  **(b) JATS → markdown converter**, the `pdf_convert.py` equivalent. Needs to handle JATS tables
+  and section nesting; drop `<ref-list>` and `<front>` boilerplate.
+
+  **On token cost — the intuition is backwards, but only after parsing.** *Raw* JATS is far more
+  expensive than a PDF (every citation an `<xref>`, every author a name nest, the whole reference
+  list marked up structurally): order 80–150k tokens vs 15–25k for PDF-extracted text. *Parsed*, it
+  wins: ~10–15k, because PDF extraction drags per-page furniture (running heads, page numbers, DOI
+  footers) through the whole document and can't cleanly cut the reference list, which is often
+  30–40% of the extracted text. **So the real cost of this item is the parser, not context size.**
+  Figures are the open question — `pdf_convert.py`'s caption extraction has no obvious JATS
+  counterpart to reuse. *(Numbers are ballpark from typical article sizes, **not measured on our
+  corpus** — worth confirming on one already-curated paper before committing to (b).)*
+
+  **Timing note for (a):** the PMID→PMC gap is set by the journal's access model, not by PMC
+  processing. Fully-OA journals deposit at publication (full text within ~2 weeks); paywalled ones
+  are 6–12 months or never. So recent OA papers usually *are* in PMC — don't assume otherwise.
+  **See:** `docs/FAQ.md` ("Should I curate from PDF or EPUB?").
+
 ## Ontology coverage gaps (PHIPO term requests)
 _Curatable phenotypes seen in papers that have **no** PHIPO term — captured and flagged in the draft,
 not forced onto a wrong ID. Candidates to raise with the PHIPO/PHI-base ontology team._

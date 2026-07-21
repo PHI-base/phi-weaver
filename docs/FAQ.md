@@ -88,6 +88,19 @@ creates `active/` (input), `completed/` (output), `media/` under it (verified li
 risks corruption); mind sync latency, `media/` quota, and use a *private* Drive folder.
 **See:** `docs/STORAGE-CONFIGURATION.md` ("Storage on Google Drive").
 
+### Should I curate from PDF or EPUB?
+**PDF — that's the default, and it's what our tooling reads.** EPUB is really a book format;
+journals hardly ever offer it for a research paper, so in practice you won't get the choice.
+EPUB's one advantage is cleaner text (no two-column scrambling, no broken hyphenation, tables
+as real tables rather than a picture of a table) — so if you happen to have both and the PDF
+converts badly, use the EPUB for the text.
+**But if the paper is open access, use neither: take the PubMed Central full text (XML or the
+HTML page) instead.** There the sections, tables and references are already labelled, so gene
+symbols and strain IDs survive intact and nothing has to be reconstructed from page layout.
+That covers most of what PHI-base curates. Order of preference: **PMC/publisher full text →
+PDF → EPUB.** Whatever you use, supplementary data still arrives as PDF/XLSX.
+**See:** `phiweaver/pdf/PDF-CONVERT-SKILL.md` (the PDF→Markdown converter, PyMuPDF).
+
 ### Is "LLM-as-a-judge" a valid way to score curation quality?
 Yes — it's a mainstream evaluation technique. Caveats: a judge must be **ground-truthed** before
 its scores are trusted; without a per-paper gold standard it is a **reference-free critic**
