@@ -211,28 +211,32 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
     stub — do NOT source the full ontologies or the real extension config from there. FYPO_EXT is the
     lone exception because the ontology is genuinely tiny.
 
-- [ ] **Repo is public with no LICENSE; finish `CITATION.cff`** (added 2026-07-21). Verified live:
-  `gh api repos/PHI-base/phi-weaver` returns **`license: null, visibility: public`**, and no LICENSE
-  exists anywhere in git history (`git log --all -- LICENSE` is empty) — so this isn't a stale clone.
-  **No license means "all rights reserved":** public visibility grants nobody any rights, so anyone
-  at another institution who wants to build on the standards or run the skills will be blocked by
-  their own legal review. Looks open, legally isn't.
-  - **Pick a license.** The repo is a **hybrid** — `phiweaver/` is code, but most of the content
-    (`07-Standards/`, `skills/`, `docs/`, gold-standard examples) is documentation and curated data.
-    Normal practice is to dual-license: **MIT or Apache-2.0 for code, CC BY 4.0 for content**, stated
-    in the README. **House norm:** PHIPO ships **CC BY 3.0 Unported**, `phipo_ext` is CC BY 4.0 — so
-    CC BY is the org convention on the content side, and 4.0 is the current version to match.
-  - **⚠ Not our call alone.** Copyright almost certainly sits with **Rothamsted** (institutional,
-    BBSRC-funded work), and PHI-base likely has an existing position. **Ask James / Rothamsted what
-    the org applies and match it**, rather than choosing on the merits.
+- [ ] **Licensing done; `CITATION.cff` still has blanks** (added 2026-07-21). The repo had been
+  **public with no license at all** — verified live, `gh api repos/PHI-base/phi-weaver` returned
+  `license: null, visibility: public`, with nothing in git history (`git log --all -- LICENSE`
+  empty). That state means *all rights reserved*: public visibility grants nobody any rights, so
+  anyone at another institution wanting to build on the standards would have been blocked by their
+  own legal review. `README.md` had claimed MIT and linked to a LICENSE file that was never created.
+  - ✅ **Dual-licensed 2026-07-21**, per the hybrid split — `phiweaver/` is code, but most of the
+    repo (`07-Standards/`, `skills/`, `docs/`, gold-standard examples) is documentation and curated
+    data. **`LICENSE` = MIT** (software), **`LICENSE-CONTENT` = CC BY 4.0** (content), README section
+    rewritten to state the split, `license: MIT` added to `CITATION.cff`. CC BY matches house norm:
+    PHIPO ships CC BY 3.0 Unported, `phipo_ext` CC BY 4.0. Vendored ontology files under
+    `phiweaver/lookup/data/` keep their own upstream licenses (noted in both files).
+  - **⚠ Still worth confirming with Rothamsted / James.** Copyright sits with the **institution**
+    (BBSRC-funded work), not with an individual, and the copyright line reads
+    **"Copyright (c) 2026 Rothamsted Research"** — that was our choice, not a checked fact. If
+    PHI-base has an existing org position, match it; changing the license later is easy while the
+    external contributor set is still small, and gets harder after.
   - **`CITATION.cff` drafted 2026-07-21** (repo root). GitHub auto-detects the filename and adds a
     "Cite this repository" button (APA + BibTeX); Zenodo reads it to pre-fill a release deposition.
-    Four things are deliberately left out so the file doesn't assert anything untrue — each needs a
-    human decision: **(1)** the placeholder **ORCID**; **(2)** the **co-author list** (Hsin-Yu, James,
-    Alayne? — authorship isn't ours to assign); **(3)** `license:` (blocked on the above); **(4)**
-    `version`/`date-released` (omitted rather than left to go stale) and the Zenodo **concept DOI**
-    once a release is minted. Add a `preferred-citation:` block if a PHI-Weaver paper is ever
-    published, so citations point at the article instead of the repo.
+    Three things are still left out so the file doesn't assert anything untrue — each needs a human
+    decision: **(1)** the placeholder **ORCID** (`0000-0000-0000-0000` — until it's swapped, the
+    GitHub button generates a citation containing it, so fix before pointing anyone at the repo);
+    **(2)** the **co-author list** (Hsin-Yu, James, Alayne? — authorship isn't ours to assign);
+    **(3)** `version`/`date-released` (omitted rather than left to go stale) and the Zenodo
+    **concept DOI** once a release is minted. Add a `preferred-citation:` block if a PHI-Weaver
+    paper is ever published, so citations point at the article instead of the repo.
   - **Validate before relying on it** — a YAML typo silently kills the GitHub button with no error.
     `cffconvert` or the `cff-validator` Action.
 

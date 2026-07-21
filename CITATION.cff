@@ -7,6 +7,7 @@ abstract: >-
   workflows using large language models. Covers literature intake, ontology term
   lookup and validation (PHIPO, PHIDO, PECO, GO), annotation drafting against
   documented curation standards, and quality checks.
+license: MIT  # software; repository content is CC BY 4.0 (see LICENSE-CONTENT)
 repository-code: "https://github.com/PHI-base/phi-weaver"
 url: "https://github.com/PHI-base/phi-weaver"
 keywords:
@@ -28,7 +29,6 @@ authors:
     affiliation: Rothamsted Research
 
 # Deliberately omitted, to avoid asserting something that is not yet true:
-#   license:         - no LICENSE file exists in the repo yet (see docs/BACKLOG.md)
 #   version:         - would need updating at every release
 #   date-released:   - ditto
 #   doi:             - add the Zenodo *concept* DOI once a release is minted

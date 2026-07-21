@@ -260,7 +260,16 @@ We welcome contributions to improve PHI-Weaver!
 
 ## 📄 **License**
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This repository is dual-licensed, because it holds both software and written content:
+
+- **Software** — the `phiweaver/` package and the scripts — under the **MIT License**.
+  See [LICENSE](LICENSE).
+- **Content** — the curation standards, documentation, skills and curated example annotations —
+  under **CC BY 4.0**. See [LICENSE-CONTENT](LICENSE-CONTENT). This matches PHI-base practice: the
+  PHIPO ontology is released under CC BY.
+
+Vendored third-party files (e.g. the ontology releases under `phiweaver/lookup/data/`) remain
+under their own licenses.
 
 ## 🏆 **Acknowledgments**
 
