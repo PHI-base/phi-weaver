@@ -211,7 +211,7 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
     stub — do NOT source the full ontologies or the real extension config from there. FYPO_EXT is the
     lone exception because the ontology is genuinely tiny.
 
-- [ ] **PHI-Canto config wired in — two follow-ups for James** (added 2026-07-21). James Seager
+- [ ] **PHI-Canto config wired in — follow-ups for James** (added 2026-07-21). James Seager
   pointed us at `canto_deploy.yaml` in the **private** PHI-base/config repo (email 2026-07-21),
   which is PHI-Canto's own configuration. Now read by **`phiweaver/lookup/canto_config.py`**
   (+ `tests/test_canto_config.py`, 16 tests): enabled annotation types, allele types, evidence
@@ -219,24 +219,47 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
   examples**, so a draft could name an annotation type PHI-Canto doesn't have and nothing caught it.
   Config = **two files merged** (public `canto_base.yaml` from pombase/canto + private overrides);
   provenance, source commits and refresh commands in `phiweaver/lookup/data/README.md`.
-  - **① Ask James to publish `canto_deploy.yaml`** (he said he intends to). Until then it's
-    **gitignored** — cleared for *use*, not for *republication*, and this repo is public — so a
-    fresh clone or CI has the base file only. That matters more than it sounds: base-only is wrong
-    in **both** directions, missing 5 of the 12 types (including `pathogen_phenotype` and
-    `host_phenotype`) while permitting 4 PHI-Canto rejects (`genetic_interaction`, bare
-    `phenotype`, …). Handled by reporting `deploy_loaded = False` + warning on every check, and by
-    **skipping** rather than failing the 10 tests that need it — but it's a real capability gap on
-    any machine without the file. **When published: commit it, drop the `.gitignore` entry.**
+  - **① ⏰ REMINDER — ask James to tell us once the private repos become public.** He said he
+    intends to move `canto_deploy.yaml` to a public repo. **Message to send:** *"Please let me know
+    once the private repos become public. While they are private, a fresh clone of Weaver falls
+    back to pombase's defaults, which are wrong for us, so the checks only work on my machine."*
+    Until then the file is **gitignored** — cleared for *use*, not for *republication*, and this
+    repo is public — so a fresh clone or CI has the base file only. That matters more than it
+    sounds: base-only is wrong in **both** directions, missing 5 of the 12 types (including
+    `pathogen_phenotype` and `host_phenotype`) while permitting 4 PHI-Canto rejects
+    (`genetic_interaction`, bare `phenotype`, …). Handled by reporting `deploy_loaded = False` +
+    warning on every check, and by **skipping** rather than failing the 10 tests that need it — but
+    it's a real capability gap on any machine without the file. **When published: commit it, drop
+    the `.gitignore` entry, and record the source commit in `data/README.md`.** Same applies to the
+    extension TSVs (`phipo_extensions.tsv`) hand-copied from the same private repo.
   - **② Feed back one review note.** His clearance checks out independently (OAuth secret is only
     an env-var *name*, DB ref is a local SQLite path, all 4 emails are role accounts, GA/GTM id is
     public by construction — it's in the live site's page source). Worth telling him the reasoning
     for the GA id is stronger than "Copilot says so", and that the categories to re-check before a
     public move are the deploy-config ones — DSNs, SMTP creds, internal hostnames — not analytics.
-  - **③ Use `do_not_annotate_subsets` in `map_phenotype`** (not yet wired). The config lists the
-    subsets PHI-Canto refuses to annotate against (`canto_root_subset`, `qc_do_not_annotate`,
-    `gocheck_do_not_annotate`, `Grouping_terms`). `map_phenotype` doesn't filter these, so it can
-    suggest a term that exists, is non-obsolete, **and would still be rejected by the curation
-    tool**. That's a live false-suggestion source, now fixable.
+  - **③ ❓ QUESTION for James / Hsin-Yu — is `qc_do_not_manually_annotate` missing from the
+    config?** PHI-Canto's `ontology_namespace_config.do_not_annotate_subsets` lists **GO's**
+    spellings — `gocheck_do_not_annotate`, `gocheck_do_not_manually_annotate` — plus
+    `qc_do_not_annotate` and `canto_root_subset`. But **PHIPO's own** `qc_do_not_manually_annotate`
+    is **not** listed, and **56 PHIPO terms carry it** (vs 67 for `qc_do_not_annotate`). PHI-Canto
+    is a *manual* curation tool, so those 56 terms look like they should be excluded too.
+    `map_phenotype` excludes them already (see ④); the question is whether PHI-Canto itself is
+    letting them through — i.e. whether the config omission is an oversight or deliberate. Frame as
+    a discussion, not a defect report: there may be a reason the GO spellings alone are enough (e.g.
+    Canto normalises the prefixes internally), and that's worth knowing either way.
+  - **④ ✅ DONE 2026-07-21 — `map_phenotype` honours the annotation-usage subsets.** It had been
+    offering terms that exist, are non-obsolete, **and would still be rejected by PHI-Canto**.
+    Worst case was the commonest phrase in PHI-base papers: *"reduced virulence"* returned
+    `PHIPO:0000015` as a **primary** phenotype term when it is `qc_extension_only` and belongs in
+    `infective_ability → PHIPO:0000015`. Now: extension-only terms are **kept and labelled** (hiding
+    them would turn the most common phrases into false gaps); grouping terms are **withheld but
+    still reported** under *"NOT a gap"* (silently dropping them turns a parent-only match into a
+    bare `no_match`, which reads as an ontology gap and invites a duplicate term request — lessons
+    L2/L8, phipo#452); `--include-grouping` promotes them for gap analysis, mirroring
+    `--include-obsolete`. **Driven by PHIPO's own `subset:` tags, not by `canto_config`** — the
+    PHI-Canto list lives in the gitignored deploy file, and a filter depending on a file present on
+    one machine and absent on another would hand two curators different candidates for the same
+    phrase. The committed ontology is identical everywhere. 6 new tests; suite 303 → 309.
   - *Related:* `extension_conf_files` names the 8 extension TSVs PHI-Canto actually loads,
     including the vendored `phipo_extensions.tsv` and `phido_extensions.tsv` — authoritative
     provenance for files previously taken on trust. May also bear on the open **PHIDO validation
