@@ -230,13 +230,17 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
     external contributor set is still small, and gets harder after.
   - **`CITATION.cff` drafted 2026-07-21** (repo root). GitHub auto-detects the filename and adds a
     "Cite this repository" button (APA + BibTeX); Zenodo reads it to pre-fill a release deposition.
-    Three things are still left out so the file doesn't assert anything untrue — each needs a human
-    decision: **(1)** the placeholder **ORCID** (`0000-0000-0000-0000` — until it's swapped, the
-    GitHub button generates a citation containing it, so fix before pointing anyone at the repo);
-    **(2)** the **co-author list** (Hsin-Yu, James, Alayne? — authorship isn't ours to assign);
-    **(3)** `version`/`date-released` (omitted rather than left to go stale) and the Zenodo
-    **concept DOI** once a release is minted. Add a `preferred-citation:` block if a PHI-Weaver
-    paper is ever published, so citations point at the article instead of the repo.
+    ✅ Martin Urban's **ORCID** added 2026-07-21 (`0000-0003-2440-4352`, verified against ORCID's
+    public API — it resolves to the right person). Two things still left out so the file doesn't
+    assert anything untrue: **(1)** the **co-author list** — adding someone needs *both* an
+    intellectual contribution *and* their agreement, since a name on a curation tool implies they'd
+    stand behind its output; note contribution doesn't require having read the repo (the standards
+    encode Hsin-Yu's methodology), but consent is not optional, and until each says yes credit
+    belongs in the README **Acknowledgments** section, not the author list. ORCIDs for co-authors
+    are optional, though they let Zenodo push a release DOI onto the person's ORCID record
+    automatically. **(2)** `version`/`date-released` (omitted rather than left to go stale) and the
+    Zenodo **concept DOI** once a release is minted. Add a `preferred-citation:` block if a
+    PHI-Weaver paper is ever published, so citations point at the article instead of the repo.
   - **Validate before relying on it** — a YAML typo silently kills the GitHub button with no error.
     `cffconvert` or the `cff-validator` Action.
 

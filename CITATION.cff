@@ -19,13 +19,15 @@ keywords:
   - ontology annotation
   - large language models
 authors:
-  # TODO: confirm the co-author list before this file is published or cited.
-  # Candidates from the contribution record: Hsin-Yu Chang (curation standards,
-  # validation authority), James Seager (software), Alayne Cuzick. Authorship is
-  # a human decision, so only the repo owner is listed here for now.
+  # Co-author list still to confirm. Two conditions must both hold before adding
+  # someone: an intellectual contribution to the work, AND their agreement to be
+  # listed (their name on a curation tool implies they stand behind its output).
+  # Candidates: Hsin-Yu Chang (curation standards, validation authority),
+  # James Seager (software), Alayne Cuzick. Until each says yes, credit belongs
+  # in the README Acknowledgments section, not here. ORCIDs are optional.
   - family-names: Urban
     given-names: Martin
-    orcid: "https://orcid.org/0000-0000-0000-0000"  # TODO: replace placeholder
+    orcid: "https://orcid.org/0000-0003-2440-4352"
     affiliation: Rothamsted Research
 
 # Deliberately omitted, to avoid asserting something that is not yet true:
