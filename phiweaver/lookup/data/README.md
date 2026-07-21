@@ -216,3 +216,72 @@ is attested; this file is kept only as the canonical **definitions reference**.
 > vendored and validated offline by `validate_ontology_ids`, so extension values are no longer
 > format-check-only. (Only the two `FYPO_EXT:100000x` grouping-root ids are unresolved — see the
 > caveat above; they are gate roots, not annotation values.)
+
+---
+
+## `canto_base.yaml` + `canto_deploy.yaml` — PHI-Canto's own configuration
+
+What PHI-Canto *accepts*: the enabled annotation types, the legal allele types, the
+evidence codes, and the ontology subsets it refuses to annotate against. Read by
+`phiweaver/lookup/canto_config.py`. Before this, weaver inferred these from
+gold-standard examples, so a draft could name an annotation type that does not exist.
+
+PHI-Canto is a deployment of PomBase's Canto, so the configuration is **two files
+merged** — effective config = base, with the deploy file's top-level keys replacing it:
+
+| file | source | in git? |
+|---|---|---|
+| `canto_base.yaml` | **pombase/canto**, `master`, `canto.yaml` — **public** | ✅ committed |
+| `canto_deploy.yaml` | **PHI-base/config**, `master`, `canto_deploy.yaml` — **private** | ❌ **gitignored** |
+
+**Source commits** (record these when refreshing):
+- `canto_base.yaml` — blob `20534e1938f9`, downloaded 2026-07-21.
+- `canto_deploy.yaml` — commit `4319d2243090` ("Allow TAS evidence code for non-admin
+  users", 2026-01-26), downloaded 2026-07-21.
+
+### ⚠ Why the deploy file is gitignored
+
+It comes from a **private** repo. James Seager cleared it for local use on 2026-07-21 —
+the ORCID OAuth secret lives outside the file (the config holds only the env-var name
+`ORCID_CLIENT_SECRET`), the only database reference is a local SQLite path, all four
+email addresses are role accounts, and the GA/GTM measurement id is public by
+construction since it is served in the page source of the live site. **Clearing a file
+for use is not clearing it for republication**, and this repo is public, so weaver reads
+it locally and does not commit it. James plans to move it to a public repo; when he does,
+commit it here and delete the `.gitignore` entry.
+
+### ⚠ Why the base file is not a usable fallback
+
+A fresh clone has `canto_base.yaml` only. Base-only answers are wrong in **both**
+directions (comparing *enabled* lists — base marks 14 types available but enables 11):
+
+- **PHI-Canto enables, base does not:** `pathogen_phenotype`, `host_phenotype`,
+  `pathogen_host_interaction_phenotype`, `gene_for_gene_phenotype`, `disease_name` —
+  5 of PHI-Canto's 12, including the two most basic ones weaver drafts.
+- **base enables, PHI-Canto does not:** `phenotype`, `genotype_interaction`,
+  `genetic_interaction`, `protein_sequence_feature_or_motif`.
+
+So `canto_config` reports `deploy_loaded = False` and attaches a warning to **every**
+check when the deploy file is missing. Treat that as *"cannot validate"*, never as a
+pass. `tests/test_canto_config.py` skips (does not fail) the 10 tests that need it.
+
+### Refreshing
+
+```bash
+# public base — safe to commit:
+curl -sL https://raw.githubusercontent.com/pombase/canto/master/canto.yaml \
+  -o <phi-weaver>/phiweaver/lookup/data/canto_base.yaml
+
+# private deploy — from a checkout of PHI-base/config (do NOT commit):
+cp canto_deploy.yaml <phi-weaver>/phiweaver/lookup/data/canto_deploy.yaml
+
+python3 -m unittest tests.test_canto_config   # confirm still green
+python3 -m phiweaver.lookup.canto_config      # should print "deploy config loaded: True"
+```
+
+Record the new source commits in this file when you refresh; drift is otherwise invisible.
+
+> **Provenance bonus:** `canto_deploy.yaml`'s `extension_conf_files` lists the 8 extension
+> TSVs PHI-Canto actually loads — including `phipo_extensions.tsv` and
+> `phido_extensions.tsv`, both vendored above. That is the authoritative source list for
+> those files, which previously had to be taken on trust.

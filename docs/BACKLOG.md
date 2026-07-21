@@ -211,6 +211,37 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
     stub — do NOT source the full ontologies or the real extension config from there. FYPO_EXT is the
     lone exception because the ontology is genuinely tiny.
 
+- [ ] **PHI-Canto config wired in — two follow-ups for James** (added 2026-07-21). James Seager
+  pointed us at `canto_deploy.yaml` in the **private** PHI-base/config repo (email 2026-07-21),
+  which is PHI-Canto's own configuration. Now read by **`phiweaver/lookup/canto_config.py`**
+  (+ `tests/test_canto_config.py`, 16 tests): enabled annotation types, allele types, evidence
+  codes, do-not-annotate subsets. **Weaver previously inferred all of this from gold-standard
+  examples**, so a draft could name an annotation type PHI-Canto doesn't have and nothing caught it.
+  Config = **two files merged** (public `canto_base.yaml` from pombase/canto + private overrides);
+  provenance, source commits and refresh commands in `phiweaver/lookup/data/README.md`.
+  - **① Ask James to publish `canto_deploy.yaml`** (he said he intends to). Until then it's
+    **gitignored** — cleared for *use*, not for *republication*, and this repo is public — so a
+    fresh clone or CI has the base file only. That matters more than it sounds: base-only is wrong
+    in **both** directions, missing 5 of the 12 types (including `pathogen_phenotype` and
+    `host_phenotype`) while permitting 4 PHI-Canto rejects (`genetic_interaction`, bare
+    `phenotype`, …). Handled by reporting `deploy_loaded = False` + warning on every check, and by
+    **skipping** rather than failing the 10 tests that need it — but it's a real capability gap on
+    any machine without the file. **When published: commit it, drop the `.gitignore` entry.**
+  - **② Feed back one review note.** His clearance checks out independently (OAuth secret is only
+    an env-var *name*, DB ref is a local SQLite path, all 4 emails are role accounts, GA/GTM id is
+    public by construction — it's in the live site's page source). Worth telling him the reasoning
+    for the GA id is stronger than "Copilot says so", and that the categories to re-check before a
+    public move are the deploy-config ones — DSNs, SMTP creds, internal hostnames — not analytics.
+  - **③ Use `do_not_annotate_subsets` in `map_phenotype`** (not yet wired). The config lists the
+    subsets PHI-Canto refuses to annotate against (`canto_root_subset`, `qc_do_not_annotate`,
+    `gocheck_do_not_annotate`, `Grouping_terms`). `map_phenotype` doesn't filter these, so it can
+    suggest a term that exists, is non-obsolete, **and would still be rejected by the curation
+    tool**. That's a live false-suggestion source, now fixable.
+  - *Related:* `extension_conf_files` names the 8 extension TSVs PHI-Canto actually loads,
+    including the vendored `phipo_extensions.tsv` and `phido_extensions.tsv` — authoritative
+    provenance for files previously taken on trust. May also bear on the open **PHIDO validation
+    gap** item.
+
 - [ ] **Licensing done; `CITATION.cff` still has blanks** (added 2026-07-21). The repo had been
   **public with no license at all** — verified live, `gh api repos/PHI-base/phi-weaver` returned
   `license: null, visibility: public`, with nothing in git history (`git log --all -- LICENSE`
