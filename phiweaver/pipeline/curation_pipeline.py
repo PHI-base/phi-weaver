@@ -263,6 +263,7 @@ class CurationPipeline:
         if HAS_DB:
             self.log_action("Adding to database tracking")
             self.add_to_database(filename, markdown_file)
+            self.record_ingest_provenance(filename, base_name)
 
         # Step 4: Create curation session
         self.log_action("Creating initial session log")
@@ -463,6 +464,52 @@ class CurationPipeline:
 
         except Exception as e:
             print(f"⚠️  Database add error: {e}")
+
+    def record_ingest_provenance(self, filename, base_name):
+        """Record how this paper was ingested, from the converter's own report.
+
+        The report is the honest witness: it knows the route *and* whether the figure
+        graphics actually resolved, which the filename alone cannot tell you — a publisher
+        XML with images fetched separately is no longer captions-only.
+        """
+        try:
+            import sqlite3
+            from phiweaver.source_routes import route_from_filename
+            from phiweaver.tracking import ingest_provenance
+            from phiweaver.tracking.migrations import run_migrations
+
+            route = route_from_filename(filename)
+            figures = None
+            pmid = ""
+
+            report_path = self.inbox_path / f"{base_name}_converted_report.json"
+            if report_path.exists():
+                report = json.loads(report_path.read_text(encoding="utf-8"))
+                pmid = str(report.get("article", {}).get("pmid", "") or "")
+                media = report.get("media")
+                if media is not None:  # JATS report: did the graphics resolve?
+                    figures = not media.get("graphics_absent")
+                    if report.get("article", {}).get("pmcid") and media.get("graphics_present"):
+                        route = "jats-europepmc"
+                elif report.get("statistics", {}).get("figures_found") is not None:
+                    figures = True  # PDF report: images were extracted from the source
+
+            conn = sqlite3.connect(str(self.db_path))
+            run_migrations(conn)
+            recorded = ingest_provenance.record(
+                conn, pmid=pmid, route=route, source_file=filename,
+                figures_inspected=figures, note_path=str(
+                    self.inbox_path / f"{base_name}_converted.md"), title=base_name)
+            conn.close()
+
+            if recorded:
+                self.log_action("✅ Ingest route recorded",
+                                f"{route}, figures={'yes' if figures else 'no'}")
+            else:
+                self.log_action("⚠️  No article row to attach the ingest route to",
+                                f"{route} (article registers at complete-paper)")
+        except Exception as e:
+            self.log_action(f"⚠️  Ingest provenance not recorded: {e}")
 
     def create_initial_session(self, base_name, source_kind="source"):
         """Create initial curation session"""

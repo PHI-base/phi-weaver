@@ -57,8 +57,25 @@ broken row into an entry table). With `--validate`, ontology IDs are checked onl
    interaction / pathogen phenotype / interaction phenotype / disease) → **G** resolve parked
    items before entering any of them.
 
+## Source provenance (required in every draft's `meta` block)
+The queue prints a **`Curated from:`** line above the first table, from three `meta` fields:
+
+- **`source_route`** — one of `pdf`, `jats-publisher`, `jats-europepmc`
+  (`phiweaver.source_routes`). Omitted, it is inferred from `source_file`'s extension.
+- **`source_file`** — the artefact actually read.
+- **`figures_inspected`** — `true`/`false`. Overrides the route's default, because a
+  publisher XML whose images were fetched separately is no longer captions-only.
+
+Record these: the route decides what evidence a draft could rest on. A publisher JATS names
+image files it does not ship, so figures are captions only, and a draft written that way can
+misjudge the evidence — on PMID:39852455 a cell-wall-thickness measurement read as a marginal
+`p < 0.05` from its caption but is a rescued ~2-fold effect in the panel, and a branching claim
+read as quantified when it never was. The same values are stored in the tracking DB
+(`phiweaver.tracking.ingest_provenance`), so `captions_only_articles()` lists the drafts worth
+revisiting if the paper later becomes open access.
+
 ## Expected outputs
-- A short header (citation, system, status, model/tool, date).
+- A short header (citation, system, status, model/tool, date) **and the `Curated from:` line**.
 - Setup tables A–E and annotation tables F1–F5, each row one Canto entry action with a `☐`.
 - A parked-items table (item / why parked / action needed) as the safety filter.
 - A queue summary with the counts and the list of unresolved blockers (held genes).

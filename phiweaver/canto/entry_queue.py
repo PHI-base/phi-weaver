@@ -38,6 +38,8 @@ import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
+from phiweaver.source_routes import describe_source
+
 from phiweaver.common import provenance_line
 from phiweaver.canto.record import extract_record, _s, _fmt_extensions
 
@@ -222,6 +224,12 @@ def render_entry_queue(rec: dict, status: Optional[str] = None,
         f"Date: {_s(meta.get('date'))}" if _s(meta.get("date")) else "",
     ] if x)
     out += ["", hdr, ""]
+
+    # Provenance of the source artefact, before any table — a curator working the queue
+    # needs to know whether the draft's figure claims were read or inferred.
+    source_line = describe_source(meta)
+    if source_line:
+        out += [source_line, ""]
 
     # --- A. Genes ---
     out += ["## A. Enter genes first", ""]
