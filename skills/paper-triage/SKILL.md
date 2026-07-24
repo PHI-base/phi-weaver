@@ -23,9 +23,15 @@ content, so curator time goes to high-value papers.
 - On any new paper/PDF added to the active pipeline, before deep curation.
 
 ## Workflow
-1. Convert/read the paper — for a PDF, run the pipeline's converter
-   (`python3 -m phiweaver.pipeline.curation_pipeline process-pdf <file>`, or
-   `python3 -m phiweaver.pdf.pdf_convert <file>` directly). See `docs/PDF-CONVERTER-USAGE.md`.
+1. Convert/read the paper — run the pipeline's converter, which dispatches on file extension
+   (`python3 -m phiweaver.pipeline.curation_pipeline process-paper <file>`), or call one
+   directly: `python3 -m phiweaver.pdf.pdf_convert <file.pdf>` /
+   `python3 -m phiweaver.jats.jats_convert <file.xml>`. See `docs/PDF-CONVERTER-USAGE.md`.
+   **Prefer JATS XML where both exist** — sections, tables, figure/reference cross-references
+   and the italics on gene names are declared rather than inferred from layout, and there is no
+   OCR step. But check the converter's `graphics_absent` warning: JATS names image files it
+   usually does not ship, so figure content may be **captions only**. If a triage judgement
+   needs the panel itself, say so rather than inferring it from the caption.
 2. Identify pathogen(s) and host(s), and whether an interaction phenotype is studied.
 3. Identify genes/proteins with experimental evidence (knockout, complementation,
    overexpression, biochemical, etc.).

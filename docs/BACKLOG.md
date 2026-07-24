@@ -298,6 +298,53 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
   - **Validate before relying on it** — a YAML typo silently kills the GitHub button with no error.
     `cffconvert` or the `cff-validator` Action.
 
+- [x] **PMC full text as an input format — part (b) DONE 2026-07-24**; part (a) still open.
+  **(b) JATS → markdown converter** shipped as `phiweaver/jats/jats_convert.py` with
+  `tests/test_jats_convert.py` (33 tests, offline). The pipeline now dispatches on file
+  extension (`CONVERTERS` in `phiweaver/pipeline/curation_pipeline.py`): `.pdf` → the PyMuPDF
+  converter, `.xml`/`.nxml`/`.jats` → the JATS converter, both writing the same
+  `<stem>_converted.md` + `_converted_report.json`, so everything downstream is unchanged.
+  New verb `process-paper`; `process-pdf` kept as an alias. Handles JATS tables, recursive
+  section nesting, and back-matter display-object blocks (how MDPI ships figures).
+  **The DOI→PMID/PMCID direction of the ID Converter is wired in** (a JATS file often carries a
+  DOI and no PMID, and the toolchain keys on PMID); failure is a warning, never fatal.
+  **Figures — resolved differently than expected.** There is no JATS counterpart to
+  `pdf_convert.py`'s caption *extraction* because JATS already tags captions exactly. The real
+  problem is the opposite one: JATS names image files it does not ship. The converter therefore
+  audits every `<graphic>` href against disk and reports absent ones in the markdown, the
+  frontmatter and the JSON — so a draft states "captions only" as a fact instead of a reader
+  assuming the panels were seen.
+  **Token cost — now measured, not ballpark** (PMID:39852455, 2333-line MDPI JATS,
+  chars/4 approximation): raw XML **~31k tokens** → parsed markdown **~10.9k** (65% reduction),
+  or **~7.7k** with `--no-references --no-index` (76%). The *parsed* estimate below was accurate;
+  the *raw* estimate (80–150k) was high for an article this size. The direction of the argument
+  holds.
+  **(a) DONE 2026-07-24 too**, via **Europe PMC** rather than NCBI: `phiweaver/jats/europepmc.py`
+  + `tests/test_europepmc.py` (31 tests, offline fixtures), and pipeline verb `from-pmid
+  <PMID|PMCID|DOI>`. One Europe PMC call resolves any identifier *and* returns the access flags,
+  so the NCBI ID Converter was dropped entirely — `jats_convert.resolve_ids_from_doi` now
+  delegates here.
+  **Correction to a common misconception:** there is **no separate "Europe PMC ID"** for journal
+  articles — in a MEDLINE record the `id` field *is* the PMID. The key is the composite
+  `source:id` (`MED:39852455`), which is what `article_ref()` builds.
+  **The availability gate is `isOpenAccess`, not "a PMCID exists".** Verified: PMC206556
+  (avrPto, 1992) has a PMCID and is viewable in Europe PMC, but `fullTextXML` returns **404** and
+  `supplementaryFiles` returns **HTTP 200 with an `<errorBean>` body** — a status code alone will
+  hand you an error message dressed as a zip. Both traps are absorbed by the client and tested.
+  **Figures: solved.** Europe PMC's `supplementaryFiles` endpoint ships the article's **main
+  figure images**, not just supplements — 14 images + the 1.17 MB supplement zip for
+  PMID:39852455 — and the filenames match the `<graphic>` hrefs, so the JATS converter's
+  stem-matching resolves `g001.tif` → `g001.jpg` and the captions-only warning disappears.
+  Re-running PMID:39852455 through this route changed three annotations in the curation draft
+  (one upgraded, one downgraded, one flagged), which is the concrete case for preferring it.
+  **Deliberately NOT used as evidence: the Annotations API.** 378 text-mined entities are
+  available for that paper, but sampling found "mice" → taxid 10095 (*Mus sp.*) instead of 10090,
+  and "guanine nucleotide exchange factor" → UniProt P0CF32 (SDC25_YEASX, *S. cerevisiae*)
+  instead of the article's own Q4WWM8 (SEC2_ASPFU). Exposed behind `--annotations` and documented
+  as a **triage recall aid only**, never evidence, never straight into a `canto` block.
+  **Still open:** on-disk response caching, and a policy decision on `source=PPR` preprints
+  (currently flagged as a scope question, not silently ingested). Original note kept below.
+
 - [ ] **PMC full text as an input format (PMID→PMCID check + JATS parser)** (added 2026-07-21).
   Today the only ingest route is PDF (`phiweaver/pdf/pdf_convert.py`, PyMuPDF). For open-access
   papers — most of what PHI-base curates — **PMC's JATS XML is a strictly better input**: sections,

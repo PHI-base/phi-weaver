@@ -18,7 +18,7 @@ curator assistance*, never a replacement for an expert curator.
 
 | Capability | How | Backed by |
 |---|---|---|
-| **Convert papers** (PDF → clean markdown, images + captions) | `python3 -m phiweaver.pipeline.curation_pipeline process-pdf` | `phiweaver/pdf/` |
+| **Convert papers** (PDF or JATS XML → clean markdown, images + captions) | `python3 -m phiweaver.pipeline.curation_pipeline process-paper` | `phiweaver/pdf/`, `phiweaver/jats/` |
 | **Triage a paper** for curatable PHI content (scope verdict + candidate items) | `paper-triage` skill | reasoning + converter |
 | **Resolve genes/proteins** to a UniProtKB accession + evidence-backed function | `uniprot-lookup` skill | `phiweaver/lookup/query_uniprot.py` |
 | **Create genotypes** (alleles, complementation, multi-allele, expression level) | `genotype-creation` skill | reasoning + PHI-Canto conventions |

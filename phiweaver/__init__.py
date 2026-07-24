@@ -9,7 +9,9 @@ nothing depends on it.
 Subpackages:
 - ``phiweaver.lookup``   — UniProtKB lookup, ontology-ID validation
 - ``phiweaver.tracking`` — SQLite curation-tracking DB + session/reporting tools
-- ``phiweaver.pipeline`` — the PDF→curation orchestration pipeline
+- ``phiweaver.pipeline`` — the source→curation orchestration pipeline (dispatches by format)
+- ``phiweaver.pdf``      — PDF ingest (PyMuPDF); structure inferred from page layout
+- ``phiweaver.jats``     — JATS (NISO Z39.96) journal-XML ingest; structure declared
 """
 
 from pathlib import Path
