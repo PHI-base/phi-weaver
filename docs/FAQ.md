@@ -101,6 +101,49 @@ That covers most of what PHI-base curates. Order of preference: **PMC/publisher 
 PDF → EPUB.** Whatever you use, supplementary data still arrives as PDF/XLSX.
 **See:** `phiweaver/pdf/PDF-CONVERT-SKILL.md` (the PDF→Markdown converter, PyMuPDF).
 
+### Should the model read the figure images, or do the text and legends already do the job?
+**Decline by default; inspect on cause.** Text and captions carry the annotation set itself.
+Measured on PMID:39852455 — curated twice, once from captions only and once with the panels —
+inspecting six figures changed **zero term selections**. Which PHIPO term, which genotype,
+evidence code, conditions and extensions all come from Methods and Results. Reading a figure
+buys **confidence and caveats**, not terms.
+
+**Where the panel is genuinely worth it** — the three causes that justify marking an annotation
+`needs_figure: true`:
+1. **The claim is qualitative** and only the image can confirm it (histopathology, microscopy
+   appearance). The one case where the figure is irreplaceable. On PMID:39852455 the authors
+   describe intact bronchial walls; the panel does not obviously show that, so the annotation
+   was flagged rather than asserted.
+2. **Magnitude decides the annotation** rather than merely describing it. The same paper's
+   cell-wall result reads as a marginal `p < 0.05` from its caption and as a ~2-fold change with
+   full complementation rescue from the panel — which changes the growth-confound judgement.
+3. **It is the paper's take-home message**, where an author's summary is worth checking against
+   their own figure.
+
+**Be honest about what captions already tell you.** Two of the four things the panels "revealed"
+on that paper were already in the text: the caption enumerates which panels were quantified (so
+"branching was never measured" was readable without the image), and the Results prose states the
+*ATG1*/*ATG12* direction outright. **Read the caption properly before deciding you need the
+panel** — "was this quantified?" is usually answerable from the caption alone, and it is the
+single most useful thing to know before spending the tokens.
+
+**Cost** (a vision model bills roughly `width × height / 750`, after a downscale to ~1.15 MP):
+Europe PMC's web-sized figures run ~300–1,100 tokens each (~3,550 for six); figures extracted
+from a PDF are print resolution and cost ~1,500 each (~8,840 for six), about 2.5×. For context,
+the JATS converter saves ~20,000 tokens against feeding raw XML, so selective figure reading
+still leaves you well ahead. Plan the spend with
+`python3 -m phiweaver.figure_ledger <draft.md> --needed`, which separates REQUIRED from optional
+and prices what is still unread.
+
+**Record the decision, don't just make it.** The `figure_inspection` ledger stores one entry per
+figure with what was actually read; declining is fine *with a stated reason*. An entry marked
+inspected with an empty `read` counts as **not** inspected — ticking a box is not looking at a
+figure. The audit still reports, as information rather than a warning, any annotation citing an
+un-inspected figure: that check caught a draft claiming nothing depended on Figure 7 when two GO
+annotations cited it, and inspecting it added a real qualification.
+**See:** `skills/canto-entry-queue/SKILL.md` (ledger fields and entry-queue output),
+`phiweaver/figure_ledger.py` (`needs_figure`, `--needed`, `--strict`).
+
 ### Is "LLM-as-a-judge" a valid way to score curation quality?
 Yes — it's a mainstream evaluation technique. Caveats: a judge must be **ground-truthed** before
 its scores are trusted; without a per-paper gold standard it is a **reference-free critic**

@@ -79,6 +79,15 @@ n/N`**, and any annotation citing an un-inspected figure lands in **F6 — enter
 caption-only** (an advisory, *not* the parked table: a caption-based claim may still be right,
 it is just weaker).
 
+**Policy: decline by default, inspect on cause.** Text and captions carry the annotation set —
+on PMID:39852455, inspecting six panels changed **zero** term selections. Curate from text and
+captions, then mark an annotation `needs_figure: true` (with `needs_figure_reason`) only when
+one of three causes applies: the claim is **qualitative** and only the panel can confirm it;
+**magnitude decides** the annotation rather than describing it; or it is the paper's
+**take-home message**. Only `needs_figure` annotations are hard requirements — everything else
+citing an un-inspected figure is reported as information, so routine declines never read as
+warnings.
+
 **Plan the spend first: `--needed`.** Reading figures costs tokens — a vision model bills an
 image at roughly `width × height / 750`. On PMID:39852455 six panels cost ~3,550 tokens against
 ~10,900 for the parsed text, about +33%. `--needed` lists only the figures the **annotations

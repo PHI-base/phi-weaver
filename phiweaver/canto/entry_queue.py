@@ -351,18 +351,21 @@ def render_entry_queue(rec: dict, status: Optional[str] = None,
 
     # --- F6. Figure-evidence advisories ---
     # Deliberately NOT the parked table: parked means "do not enter", and an annotation
-    # resting on a caption may still be correct. These are enterable but weaker than the
-    # rest, and a curator should know which ones they are.
+    # resting on a caption may still be correct. Only annotations the drafter marked
+    # `needs_figure` appear here — under decline-by-default, curating from text and
+    # captions is the normal path, so routine declines must not fill this section.
     uninspected = figure_audit.get("annotations_on_uninspected", [])
     if uninspected:
-        out += ["### F6. Figure evidence — enterable, but caption-only", "",
-                "*These annotations cite a figure whose panel was not inspected, so the "
-                "claim rests on the caption. On PMID:39852455 that distinction changed "
-                "three annotations.*", ""]
+        out += ["### F6. Figure evidence — marked needs_figure, but not inspected", "",
+                "*These annotations were judged to need their panel read — the claim is "
+                "qualitative, magnitude decides it, or it is the paper's take-home "
+                "message — and the figure was not inspected. Enterable, but weaker than "
+                "intended.*", ""]
         out += _table(
-            ["Annotation", "Cites", "Why it is weaker"],
+            ["Annotation", "Cites", "Why it needs the figure", "Status"],
             [[_cell(f"{i['term_name'] or i['term_id']} on {i['feature']}"),
-              _cell(i["figure"]), _cell(i["reason"])] for i in uninspected]) + [""]
+              _cell(i["figure"]), _cell(i.get("why_needed") or "—"),
+              _cell(i["reason"])] for i in uninspected]) + [""]
 
     # --- G. Parked items ---
     out += ["## G. Parked items — do not enter yet", ""]

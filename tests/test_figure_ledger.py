@@ -72,11 +72,13 @@ class InspectionSemanticsTests(unittest.TestCase):
 
 
 class RosterCrossCheckTests(unittest.TestCase):
-    def test_figure_with_no_ledger_entry_is_missing(self):
+    def test_figure_with_no_ledger_entry_is_reported_but_not_a_failure(self):
+        # Under decline-by-default a figure nobody needed and nobody opened is the
+        # expected state, so it is reported without failing the draft.
         rec = _rec([{"label": "Figure 1", "inspected": True, "read": "x"}])
         result = fl.audit(rec, _report(["Figure 1", "Figure 2"]))
         self.assertEqual(result["missing"], ["Figure 2"])
-        self.assertFalse(result["complete"])
+        self.assertTrue(result["complete"])
 
     def test_ledger_entry_for_a_nonexistent_figure_is_flagged(self):
         rec = _rec([{"label": "Figure 9", "inspected": True, "read": "x"}])
@@ -88,7 +90,8 @@ class RosterCrossCheckTests(unittest.TestCase):
                          ["total_figures"], 3)
 
     def test_unavailable_image_is_reported_as_such(self):
-        rec = _rec(annotations=[{"term_id": "PHIPO:1", "figure": "Figure 3"}])
+        rec = _rec(annotations=[{"term_id": "PHIPO:1", "figure": "Figure 3",
+                                 "needs_figure": True}])
         result = fl.audit(rec, _report(["Figure 3"], not_openable=["Figure 3"]))
         self.assertEqual(result["annotations_on_uninspected"][0]["reason"],
                          "image not available")
@@ -98,14 +101,36 @@ class AnnotationDependencyTests(unittest.TestCase):
     """The check that caught a real error: a figure declared irrelevant that two
     annotations actually cited."""
 
-    def test_annotation_citing_an_uninspected_figure_is_flagged(self):
+    def test_annotation_marked_needs_figure_is_flagged(self):
         rec = _rec(
             figures=[{"label": "Figure 7", "inspected": False, "read": "",
                       "note": "nothing depends on it"}],
             annotations=[{"term_id": "GO:0010508", "term_name": "positive regulation of autophagy",
-                          "feature": "sec2", "figure": "Figure 5A,C; Figure 7A"}])
-        flagged = fl.audit(rec)["annotations_on_uninspected"]
-        self.assertEqual([f["figure"] for f in flagged], ["Figure 5", "Figure 7"])
+                          "feature": "sec2", "figure": "Figure 5A,C; Figure 7A",
+                          "needs_figure": True}])
+        result = fl.audit(rec)
+        self.assertEqual([f["figure"] for f in result["annotations_on_uninspected"]],
+                         ["Figure 5", "Figure 7"])
+        self.assertFalse(result["complete"])
+
+    def test_unmarked_annotation_is_informational_not_a_failure(self):
+        # Decline-by-default: curating this from text and captions is the normal path,
+        # so it is reported for discovery but does not fail the draft.
+        rec = _rec(
+            figures=[{"label": "Figure 7", "inspected": False, "read": "", "note": "n/a"}],
+            annotations=[{"term_id": "GO:0010508", "figure": "Figure 7A"}])
+        result = fl.audit(rec)
+        self.assertEqual(result["annotations_on_uninspected"], [])
+        self.assertEqual([f["figure"] for f in result["optional_uninspected"]],
+                         ["Figure 7"])
+        self.assertTrue(result["complete"])
+
+    def test_needs_figure_reason_is_carried_through(self):
+        rec = _rec(annotations=[{"term_id": "PHIPO:0000985", "figure": "Figure 4C",
+                                 "needs_figure": True,
+                                 "needs_figure_reason": "qualitative histopathology claim"}])
+        item = fl.audit(rec)["annotations_on_uninspected"][0]
+        self.assertEqual(item["why_needed"], "qualitative histopathology claim")
 
     def test_annotation_on_inspected_figures_is_not_flagged(self):
         rec = _rec(
@@ -225,6 +250,16 @@ class NeededFiguresTests(unittest.TestCase):
         self.assertEqual([r["figure"] for r in plan["pending"]], ["Figure 2"])
         self.assertEqual(plan["pending_tokens"], 600)   # 750*600/750, Figure 1 excluded
 
+    def test_required_and_optional_are_separated(self):
+        rec = _rec(annotations=[
+            {"term_id": "A", "figure": "Figure 1", "needs_figure": True},
+            {"term_id": "B", "figure": "Figure 2"}])
+        plan = fl.needed_figures(rec, _report(["Figure 1", "Figure 2"]))
+        self.assertEqual([r["figure"] for r in plan["required"]], ["Figure 1"])
+        by_label = {r["figure"]: r["required"] for r in plan["needed"]}
+        self.assertTrue(by_label["Figure 1"])
+        self.assertFalse(by_label["Figure 2"])
+
     def test_no_annotations_means_nothing_needs_reading(self):
         plan = fl.needed_figures(_rec(), _report(["Figure 1", "Figure 2"]))
         self.assertEqual(plan["needed"], [])
@@ -251,7 +286,9 @@ class EntryQueueIntegrationTests(unittest.TestCase):
             annotations=[{"feature_type": "gene", "feature": "sec2",
                           "annotation_type": "biological_process",
                           "term_id": "GO:0010508", "term_name": "positive regulation of autophagy",
-                          "evidence": "IMP", "figure": "Figure 7A"}])
+                          "evidence": "IMP", "figure": "Figure 7A",
+                          "needs_figure": True,
+                          "needs_figure_reason": "take-home claim"}])
         text = self._render(rec)
         self.assertIn("F6. Figure evidence", text)
         self.assertIn("positive regulation of autophagy", text)

@@ -89,6 +89,26 @@ def _is_inspected(entry: dict) -> bool:
     return bool(entry.get("inspected")) and bool(str(entry.get("read") or "").strip())
 
 
+def needs_figure(annotation: dict) -> bool:
+    """Does this annotation *require* its figure to be read?
+
+    **Policy: decline by default, inspect on cause.** Text and captions carry the
+    annotation set itself — on PMID:39852455, inspecting six panels changed zero term
+    selections. Reading a figure buys confidence and caveats, not terms, so it is spent
+    deliberately rather than by default.
+
+    Mark ``needs_figure: true`` when one of the three causes applies:
+
+    1. the claim is **qualitative** and only the panel can confirm it (histopathology,
+       microscopy appearance) — the one case where the image is irreplaceable;
+    2. **magnitude decides** the annotation rather than merely describing it (the
+       growth-confound convention turns on 2-fold-with-rescue versus marginal);
+    3. it is the paper's **take-home message**, where an author's summary and their own
+       panel are worth checking against each other.
+    """
+    return bool(annotation.get("needs_figure"))
+
+
 def roster_from_report(report: dict) -> List[dict]:
     """The converter's figure roster, if the conversion report carries one."""
     return list((report or {}).get("figures") or [])
@@ -121,18 +141,27 @@ def audit(rec: dict, report: Optional[dict] = None) -> dict:
     missing = sorted(set(expected) - set(ledger))
     unknown = sorted(set(ledger) - set(expected)) if expected else []
 
-    annotations_on_uninspected = []
+    # Two tiers, because the policy is decline-by-default. An annotation explicitly
+    # marked needs_figure is a hard requirement; any other annotation citing an
+    # un-inspected figure is reported as information only — it keeps the discovery value
+    # (this check caught a draft claiming nothing depended on a figure that two GO
+    # annotations cited) without turning routine, deliberate declines into warnings.
+    required_uninspected, optional_uninspected = [], []
     for ann in ((rec.get("canto") or {}).get("annotations") or []):
         for label in figures_cited(ann.get("figure", "")):
-            if label not in inspected:
-                annotations_on_uninspected.append({
-                    "term_id": ann.get("term_id", ""),
-                    "term_name": ann.get("term_name", ""),
-                    "feature": ann.get("feature", ""),
-                    "figure": label,
-                    "reason": ("image not available" if label in not_openable
-                               else "figure not inspected"),
-                })
+            if label in inspected:
+                continue
+            item = {
+                "term_id": ann.get("term_id", ""),
+                "term_name": ann.get("term_name", ""),
+                "feature": ann.get("feature", ""),
+                "figure": label,
+                "reason": ("image not available" if label in not_openable
+                           else "figure not inspected"),
+                "why_needed": str(ann.get("needs_figure_reason") or ""),
+            }
+            (required_uninspected if needs_figure(ann)
+             else optional_uninspected).append(item)
 
     total = len(expected) if expected else len(ledger)
     return {
@@ -145,8 +174,13 @@ def audit(rec: dict, report: Optional[dict] = None) -> dict:
         "claimed_not_read": claimed_not_read,
         "unknown": unknown,
         "not_openable": sorted(not_openable),
-        "annotations_on_uninspected": annotations_on_uninspected,
-        "complete": bool(ledger) and not missing and not claimed_not_read,
+        # Kept under the old key so callers keep working; it now means "required".
+        "annotations_on_uninspected": required_uninspected,
+        "optional_uninspected": optional_uninspected,
+        # Complete means every *required* figure was read. A figure nobody needed and
+        # nobody opened is the expected state, not an omission.
+        "complete": (bool(ledger) and not claimed_not_read
+                     and not required_uninspected),
     }
 
 
@@ -239,7 +273,12 @@ def needed_figures(rec: dict, report: Optional[dict] = None) -> dict:
         for label in figures_cited(ann.get("figure", "")):
             cited.setdefault(label, []).append(who)
 
-    rows, pending_tokens = [], 0
+    required = set()
+    for ann in ((rec.get("canto") or {}).get("annotations") or []):
+        if needs_figure(ann):
+            required.update(figures_cited(ann.get("figure", "")))
+
+    rows, pending_tokens, required_tokens = [], 0, 0
     for label in sorted(cited, key=lambda l: (len(l), l)):
         entry = ledger.get(label, {})
         done = _is_inspected(entry)
@@ -247,10 +286,13 @@ def needed_figures(rec: dict, report: Optional[dict] = None) -> dict:
         tokens = estimate_tokens(images[0]) if images else 0
         if not done:
             pending_tokens += tokens
+            if label in required:
+                required_tokens += tokens
         rows.append({
             "figure": label,
             "cited_by": cited[label],
             "inspected": done,
+            "required": label in required,
             "image": images[0] if images else "",
             "est_tokens": tokens,
         })
@@ -258,6 +300,8 @@ def needed_figures(rec: dict, report: Optional[dict] = None) -> dict:
     not_needed = sorted(set(roster) - set(cited), key=lambda l: (len(l), l))
     return {
         "needed": rows,
+        "required": [r for r in rows if r["required"] and not r["inspected"]],
+        "required_tokens": required_tokens,
         "pending": [r for r in rows if not r["inspected"]],
         "pending_tokens": pending_tokens,
         "not_needed": not_needed,
@@ -274,17 +318,23 @@ def summary_line(result: dict) -> str:
     total = result["total_figures"]
     count = result["inspected_count"]
     problems = []
-    if result["missing"]:
-        problems.append(f"{len(result['missing'])} never opened")
     if result["claimed_not_read"]:
         problems.append(f"{len(result['claimed_not_read'])} ticked without a reading")
     if result["annotations_on_uninspected"]:
         problems.append(
-            f"{len(result['annotations_on_uninspected'])} annotation(s) rest on an "
-            f"un-inspected figure")
+            f"{len(result['annotations_on_uninspected'])} annotation(s) marked "
+            f"needs_figure rest on an un-inspected figure")
     if problems:
         return f"⚠️ **Figures inspected:** {count}/{total} — " + "; ".join(problems)
-    return f"**Figures inspected:** {count}/{total}"
+
+    # Not a warning: under decline-by-default, curating from text and captions is the
+    # normal path. Reported so the reader knows what the draft did and did not look at.
+    note = ""
+    if result["optional_uninspected"]:
+        pending = sorted({i["figure"] for i in result["optional_uninspected"]})
+        note = (f" — {len(pending)} cited figure(s) not inspected "
+                f"({', '.join(pending)}); text and captions were judged sufficient")
+    return f"**Figures inspected:** {count}/{total}{note}"
 
 
 def figures_inspected_flag(rec: dict, report: Optional[dict] = None):
@@ -383,14 +433,20 @@ def main(argv=None) -> int:
             return 0
         print(f"Figures the annotations rest on ({len(plan['needed'])}):")
         for row in plan["needed"]:
-            mark = "✅" if row["inspected"] else "📖"
+            mark = "✅" if row["inspected"] else ("📖" if row["required"] else "○")
+            tier = "REQUIRED" if row["required"] else "optional"
             cost = f"~{row['est_tokens']} tokens" if row["est_tokens"] else "size unknown"
             cited = ", ".join(row["cited_by"][:4]) + (
                 f" +{len(row['cited_by']) - 4} more" if len(row["cited_by"]) > 4 else "")
-            print(f"  {mark} {row['figure']:<10} {cost:<18} cited by: {cited}")
-        if plan["pending"]:
-            print(f"\nStill to read: {len(plan['pending'])} figure(s), "
-                  f"~{plan['pending_tokens']} tokens.")
+            print(f"  {mark} {row['figure']:<10} {tier:<9} {cost:<16} cited by: {cited}")
+        if plan["required"]:
+            print(f"\nMUST read: {len(plan['required'])} figure(s) marked needs_figure, "
+                  f"~{plan['required_tokens']} tokens.")
+        elif plan["pending"]:
+            print(f"\nNothing is marked needs_figure. Optional: {len(plan['pending'])} "
+                  f"figure(s), ~{plan['pending_tokens']} tokens — "
+                  f"decline-by-default says skip unless a claim is qualitative, "
+                  f"magnitude-dependent, or the paper's take-home message.")
         else:
             print("\nAll cited figures have been inspected.")
         if plan["not_needed"]:
