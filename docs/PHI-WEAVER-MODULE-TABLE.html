@@ -1,0 +1,317 @@
+<title>PHI-Weaver Table 1 — Functional modules</title>
+<style>
+  :root {
+    --paper:      #faf9f5;
+    --panel:      #ffffff;
+    --ink:        #1b201c;
+    --muted:      #6a7168;
+    --rule:       #d8d9cf;
+    --rule-heavy: #1b201c;
+    --accent:     #3d6b4d;
+    --amber:      #9a6a22;
+    --slate:      #7d8480;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper:      #14170f00;
+      --paper:      #131614;
+      --panel:      #191d1a;
+      --ink:        #e7e9e2;
+      --muted:      #99a096;
+      --rule:       #2d332e;
+      --rule-heavy: #7f8a80;
+      --accent:     #82b18d;
+      --amber:      #d3a15f;
+      --slate:      #8d948f;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:      #131614;
+    --panel:      #191d1a;
+    --ink:        #e7e9e2;
+    --muted:      #99a096;
+    --rule:       #2d332e;
+    --rule-heavy: #7f8a80;
+    --accent:     #82b18d;
+    --amber:      #d3a15f;
+    --slate:      #8d948f;
+  }
+  :root[data-theme="light"] {
+    --paper:      #faf9f5;
+    --panel:      #ffffff;
+    --ink:        #1b201c;
+    --muted:      #6a7168;
+    --rule:       #d8d9cf;
+    --rule-heavy: #1b201c;
+    --accent:     #3d6b4d;
+    --amber:      #9a6a22;
+    --slate:      #7d8480;
+  }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    font-size: 17px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .sheet {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 3.5rem 1.5rem 5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .eyebrow {
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .caption {
+    max-width: 62ch;
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: var(--ink);
+    text-wrap: pretty;
+  }
+  .caption strong { font-weight: 600; }
+  .caption .sub { color: var(--muted); }
+
+  .scroller {
+    overflow-x: auto;
+    border-top: 1.5px solid var(--rule-heavy);
+    border-bottom: 1.5px solid var(--rule-heavy);
+    background: var(--panel);
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 860px;
+    font-size: 0.9rem;
+  }
+
+  thead th {
+    text-align: left;
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--rule-heavy);
+    white-space: nowrap;
+  }
+
+  tbody td {
+    padding: 0.7rem 1rem;
+    vertical-align: top;
+    border-bottom: 1px solid var(--rule);
+  }
+  tbody tr:last-child td { border-bottom: none; }
+
+  .module {
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .mode {
+    color: var(--muted);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .reason {
+    color: var(--ink);
+    min-width: 30ch;
+    text-wrap: pretty;
+  }
+  .example {
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.8rem;
+    color: var(--ink);
+    min-width: 22ch;
+  }
+  .example .none { color: var(--muted); }
+  .example .rel { color: var(--amber); font-style: normal; }
+  .example .term {
+    display: block;
+    margin-top: 0.15rem;
+    font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    font-size: 0.84rem;
+    font-style: italic;
+    color: var(--muted);
+    text-wrap: pretty;
+  }
+  .example em { font-family: inherit; font-style: italic; }
+
+  .llm {
+    text-align: center;
+    font-size: 1.05rem;
+    line-height: 1.2;
+  }
+  .yes { color: var(--accent); }
+  .no  { color: var(--slate); }
+  .mix { color: var(--amber); }
+
+  code {
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.85em;
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.6rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+    max-width: 78ch;
+  }
+  .legend span { white-space: nowrap; }
+
+  .note {
+    max-width: 62ch;
+    font-size: 0.9rem;
+    color: var(--muted);
+    border-left: 2px solid var(--rule);
+    padding-left: 1rem;
+    text-wrap: pretty;
+  }
+
+  @media (max-width: 640px) {
+    body { font-size: 16px; }
+    .sheet { padding: 2.25rem 1rem 3rem; }
+  }
+</style>
+
+<div class="sheet">
+  <p class="eyebrow">PHI-Weaver · architecture</p>
+
+  <p class="caption">
+    <strong>Table 1. Functional modules of PHI-Weaver and their operating mode.</strong>
+    <span class="sub">All modules are executed by one general-purpose language-model agent; they are
+    stages in a pipeline, not independent agents. Examples are drawn from a validated gold-standard
+    curation of PMID:39787257 (<em>Knr4/Smi1</em> in <em>Fusarium graminearum</em> and
+    <em>Zymoseptoria tritici</em> on wheat).</span>
+  </p>
+
+  <div class="scroller">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Module</th>
+          <th scope="col">Operating mode</th>
+          <th scope="col" style="text-align:center">LLM</th>
+          <th scope="col">Reason</th>
+          <th scope="col">Example</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="module">PDF conversion</td>
+          <td class="mode">Algorithm-based</td>
+          <td class="llm no">✗</td>
+          <td class="reason">Text, figure, caption, and table extraction must be reproducible; no interpretation is involved</td>
+          <td class="example"><span class="none">—</span></td>
+        </tr>
+        <tr>
+          <td class="module">Paper triage</td>
+          <td class="mode">LLM-based</td>
+          <td class="llm yes">✓</td>
+          <td class="reason">Judging whether a paper holds curatable PHI data requires reading comprehension over prose and figures</td>
+          <td class="example"><span class="none">—</span></td>
+        </tr>
+        <tr>
+          <td class="module">Gene/protein resolution</td>
+          <td class="mode">Hybrid</td>
+          <td class="llm mix">◐</td>
+          <td class="reason">Model names candidate genes; the accession and function are returned by a UniProtKB query, never generated</td>
+          <td class="example">A0A1C3YKU0<span class="term">FgKnr4</span></td>
+        </tr>
+        <tr>
+          <td class="module">Genotype construction</td>
+          <td class="mode">LLM-based</td>
+          <td class="llm yes">✓</td>
+          <td class="reason">Mapping described mutants, complementations, and expression levels onto PHI-base's controlled vocabulary is interpretive</td>
+          <td class="example"><em>FgKnr4Δ</em></td>
+        </tr>
+        <tr>
+          <td class="module">Phenotype → PHIPO mapping</td>
+          <td class="mode">Hybrid</td>
+          <td class="llm mix">◐</td>
+          <td class="reason">Model proposes a mapping from the described phenotype; term identity is verified, and <code>no_match</code> is returned rather than an approximation</td>
+          <td class="example">PHIPO:0001020<span class="term">sensitive to calcofluor white</span></td>
+        </tr>
+        <tr>
+          <td class="module">Ontology ID validation</td>
+          <td class="mode">Rule-based</td>
+          <td class="llm no">✗</td>
+          <td class="reason">Existence and obsolescence checks must be transparent, auditable, and identical on every run</td>
+          <td class="example">PHIDO:0000163 <span class="rel">replaced_by</span> PHIDO:0000162<span class="term">Fusarium ear blight</span></td>
+        </tr>
+        <tr>
+          <td class="module">Annotation assembly</td>
+          <td class="mode">LLM-based</td>
+          <td class="llm yes">✓</td>
+          <td class="reason">Evidence codes, conditions, and extensions follow from the paper's experimental design</td>
+          <td class="example">PHIPO:0000365<span class="term">decreased pathogen growth within host</span></td>
+        </tr>
+        <tr>
+          <td class="module">Gene-for-gene curation</td>
+          <td class="mode">LLM-based</td>
+          <td class="llm yes">✓</td>
+          <td class="reason">Encodes curator methodology (guard/decoy versus direct recognition) that has no algorithmic form</td>
+          <td class="example"><span class="none">—</span></td>
+        </tr>
+        <tr>
+          <td class="module">Curation QC</td>
+          <td class="mode">Hybrid</td>
+          <td class="llm mix">◐</td>
+          <td class="reason">Deterministic checks on accessions and term status, combined with model review of completeness and provenance</td>
+          <td class="example">14/14 IDs valid</td>
+        </tr>
+        <tr>
+          <td class="module">PHI-Canto entry queue</td>
+          <td class="mode">Algorithm-based</td>
+          <td class="llm no">✗</td>
+          <td class="reason">Built as a deterministic renderer so it cannot invent an accession, term, or evidence code; unresolved genes and everything depending on them are parked automatically</td>
+          <td class="example"><span class="none">—</span></td>
+        </tr>
+        <tr>
+          <td class="module">Progress tracking</td>
+          <td class="mode">Algorithm-based</td>
+          <td class="llm no">✗</td>
+          <td class="reason">Completion metrics are derived only from explicit structure in the draft, so counts are reproducible</td>
+          <td class="example"><span class="none">—</span></td>
+        </tr>
+        <tr>
+          <td class="module">Benchmark scoring</td>
+          <td class="mode">Rule-based</td>
+          <td class="llm no">✗</td>
+          <td class="reason">Mechanical checks are prefilled automatically; accuracy and completeness ratings are supplied by a curator, so the system never scores itself</td>
+          <td class="example"><span class="none">—</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="legend">
+    <span><span class="yes">✓</span> language-model reasoning</span>
+    <span><span class="no">✗</span> deterministic code</span>
+    <span><span class="mix">◐</span> hybrid: model proposes, code verifies</span>
+    <span><span class="rel" style="font-family:ui-monospace,Menlo,Consolas,monospace">replaced_by</span> the ontology's own relation for a retired term</span>
+  </p>
+
+  <p class="note">
+    Five modules are not exercised by PMID:39787257 and are left blank. Gene-for-gene curation can be
+    filled from the <em>Fusarium oxysporum</em> f. sp. <em>lycopersici</em> gold standard
+    (PMID:26177154) if the table should carry no gaps, at the cost of drawing on two papers.
+  </p>
+</div>
