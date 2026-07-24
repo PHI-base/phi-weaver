@@ -319,7 +319,7 @@ class PmidResolutionTests(unittest.TestCase):
     def _offline(self):
         """Stub the single HTTP chokepoint in the Europe PMC client."""
         original = jc.europepmc._get
-        jc.europepmc._get = lambda url, timeout=None: (0, b"", "")
+        jc.europepmc._get = lambda url, timeout=None, cache=None: (0, b"", "")
         self.addCleanup(lambda: setattr(jc.europepmc, "_get", original))
 
     def _resolving_to(self, pmid, pmcid):
@@ -328,7 +328,8 @@ class PmidResolutionTests(unittest.TestCase):
             {"id": pmid, "source": "MED", "pmid": pmid, "pmcid": pmcid,
              "doi": "10.3390/jof11010036", "title": "t", "isOpenAccess": "Y"}]}}).encode()
         original = jc.europepmc._get
-        jc.europepmc._get = lambda url, timeout=None: (200, body, "application/json")
+        jc.europepmc._get = (
+            lambda url, timeout=None, cache=None: (200, body, "application/json"))
         self.addCleanup(lambda: setattr(jc.europepmc, "_get", original))
 
     def test_empty_doi_short_circuits(self):

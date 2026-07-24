@@ -65,14 +65,16 @@ def _zip_bytes(names):
 
 
 class _StubHTTP:
-    """Route stubbed responses by URL substring; records the calls made."""
+    """Route stubbed responses by URL substring; records the calls and their cache arg."""
 
     def __init__(self, routes):
         self.routes = routes
         self.calls = []
+        self.caches = []
 
-    def __call__(self, url, timeout=ep.TIMEOUT):
+    def __call__(self, url, timeout=ep.TIMEOUT, cache=None):
         self.calls.append(url)
+        self.caches.append(cache)
         for needle, response in self.routes.items():
             if needle in url:
                 return response
@@ -285,6 +287,152 @@ class AcquireTests(unittest.TestCase):
             self.assertFalse(any("supplementaryFiles" in c for c in stub.calls))
 
 
+class ResponseCacheTests(unittest.TestCase):
+    def _cache(self):
+        d = tempfile.TemporaryDirectory()
+        self.addCleanup(d.cleanup)
+        return ep.ResponseCache(d.name)
+
+    def test_roundtrip(self):
+        c = self._cache()
+        c.put("https://x/y", 200, b"payload", "application/xml")
+        status, body, ctype, cached_at = c.get("https://x/y")
+        self.assertEqual((status, body, ctype), (200, b"payload", "application/xml"))
+        self.assertTrue(cached_at)
+
+    def test_miss_returns_none(self):
+        self.assertIsNone(self._cache().get("https://x/never-fetched"))
+
+    def test_distinct_urls_do_not_collide(self):
+        c = self._cache()
+        c.put("https://x/a", 200, b"A", "")
+        c.put("https://x/b", 200, b"B", "")
+        self.assertEqual(c.get("https://x/a")[1], b"A")
+        self.assertEqual(c.get("https://x/b")[1], b"B")
+
+    def test_binary_payload_survives(self):
+        # The whole reason this is not the shared JSON/SQLite cache: zips and XML.
+        c = self._cache()
+        blob = _zip_bytes(["fig-g001.jpg"])
+        c.put("https://x/suppl", 200, blob, "application/zip")
+        self.assertEqual(c.get("https://x/suppl")[1], blob)
+        self.assertTrue(zipfile.ZipFile(io.BytesIO(c.get("https://x/suppl")[1])).namelist())
+
+    def test_corrupt_sidecar_is_a_miss_not_an_error(self):
+        c = self._cache()
+        c.put("https://x/y", 200, b"payload", "")
+        for side in Path(c.path).glob("*.json"):
+            side.write_text("{ not json", encoding="utf-8")
+        self.assertIsNone(c.get("https://x/y"))
+
+    def test_sidecar_records_provenance(self):
+        c = self._cache()
+        c.put("https://x/y", 200, b"payload", "application/xml")
+        meta = json.loads(next(Path(c.path).glob("*.json")).read_text(encoding="utf-8"))
+        self.assertEqual(meta["url"], "https://x/y")
+        self.assertEqual(meta["bytes"], len(b"payload"))
+        self.assertEqual(meta["content_type"], "application/xml")
+
+
+class CachedGetTests(unittest.TestCase):
+    """_get is the single chokepoint, so caching is tested there."""
+
+    def _cache(self):
+        d = tempfile.TemporaryDirectory()
+        self.addCleanup(d.cleanup)
+        return ep.ResponseCache(d.name)
+
+    def _counting_urlopen(self, status=200, body=b"ok", raise_http=None):
+        calls = []
+
+        class _Resp:
+            def __init__(self):
+                self.status, self.headers = status, {"Content-Type": "application/json"}
+
+            def read(self):
+                return body
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *a):
+                return False
+
+        def fake(request, timeout=None):
+            calls.append(getattr(request, "full_url", request))
+            if raise_http:
+                raise raise_http
+            return _Resp()
+
+        original = ep.urllib.request.urlopen
+        ep.urllib.request.urlopen = fake
+        self.addCleanup(lambda: setattr(ep.urllib.request, "urlopen", original))
+        return calls
+
+    def test_second_call_is_served_from_cache(self):
+        calls = self._counting_urlopen()
+        cache = self._cache()
+        first = ep._get("https://x/y", cache=cache)
+        second = ep._get("https://x/y", cache=cache)
+        self.assertEqual(first, second)
+        self.assertEqual(len(calls), 1, "second call should not hit the network")
+
+    def test_without_a_cache_every_call_hits_the_network(self):
+        calls = self._counting_urlopen()
+        ep._get("https://x/y")
+        ep._get("https://x/y")
+        self.assertEqual(len(calls), 2)
+
+    def test_404_is_not_cached_because_embargoes_lift(self):
+        err = ep.urllib.error.HTTPError("https://x/y", 404, "Not Found", {}, None)
+        calls = self._counting_urlopen(raise_http=err)
+        cache = self._cache()
+        self.assertEqual(ep._get("https://x/y", cache=cache), (404, b"", ""))
+        self.assertEqual(ep._get("https://x/y", cache=cache), (404, b"", ""))
+        self.assertEqual(len(calls), 2, "a 404 must be retried, not remembered")
+
+    def test_network_failure_is_not_cached(self):
+        calls = self._counting_urlopen(raise_http=OSError("down"))
+        cache = self._cache()
+        ep._get("https://x/y", cache=cache)
+        ep._get("https://x/y", cache=cache)
+        self.assertEqual(len(calls), 2)
+
+    def test_empty_200_is_not_cached(self):
+        calls = self._counting_urlopen(body=b"")
+        cache = self._cache()
+        ep._get("https://x/y", cache=cache)
+        ep._get("https://x/y", cache=cache)
+        self.assertEqual(len(calls), 2)
+
+    def test_cache_is_threaded_through_acquire(self):
+        blob = _zip_bytes(["g001.jpg"])
+        stub = _patch(self, {
+            "/search": (200, _search_body([OA_RESULT]), "application/json"),
+            "/fullTextXML": (200, FULL_TEXT_XML, "application/xml"),
+            "/supplementaryFiles": (200, blob, "application/zip"),
+        })
+        cache = self._cache()
+        with tempfile.TemporaryDirectory() as d:
+            ep.acquire("39852455", d, cache=cache)
+        # Every network call in acquire must carry the cache through, not drop it —
+        # a dropped kwarg is silent and would re-download the multi-MB zip each run.
+        self.assertEqual(len(stub.calls), 3)
+        self.assertTrue(all(c is cache for c in stub.caches), stub.caches)
+
+    def test_default_cache_path_honours_env_var(self):
+        import os
+        original = os.environ.get("EPMC_CACHE")
+        os.environ["EPMC_CACHE"] = "/tmp/epmc-test-cache"
+        try:
+            self.assertEqual(ep.default_cache_path(), "/tmp/epmc-test-cache")
+        finally:
+            if original is None:
+                del os.environ["EPMC_CACHE"]
+            else:
+                os.environ["EPMC_CACHE"] = original
+
+
 class AnnotationsTests(unittest.TestCase):
     def test_annotations_parsed(self):
         body = json.dumps([{"annotations": [
@@ -298,6 +446,17 @@ class AnnotationsTests(unittest.TestCase):
     def test_failure_returns_empty_list(self):
         _patch(self, {"annotationsByArticleIds": (500, b"", "")})
         self.assertEqual(ep.fetch_annotations("MED:39852455"), [])
+
+    def test_client_bug_cannot_abort_a_conversion(self):
+        # Enrichment must degrade, not propagate: a broken _get signature once surfaced
+        # as "conversion failed" on an otherwise perfect conversion.
+        from phiweaver.jats import jats_convert as jc
+        original = ep._get
+        ep._get = lambda url: (_ for _ in ()).throw(TypeError("bad signature"))
+        try:
+            self.assertEqual(jc.resolve_ids_from_doi("10.3390/jof11010036"), {})
+        finally:
+            ep._get = original
 
     def test_docstring_records_the_known_error_rate(self):
         # The caveat is load-bearing: these annotations must never become evidence.

@@ -280,7 +280,7 @@ class CurationPipeline:
 
         return True
 
-    def from_identifier_workflow(self, identifier, fetch_media=True):
+    def from_identifier_workflow(self, identifier, fetch_media=True, no_cache=False):
         """Acquire a paper from Europe PMC by PMID/PMCID/DOI, then process it.
 
         Prefers full text XML **with figure images** over a PDF, because Europe PMC's
@@ -298,13 +298,18 @@ class CurationPipeline:
         print("=" * 50)
         self.ensure_storage()
 
+        cache = None if no_cache else europepmc.ResponseCache(
+            europepmc.default_cache_path())
         try:
             manifest = europepmc.acquire(
                 identifier, self.inbox_path, fetch_media=fetch_media,
-                media_dir=None)
+                media_dir=None, cache=cache)
         except europepmc.EuropePMCError as e:
             print(f"❌ {e}")
             return False
+        finally:
+            if cache:
+                cache.close()
 
         record = manifest["record"]
         if not record.get("found"):
@@ -577,10 +582,11 @@ def main():
 
     elif command == "from-pmid":
         if len(sys.argv) < 3:
-            print("Usage: from-pmid <PMID|PMCID|DOI> [--no-media]")
+            print("Usage: from-pmid <PMID|PMCID|DOI> [--no-media] [--no-cache]")
             return
         pipeline.from_identifier_workflow(
-            sys.argv[2], fetch_media="--no-media" not in sys.argv)
+            sys.argv[2], fetch_media="--no-media" not in sys.argv,
+            no_cache="--no-cache" in sys.argv)
 
     elif command in ("process-paper", "process-pdf"):
         if len(sys.argv) < 3:

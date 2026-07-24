@@ -342,8 +342,19 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
   and "guanine nucleotide exchange factor" → UniProt P0CF32 (SDC25_YEASX, *S. cerevisiae*)
   instead of the article's own Q4WWM8 (SEC2_ASPFU). Exposed behind `--annotations` and documented
   as a **triage recall aid only**, never evidence, never straight into a `canto` block.
-  **Still open:** on-disk response caching, and a policy decision on `source=PPR` preprints
-  (currently flagged as a scope question, not silently ingested). Original note kept below.
+  **Caching DONE 2026-07-24.** `europepmc.ResponseCache` — an on-disk blob cache keyed by URL,
+  with `--cache` / `--no-cache` / `EPMC_CACHE` mirroring `query_uniprot`'s conventions. It is
+  deliberately **not** `phiweaver.common.ResponseCache`: that stores JSON in SQLite, and these
+  payloads are full text XML and a 1.9 MB figure ZIP per article. Each entry is a `.bin` blob
+  plus an inspectable `.json` sidecar (url, status, content type, bytes, fetched-at).
+  **Only HTTP 200s with a body are stored.** A 404 is deliberately *not* cached: Europe PMC
+  returns one for an embargoed article, embargoes lift, and a remembered 404 would permanently
+  hide a paper that has since become open access. Measured on PMID:39852455: 1.93 s cold →
+  0.50 s warm, and the 1.9 MB ZIP stops being re-fetched on every run.
+  **Still open:** a policy decision on `source=PPR` preprints (currently flagged as a scope
+  question, not silently ingested), and the author-manuscript check — for some deposits PMC
+  holds the *accepted manuscript* rather than the version of record, and whether Europe PMC
+  exposes a clean flag for that is unverified. Original note kept below.
 
 - [ ] **PMC full text as an input format (PMID→PMCID check + JATS parser)** (added 2026-07-21).
   Today the only ingest route is PDF (`phiweaver/pdf/pdf_convert.py`, PyMuPDF). For open-access

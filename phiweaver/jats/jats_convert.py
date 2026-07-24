@@ -136,7 +136,10 @@ def resolve_ids_from_doi(doi: str, timeout: float = 15.0) -> dict:
         return {}
     try:
         record = europepmc.resolve(doi, timeout=timeout)
-    except europepmc.EuropePMCError:
+    except Exception:
+        # Deliberately broad. This is enrichment: an unparseable DOI, a client bug or
+        # anything else here must degrade to "no PMID", never abort a conversion that
+        # has already succeeded in every other respect.
         return {}
     if not record.get("found"):
         return {}
