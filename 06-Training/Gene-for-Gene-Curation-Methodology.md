@@ -158,17 +158,26 @@ Use when supported by data (RT-qPCR, RNA-seq) — the `wt_rna_expression` annota
 annotation: *RNA level increased → during response to host*.
 
 The RNA-level **qualifier is a controlled phrase**, not free text: pick exactly one of the seven
-PomGeneEx qualifiers below (use the phrase — the numeric IDs are not required for the draft):
+PomGeneEx qualifiers below. **Carry the `PomGeneEx:` ID as well as the phrase** (curator ruling
+2026-07-24, superseding the terms-only scope of 2026-07-16); the IDs validate offline against
+`phiweaver/lookup/data/pomgeneex.obo`:
 
-| Qualifier phrase | Use when |
-|------------------|----------|
-| RNA level increased | RNA present at a higher level under one condition/time than otherwise |
-| RNA level decreased | RNA present at a lower level under one condition/time than otherwise |
-| RNA level unchanged | RNA present at the same level under one condition/time as otherwise |
-| RNA present | RNA detected (no level comparison) |
-| RNA absent | RNA not detected |
-| RNA level constant | level stays steady across conditions/time |
-| RNA level fluctuates | level varies across conditions/time |
+| Qualifier phrase | ID | Use when |
+|------------------|----|----------|
+| RNA level increased | PomGeneEx:0000011 | RNA present at a higher level under one condition/time than otherwise |
+| RNA level decreased | PomGeneEx:0000012 | RNA present at a lower level under one condition/time than otherwise |
+| RNA level unchanged | PomGeneEx:0000013 | RNA present at the same level under one condition/time as otherwise |
+| RNA present | PomGeneEx:0000014 | RNA detected (no level comparison) |
+| RNA absent | PomGeneEx:0000015 | RNA not detected |
+| RNA level constant | PomGeneEx:0000016 | level stays steady across conditions/time |
+| RNA level fluctuates | PomGeneEx:0000017 | level varies across conditions/time |
+
+> **ID provenance — not independently verified.** The seven IDs are curator-supplied
+> (2026-07-24); no public PomGeneEx release artifact was located to check them against. The
+> *phrases* were separately confirmed from a PHI-Canto UI screenshot (2026-07-11). Re-confirm
+> the ID↔phrase pairing in Canto before treating the bundled `.obo` as authoritative.
+> The parallel **protein**-level vocabulary (`PomGeneExProt`, `wt_protein_expression`) has no
+> IDs recorded — use the phrase alone there.
 
 Keep the numeric specifics (fold-change, timepoints, method) in the annotation comment. Do not
 invent a qualifier outside this list; if none fits, say so rather than forcing one.

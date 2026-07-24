@@ -1,0 +1,49 @@
+format-version: 1.2
+default-namespace: PomGeneExRNA
+ontology: pomgeneex
+remark: The controlled RNA-level qualifier terms offered by PHI-Canto's wt_rna_expression
+remark: annotation type (namespace PomGeneExRNA in canto_base.yaml). Not hosted by OLS4, so
+remark: IDs resolve offline against this file — the same pattern as fypo_extension.obo.
+remark: PROVENANCE: the seven IDs were supplied by the curator (Martin Urban) on 2026-07-24
+remark: and are NOT independently verified against a PomBase release — no public PomGeneEx
+remark: artifact was located. The phrases themselves were already confirmed from a PHI-Canto
+remark: UI screenshot on 2026-07-11 (see docs/BACKLOG.md). Re-confirm the ID/phrase pairing
+remark: against Canto before treating this file as authoritative.
+remark: SCOPE: RNA-level qualifiers only. The parallel protein-level vocabulary
+remark: (PomGeneExProt, used by wt_protein_expression) is NOT included — its IDs were not
+remark: supplied, so a protein-level annotation must still carry the phrase alone.
+
+[Term]
+id: PomGeneEx:0000011
+name: RNA level increased
+def: "RNA present at a higher level under one condition or timepoint than otherwise." [PHI-Canto:curators]
+
+[Term]
+id: PomGeneEx:0000012
+name: RNA level decreased
+def: "RNA present at a lower level under one condition or timepoint than otherwise." [PHI-Canto:curators]
+
+[Term]
+id: PomGeneEx:0000013
+name: RNA level unchanged
+def: "RNA present at the same level under one condition or timepoint as otherwise." [PHI-Canto:curators]
+
+[Term]
+id: PomGeneEx:0000014
+name: RNA present
+def: "RNA detected, with no level comparison made." [PHI-Canto:curators]
+
+[Term]
+id: PomGeneEx:0000015
+name: RNA absent
+def: "RNA not detected." [PHI-Canto:curators]
+
+[Term]
+id: PomGeneEx:0000016
+name: RNA level constant
+def: "RNA level stays steady across conditions or timepoints." [PHI-Canto:curators]
+
+[Term]
+id: PomGeneEx:0000017
+name: RNA level fluctuates
+def: "RNA level varies across conditions or timepoints." [PHI-Canto:curators]

@@ -33,7 +33,7 @@ clean, provenance-complete draft.
    that carry no PECO term (numeric specifics may stay in the comment).
 3. Check each annotation has: evidence type, source location (figure/table), and
    experimental conditions where relevant. **RNA-expression (`wt_rna_expression`) annotations must
-   use one of the seven controlled PomGeneEx qualifier phrases** (RNA level increased / decreased /
+   use one of the seven controlled PomGeneEx qualifier phrases, and carry its `PomGeneEx:` ID** (RNA level increased / decreased /
    unchanged / constant / fluctuates, RNA present, RNA absent — see
    `06-Training/Gene-for-Gene-Curation-Methodology.md` §9) — flag a free-prose RNA-level qualifier
    (numeric specifics belong in the comment).

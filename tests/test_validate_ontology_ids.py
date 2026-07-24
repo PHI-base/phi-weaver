@@ -395,6 +395,51 @@ class FypoExtOfflineTests(unittest.TestCase):
         self.assertEqual(ids, ["PHIPO_EXT:0000001", "FYPO_EXT:0000001", "PHIPO:0000015"])
 
 
+class PomGeneExOfflineTests(unittest.TestCase):
+    """PomGeneEx holds the seven controlled RNA-level qualifiers behind wt_rna_expression.
+    Not on OLS; resolved offline against the bundled pomgeneex.obo."""
+
+    def test_format_and_split(self):
+        prefix, ok = v.check_format("PomGeneEx:0000011")
+        self.assertEqual(prefix, "PomGeneEx")
+        self.assertTrue(ok)
+
+    def test_all_seven_qualifiers_resolve(self):
+        val = v.OntologyValidator()
+        expected = {
+            "0000011": "RNA level increased", "0000012": "RNA level decreased",
+            "0000013": "RNA level unchanged", "0000014": "RNA present",
+            "0000015": "RNA absent", "0000016": "RNA level constant",
+            "0000017": "RNA level fluctuates",
+        }
+        for local, label in expected.items():
+            r = val.validate(f"PomGeneEx:{local}")
+            self.assertEqual(r.existence, "exists", local)
+            self.assertEqual(r.label, label)
+            self.assertEqual(r.source, v.POMGENEEX_SOURCE)
+            self.assertTrue(r.ok)
+
+    def test_mixed_case_prefix_reports_canonical_spelling(self):
+        # Matched case-insensitively, but must not be shouted back as POMGENEEX.
+        self.assertEqual(v.check_format("pomgeneex:0000011")[0], "PomGeneEx")
+
+    def test_missing_id_not_found(self):
+        r = v.OntologyValidator().validate("PomGeneEx:0000099")
+        self.assertEqual(r.existence, "not_found")
+        self.assertFalse(r.ok)
+
+    def test_no_network_used(self):
+        def boom(url, params):
+            raise AssertionError("PomGeneEx must not hit OLS/the network")
+        r = v.OntologyValidator(http_get=boom).validate("PomGeneEx:0000015")
+        self.assertEqual(r.existence, "exists")
+        self.assertEqual(r.label, "RNA absent")
+
+    def test_extraction_picks_up_pomgeneex(self):
+        ids = v.extract_ids("PomGeneEx:0000011 and PHIPO:0000015")
+        self.assertEqual(ids, ["PomGeneEx:0000011", "PHIPO:0000015"])
+
+
 class LoaderTests(unittest.TestCase):
     def test_load_phido_parses_terms_and_obsolete_flags(self):
         idx = v._load_phido()

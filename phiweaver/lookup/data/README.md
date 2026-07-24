@@ -143,6 +143,28 @@ resolves `FYPO_EXT:` IDs **offline** against this bundled copy.
   `high`/`medium`/`low`/`complete`, not the root). PHI-base/canto's *other* `t/data/*_small.obo`
   files are truncated test fixtures — do NOT source PHIPO/GO/etc. from there.
 
+## `pomgeneex.obo` — PomGeneEx (RNA-level qualifiers, prefix `PomGeneEx:`)
+
+The seven controlled qualifiers behind PHI-Canto's `wt_rna_expression` annotation type
+(namespace `PomGeneExRNA` in `canto_base.yaml`): `RNA level increased` / `decreased` /
+`unchanged` / `constant` / `fluctuates`, `RNA present`, `RNA absent`. Not on OLS4, so
+`validate_ontology_ids` resolves `PomGeneEx:` IDs **offline** against this file — the same
+pattern as `fypo_extension.obo`. The prefix is matched case-insensitively but reported in its
+canonical mixed-case spelling.
+
+- **Source**: **none — hand-written from IDs supplied by the curator on 2026-07-24.** No public
+  PomGeneEx release artifact was located, so these IDs are **not verified against an upstream
+  file**. The *phrases* have independent backing (PHI-Canto UI screenshot, 2026-07-11); the
+  ID↔phrase *pairing* does not. This is the only bundled ontology here without an upstream.
+- **History**: a 2026-07-16 curator ruling scoped this vocabulary to **terms-only** (no IDs, no
+  bundled ontology). **Superseded 2026-07-24** when the IDs were supplied — see the closed item
+  in `docs/BACKLOG.md`.
+- **Caveat — RNA only.** The parallel protein-level vocabulary (`PomGeneExProt`, used by
+  `wt_protein_expression`) has **no IDs recorded**, so those annotations still carry the phrase
+  alone; `entry_queue` accordingly still accepts a blank `term_id` for both types.
+- **Action**: re-confirm the pairing in Canto, then either replace this file with an upstream
+  copy or record here that no upstream exists.
+
 > **⚠ Hand-vendored from a private repo — rewire when public.** The four extension-config files
 > below (`phipo_extensions.tsv`, `phibase_go_extensions.tsv`, `phido_extensions.tsv`,
 > `phipo_extension_relations.obo`) were **copied in by hand** from the **private** PHI-base/config

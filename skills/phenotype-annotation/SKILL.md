@@ -54,7 +54,7 @@ annotation; choosing the PHIPO term itself is delegated to the phipo-mapping ski
    keep numeric specifics (exact medium, temperature, duration) in the annotation comment. Don't
    force a term where none fits; do not over-specify conditions implied by the phenotype term.
 5. For an **RNA-expression** annotation (`wt_rna_expression`, from RT-qPCR / RNA-seq), the
-   RNA-level qualifier is a **controlled phrase** — use exactly one of the seven PomGeneEx
+   RNA-level qualifier is a **controlled phrase with an ID** — use exactly one of the seven PomGeneEx
    qualifiers (RNA level increased / decreased / unchanged / constant / fluctuates, RNA present,
    RNA absent), not free prose. See `06-Training/Gene-for-Gene-Curation-Methodology.md` §9 for the
    phrase list and when to use each; keep fold-change / timepoints / method in the comment. IDs are

@@ -64,7 +64,11 @@ USER_AGENT = "PHI-Weaver-validate-ontology-ids/1.0 (https://github.com/PHI-base/
 DEFAULT_CACHE = Path(__file__).resolve().parent / ".cache" / "ontology_cache.sqlite"
 
 # Ontology-term prefixes we recognise (as opposed to UniProtKB accessions).
-OBO_PREFIXES = {"PHIPO", "PHIPO_EXT", "GO", "PHIDO", "MOD", "BTO", "PECO", "FYPO_EXT"}
+OBO_PREFIXES = {"PHIPO", "PHIPO_EXT", "GO", "PHIDO", "MOD", "BTO", "PECO", "FYPO_EXT",
+                "PomGeneEx"}
+# Prefixes are matched case-insensitively but reported in their canonical spelling, so a
+# mixed-case prefix like PomGeneEx round-trips as written rather than being shouted back.
+_PREFIX_BY_UPPER = {p.upper(): p for p in OBO_PREFIXES}
 # The subset we verify online, mapped to their OLS ontology name. PHIDO and PECO are absent
 # on purpose: OLS4 hosts neither, so they resolve offline against a bundled .obo.
 # (PECO here = the PHI-base experimental-conditions ontology / PHI-ECO — NOT the Planteome
@@ -89,6 +93,11 @@ PHIPO_OBO_PATH = Path(__file__).resolve().parent / "data" / "phipo-base.obo"
 PHIPO_SOURCE = "bundled phipo-base.obo"
 FYPO_EXT_OBO_PATH = Path(__file__).resolve().parent / "data" / "fypo_extension.obo"
 FYPO_EXT_SOURCE = "bundled fypo_extension.obo"
+# PomGeneEx: the RNA-level qualifier vocabulary behind PHI-Canto's wt_rna_expression type.
+# Not on OLS4; IDs are curator-supplied rather than taken from a published release — see the
+# provenance remarks in the .obo itself before relying on them.
+POMGENEEX_OBO_PATH = Path(__file__).resolve().parent / "data" / "pomgeneex.obo"
+POMGENEEX_SOURCE = "bundled pomgeneex.obo"
 
 # Sentinel: "no PHIDO index was injected, use the bundled one". Distinct from an
 # injected None, which models an unreadable ontology file.
@@ -101,7 +110,8 @@ _UNSET = object()
 _OBO7_RE = re.compile(r"\d{7}$")
 _MOD_RE = re.compile(r"\d{5}$")
 _LOCAL_ID_RE = {"PHIPO": _OBO7_RE, "PHIPO_EXT": _OBO7_RE, "GO": _OBO7_RE, "PHIDO": _OBO7_RE,
-                "MOD": _MOD_RE, "BTO": _OBO7_RE, "PECO": _OBO7_RE, "FYPO_EXT": _OBO7_RE}
+                "MOD": _MOD_RE, "BTO": _OBO7_RE, "PECO": _OBO7_RE, "FYPO_EXT": _OBO7_RE,
+                "PomGeneEx": _OBO7_RE}
 _UNIPROT_RE = re.compile(
     r"(?:[OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9](?:[A-Z][A-Z0-9]{2}[0-9]){1,2})"
     r"(?:-\d+)?$"
@@ -112,7 +122,8 @@ _UNIPROT_PREFIXES = {"UNIPROTKB", "UNIPROT"}
 # Matches any candidate ontology ID in free text, for --file extraction.
 # PHIPO_EXT must precede PHIPO in the alternation so the longer prefix wins.
 _ID_IN_TEXT_RE = re.compile(
-    r"\b(PHIPO_EXT|PHIPO|FYPO_EXT|PHIDO|GO|MOD|BTO|PECO|UniProtKB|UniProt):[A-Za-z0-9-]+",
+    r"\b(PHIPO_EXT|PHIPO|FYPO_EXT|PHIDO|GO|MOD|BTO|PECO|PomGeneEx|UniProtKB|UniProt)"
+    r":[A-Za-z0-9-]+",
     re.IGNORECASE)
 
 
@@ -164,8 +175,8 @@ def _split_id(raw: str):
         return None, raw
     prefix, local = raw.split(":", 1)
     key = prefix.strip().upper()
-    if key in OBO_PREFIXES:
-        return key, local.strip()
+    if key in _PREFIX_BY_UPPER:
+        return _PREFIX_BY_UPPER[key], local.strip()
     if key in _UNIPROT_PREFIXES:
         return "UniProtKB", local.strip()
     return None, raw
@@ -252,13 +263,19 @@ def _fypo_ext_index() -> Optional[Dict[str, Tuple[Optional[str], bool]]]:
     return _load_phido(FYPO_EXT_OBO_PATH)
 
 
+@lru_cache(maxsize=1)
+def _pomgeneex_index() -> Optional[Dict[str, Tuple[Optional[str], bool]]]:
+    """Module-level cache of the parsed bundled PomGeneEx ontology (None if unavailable)."""
+    return _load_phido(POMGENEEX_OBO_PATH)
+
+
 # ------------------------------------------------------------------------- Client
 
 class OntologyValidator:
     def __init__(self, cache: Optional[ResponseCache] = None,
                  http_get: Optional[Callable] = None,
                  phido_index=_UNSET, peco_index=_UNSET, phipo_ext_index=_UNSET,
-                 fypo_ext_index=_UNSET, phipo_index=_UNSET):
+                 fypo_ext_index=_UNSET, phipo_index=_UNSET, pomgeneex_index=_UNSET):
         self.cache = cache
         self._http_get = http_get or _requests_get
         # Injectable for tests; falls back to the bundled ontology when not supplied.
@@ -267,6 +284,7 @@ class OntologyValidator:
         self._phipo_ext_index = phipo_ext_index
         self._fypo_ext_index = fypo_ext_index
         self._phipo_index = phipo_index
+        self._pomgeneex_index = pomgeneex_index
 
     def _get(self, url: str, params: dict, use_cache: bool):
         key = url + "?" + json.dumps(params, sort_keys=True)
@@ -288,7 +306,7 @@ class OntologyValidator:
         if prefix is None:
             return ValidationResult(raw, None, False, "unknown_prefix",
                                     None, None, False, None,
-                                    "unrecognised prefix; expected PHIPO/PHIPO_EXT/GO/PHIDO/MOD/BTO/PECO/FYPO_EXT/UniProtKB")
+                                    "unrecognised prefix; expected PHIPO/PHIPO_EXT/GO/PHIDO/MOD/BTO/PECO/FYPO_EXT/PomGeneEx/UniProtKB")
         if not fmt_ok:
             return ValidationResult(raw, prefix, False, "format_invalid",
                                     None, None, False, None,
@@ -322,6 +340,10 @@ class OntologyValidator:
             # FYPO_EXT is a small PomBase extension ontology (penetrance/severity values:
             # high/medium/low/complete); not on OLS; resolve offline.
             return self._validate_fypo_ext(raw)
+        if prefix == "PomGeneEx":
+            # PomGeneEx holds the seven controlled RNA-level qualifiers behind
+            # wt_rna_expression; not on OLS; resolve offline.
+            return self._validate_pomgeneex(raw)
 
         # GO/PHIPO: verify existence + obsolescence via OLS.
         obo_id = f"{prefix}:{raw.split(':', 1)[1].strip()}"
@@ -372,6 +394,12 @@ class OntologyValidator:
         """Resolve a FYPO_EXT ID offline against the bundled ontology."""
         index = _fypo_ext_index() if self._fypo_ext_index is _UNSET else self._fypo_ext_index
         return self._validate_offline(raw, "FYPO_EXT", index, FYPO_EXT_SOURCE, FYPO_EXT_OBO_PATH)
+
+    def _validate_pomgeneex(self, raw: str) -> ValidationResult:
+        """Resolve a PomGeneEx ID offline against the bundled ontology."""
+        index = _pomgeneex_index() if self._pomgeneex_index is _UNSET else self._pomgeneex_index
+        return self._validate_offline(raw, "PomGeneEx", index, POMGENEEX_SOURCE,
+                                      POMGENEEX_OBO_PATH)
 
     @staticmethod
     def _validate_offline(raw: str, prefix: str, index, source: str, path) -> ValidationResult:

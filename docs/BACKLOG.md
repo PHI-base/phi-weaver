@@ -103,7 +103,10 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
   and the phrase "RNA level increased" (one gold-standard example, PINE1/PMID:35468894) but not the
   full controlled set of RNA-level qualifiers. **Terms-only scope (curator, 2026-07-16): the
   qualifier IDs are NOT needed — only the term phrases** (no offline ontology, no `PomGeneEx` prefix
-  in `validate_ontology_ids`). The seven controlled qualifier phrases (PHI-Canto UI screenshot
+  in `validate_ontology_ids`). **SUPERSEDED 2026-07-24:** the curator supplied the seven IDs, so the
+  IDs ARE now carried — vendored as `phiweaver/lookup/data/pomgeneex.obo`, `PomGeneEx` registered in
+  `validate_ontology_ids` (offline, like FYPO_EXT). IDs are curator-supplied and **not verified against
+  a published PomGeneEx release**; see the provenance remarks in the `.obo`. The seven controlled qualifier phrases (PHI-Canto UI screenshot
   2026-07-11): RNA level increased, RNA level decreased, RNA level unchanged, RNA present, RNA
   absent, RNA level constant, RNA level fluctuates. **Surfaced to the drafting workflow (2026-07-16):**
   authoritative phrase table + per-phrase "use when" added to `Gene-for-Gene-Curation-Methodology.md`
