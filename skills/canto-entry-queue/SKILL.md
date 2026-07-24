@@ -79,6 +79,20 @@ n/N`**, and any annotation citing an un-inspected figure lands in **F6 — enter
 caption-only** (an advisory, *not* the parked table: a caption-based claim may still be right,
 it is just weaker).
 
+**Plan the spend first: `--needed`.** Reading figures costs tokens — a vision model bills an
+image at roughly `width × height / 750`. On PMID:39852455 six panels cost ~3,550 tokens against
+~10,900 for the parsed text, about +33%. `--needed` lists only the figures the **annotations
+actually cite**, with the estimated cost of the ones still unread, so selective reading is a
+decision rather than a guess:
+
+```
+📖 Figure 7   ~1121 tokens   cited by: GO:0010508, GO:0032995
+Still to read: 1 figure(s), ~1121 tokens.
+Not cited by any annotation: Figure 2 (~524 tokens saved by declining them).
+```
+
+Inspect what the annotations rest on; decline the rest **with a reason** in `note`.
+
 This catches real errors. On PMID:39852455 the draft declared "no annotation depends on
 Figure 7"; the audit showed `GO:0010508` and `GO:0032995` both cite it, and inspecting it
 revealed the transcript data run *opposite* to the naive reading of `positive regulation of

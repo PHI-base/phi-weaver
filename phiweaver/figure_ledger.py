@@ -150,6 +150,107 @@ def audit(rec: dict, report: Optional[dict] = None) -> dict:
     }
 
 
+# --------------------------------------------------------------- inspection budget
+
+# Vision models bill an image at roughly (width x height) / 750 tokens, so the cost of
+# reading a figure is knowable *before* reading it. Measured on PMID:39852455: six panels
+# cost ~3,550 tokens against ~10,900 for the parsed text — about +33%, worth spending on
+# the figures the annotations actually rest on and not on the rest.
+_TOKENS_PER_PIXEL_DIVISOR = 750
+
+
+def image_dimensions(path):
+    """``(width, height)`` for a JPEG/PNG/GIF, or ``None``. Header parsing only — stdlib."""
+    try:
+        with open(path, "rb") as handle:
+            data = handle.read(24)
+            if data[:2] == b"\xff\xd8":            # JPEG: walk the segment markers
+                handle.seek(2)
+                blob = handle.read()
+                i = 0
+                while i < len(blob) - 9:
+                    if blob[i] != 0xFF:
+                        i += 1
+                        continue
+                    marker = blob[i + 1]
+                    if marker in (0xC0, 0xC1, 0xC2, 0xC3, 0xC5, 0xC6, 0xC7,
+                                  0xC9, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF):
+                        import struct
+                        height, width = struct.unpack(">HH", blob[i + 5:i + 9])
+                        return width, height
+                    if marker in (0xD8, 0xD9) or 0xD0 <= marker <= 0xD7:
+                        i += 2
+                        continue
+                    import struct
+                    (length,) = struct.unpack(">H", blob[i + 2:i + 4])
+                    i += 2 + length
+                return None
+            if data[:8] == b"\x89PNG\r\n\x1a\n":
+                import struct
+                return struct.unpack(">II", data[16:24])
+            if data[:3] == b"GIF":
+                import struct
+                return struct.unpack("<HH", data[6:10])
+    except (OSError, IndexError, ValueError):
+        return None
+    return None
+
+
+def estimate_tokens(path) -> int:
+    """Rough token cost of showing this image to a vision model; 0 if unmeasurable."""
+    size = image_dimensions(path)
+    if not size:
+        return 0
+    width, height = size
+    return round(width * height / _TOKENS_PER_PIXEL_DIVISOR)
+
+
+def needed_figures(rec: dict, report: Optional[dict] = None) -> dict:
+    """Which figures the annotations actually rest on, and what reading them would cost.
+
+    The inspection set is derived from the annotations, not from the figure list: a paper's
+    alignment panel or a mechanism-only qRT-PCR figure need not be opened, but anything an
+    annotation cites must be. Answering this *before* inspecting is what makes selective
+    reading a decision rather than a guess.
+    """
+    ledger = parse_ledger(rec)
+    roster = {normalise_label(f.get("label") or f.get("id") or ""): f
+              for f in roster_from_report(report)}
+
+    cited: Dict[str, List[str]] = {}
+    for ann in ((rec.get("canto") or {}).get("annotations") or []):
+        who = ann.get("term_id") or ann.get("term_name") or ann.get("feature") or "?"
+        for label in figures_cited(ann.get("figure", "")):
+            cited.setdefault(label, []).append(who)
+
+    rows, pending_tokens = [], 0
+    for label in sorted(cited, key=lambda l: (len(l), l)):
+        entry = ledger.get(label, {})
+        done = _is_inspected(entry)
+        images = (roster.get(label) or {}).get("images_on_disk") or []
+        tokens = estimate_tokens(images[0]) if images else 0
+        if not done:
+            pending_tokens += tokens
+        rows.append({
+            "figure": label,
+            "cited_by": cited[label],
+            "inspected": done,
+            "image": images[0] if images else "",
+            "est_tokens": tokens,
+        })
+
+    not_needed = sorted(set(roster) - set(cited), key=lambda l: (len(l), l))
+    return {
+        "needed": rows,
+        "pending": [r for r in rows if not r["inspected"]],
+        "pending_tokens": pending_tokens,
+        "not_needed": not_needed,
+        "not_needed_tokens": sum(
+            estimate_tokens(((roster.get(l) or {}).get("images_on_disk") or [""])[0])
+            for l in not_needed),
+    }
+
+
 def summary_line(result: dict) -> str:
     """One markdown line for the entry queue; '' when the draft carries no ledger."""
     if not result.get("has_ledger"):
@@ -242,6 +343,9 @@ def main(argv=None) -> int:
     parser.add_argument("--json", action="store_true", help="emit the audit as JSON")
     parser.add_argument("--strict", action="store_true",
                         help="exit non-zero unless every figure was inspected")
+    parser.add_argument("--needed", action="store_true",
+                        help="list only the figures the annotations cite, with the "
+                             "estimated token cost of reading the ones still pending")
     parser.add_argument("--record", action="store_true",
                         help="write the coverage to the tracking DB (articles.figures_*)")
     parser.add_argument("--db", default="", help="tracking DB path (default: repo default)")
@@ -252,6 +356,31 @@ def main(argv=None) -> int:
     report = (json.loads(Path(args.report).read_text(encoding="utf-8"))
               if args.report else _load_report(draft_path))
     result = audit(rec, report)
+
+    if args.needed:
+        plan = needed_figures(rec, report)
+        if args.json:
+            print(json.dumps(plan, indent=2))
+            return 0
+        if not plan["needed"]:
+            print("No annotation cites a figure — nothing needs inspecting.")
+            return 0
+        print(f"Figures the annotations rest on ({len(plan['needed'])}):")
+        for row in plan["needed"]:
+            mark = "✅" if row["inspected"] else "📖"
+            cost = f"~{row['est_tokens']} tokens" if row["est_tokens"] else "size unknown"
+            cited = ", ".join(row["cited_by"][:4]) + (
+                f" +{len(row['cited_by']) - 4} more" if len(row["cited_by"]) > 4 else "")
+            print(f"  {mark} {row['figure']:<10} {cost:<18} cited by: {cited}")
+        if plan["pending"]:
+            print(f"\nStill to read: {len(plan['pending'])} figure(s), "
+                  f"~{plan['pending_tokens']} tokens.")
+        else:
+            print("\nAll cited figures have been inspected.")
+        if plan["not_needed"]:
+            print(f"Not cited by any annotation: {', '.join(plan['not_needed'])} "
+                  f"(~{plan['not_needed_tokens']} tokens saved by declining them).")
+        return 0
 
     if args.record:
         print(_record_coverage(rec, result, args.db))

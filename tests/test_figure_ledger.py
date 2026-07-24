@@ -5,7 +5,9 @@ The point of the ledger is that "I looked at the figures" stops being an unverif
 boolean, so these tests concentrate on the ways a draft can claim inspection it did not do.
 """
 
+import struct
 import unittest
+from pathlib import Path
 
 from phiweaver import figure_ledger as fl
 from phiweaver.canto import entry_queue as eq
@@ -142,6 +144,96 @@ class SummaryLineTests(unittest.TestCase):
 
     def test_no_ledger_yields_no_line(self):
         self.assertEqual(fl.summary_line(fl.audit({"canto": {}})), "")
+
+
+class ImageMeasurementTests(unittest.TestCase):
+    """Header-only sizing, so the token cost of a figure is knowable before reading it."""
+
+    def _write(self, name, data):
+        import tempfile
+        d = tempfile.TemporaryDirectory()
+        self.addCleanup(d.cleanup)
+        p = Path(d.name) / name
+        p.write_bytes(data)
+        return p
+
+    def test_jpeg_dimensions(self):
+        data = b"\xff\xd8" + b"\xff\xc0\x00\x11\x08" + struct.pack(">HH", 455, 716) + b"\x03" * 8
+        self.assertEqual(fl.image_dimensions(self._write("f.jpg", data)), (716, 455))
+
+    def test_png_dimensions(self):
+        data = b"\x89PNG\r\n\x1a\n" + b"\x00\x00\x00\rIHDR" + struct.pack(">II", 800, 600)
+        self.assertEqual(fl.image_dimensions(self._write("f.png", data)), (800, 600))
+
+    def test_gif_dimensions(self):
+        data = b"GIF89a" + struct.pack("<HH", 120, 90) + b"\x00" * 8
+        self.assertEqual(fl.image_dimensions(self._write("f.gif", data)), (120, 90))
+
+    def test_non_image_and_missing_file_degrade(self):
+        self.assertIsNone(fl.image_dimensions(self._write("f.txt", b"not an image at all")))
+        self.assertIsNone(fl.image_dimensions("/nonexistent/f.jpg"))
+        self.assertEqual(fl.estimate_tokens("/nonexistent/f.jpg"), 0)
+
+    def test_token_estimate_matches_the_pixel_rule(self):
+        data = b"\xff\xd8" + b"\xff\xc0\x00\x11\x08" + struct.pack(">HH", 1161, 724) + b"\x03" * 8
+        # 724 x 1161 / 750 -> the real cost of this paper's Figure 7.
+        self.assertEqual(fl.estimate_tokens(self._write("f.jpg", data)), 1121)
+
+
+class NeededFiguresTests(unittest.TestCase):
+    """The inspection set comes from the annotations, not from the figure list."""
+
+    def _report_with_images(self, mapping):
+        return {"figures": [{"label": label, "openable": True, "images_on_disk": [path]}
+                            for label, path in mapping.items()]}
+
+    def test_only_cited_figures_are_needed(self):
+        rec = _rec(annotations=[{"term_id": "PHIPO:1", "figure": "Figure 1"},
+                                {"term_id": "GO:1", "figure": "Figure 5A,B"}])
+        plan = fl.needed_figures(rec, _report(["Figure 1", "Figure 2", "Figure 5"]))
+        self.assertEqual([r["figure"] for r in plan["needed"]], ["Figure 1", "Figure 5"])
+        self.assertEqual(plan["not_needed"], ["Figure 2"])
+
+    def test_cited_by_lists_every_dependent_annotation(self):
+        rec = _rec(annotations=[{"term_id": "GO:0010508", "figure": "Figure 7A"},
+                                {"term_id": "GO:0032995", "figure": "Figure 7B"}])
+        plan = fl.needed_figures(rec, _report(["Figure 7"]))
+        self.assertEqual(plan["needed"][0]["cited_by"], ["GO:0010508", "GO:0032995"])
+
+    def test_already_inspected_figures_are_not_pending(self):
+        rec = _rec(figures=[{"label": "Figure 1", "inspected": True, "read": "axis in cm"}],
+                   annotations=[{"term_id": "PHIPO:1", "figure": "Figure 1"}])
+        plan = fl.needed_figures(rec, _report(["Figure 1"]))
+        self.assertTrue(plan["needed"][0]["inspected"])
+        self.assertEqual(plan["pending"], [])
+        self.assertEqual(plan["pending_tokens"], 0)
+
+    def test_pending_cost_sums_only_the_unread(self):
+        import tempfile
+        d = tempfile.TemporaryDirectory()
+        self.addCleanup(d.cleanup)
+        paths = {}
+        for label, (w, h) in {"Figure 1": (750, 300), "Figure 2": (750, 600)}.items():
+            p = Path(d.name) / f"{label.replace(' ', '')}.jpg"
+            p.write_bytes(b"\xff\xd8" + b"\xff\xc0\x00\x11\x08"
+                          + struct.pack(">HH", h, w) + b"\x03" * 8)
+            paths[label] = str(p)
+        rec = _rec(figures=[{"label": "Figure 1", "inspected": True, "read": "done"}],
+                   annotations=[{"term_id": "A", "figure": "Figure 1"},
+                                {"term_id": "B", "figure": "Figure 2"}])
+        plan = fl.needed_figures(rec, self._report_with_images(paths))
+        self.assertEqual([r["figure"] for r in plan["pending"]], ["Figure 2"])
+        self.assertEqual(plan["pending_tokens"], 600)   # 750*600/750, Figure 1 excluded
+
+    def test_no_annotations_means_nothing_needs_reading(self):
+        plan = fl.needed_figures(_rec(), _report(["Figure 1", "Figure 2"]))
+        self.assertEqual(plan["needed"], [])
+        self.assertEqual(plan["not_needed"], ["Figure 1", "Figure 2"])
+
+    def test_missing_image_yields_zero_cost_not_an_error(self):
+        rec = _rec(annotations=[{"term_id": "A", "figure": "Figure 1"}])
+        plan = fl.needed_figures(rec, _report(["Figure 1"]))
+        self.assertEqual(plan["needed"][0]["est_tokens"], 0)
 
 
 class EntryQueueIntegrationTests(unittest.TestCase):
