@@ -44,7 +44,7 @@ Concise "start here" pointer. Full history is the latest session log
   mount edit `.git/config` directly (`git config` fails on the lock-file chmod).
 - Green gate before/after every change.
 - Each change: branch → commit → `--ff-only` merge to `main` → push → delete branch (PR-free, solo
-  repo). End commit messages with the Claude co-author trailer. The benign
+  repo). **No Claude co-author / provenance trailer** — see AGENTS.md §5. The benign
   `chmod .git/config.lock failed` warning on the z: mount does not affect the merge/push.
 - Per-paper work products (PDFs, drafts, scorecards, entry queues) stay in external
   `active/`, **not committed**; only engine/skills/docs + wrapped gold-standard `.md` go in the repo.

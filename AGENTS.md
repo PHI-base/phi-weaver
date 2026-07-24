@@ -109,6 +109,10 @@ PHI-Canto-ready annotation **drafts** and tracks curation progress.
   micro-commits or agonise over logical separation unless asked. Commit straight to `main`;
   stage only the task's files (leave unrelated dirty files like `.obsidian/` alone). Short
   imperative subject; add a brief body only when the *why* isn't obvious.
+- **No AI co-author or provenance trailer** on commit messages — no `Co-Authored-By: Claude`,
+  no "generated with" line. This is the repo owner's standing preference, stated here because
+  it is the tool-agnostic source of truth: an agent that only reads `AGENTS.md`, or whose
+  harness defaults to adding the trailer, must not have to infer it.
 
 ## 6. Reusable Workflows (skills)
 
