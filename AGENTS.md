@@ -94,6 +94,17 @@ PHI-Canto-ready annotation **drafts** and tracks curation progress.
 - Git: commit when asked; pushing to `PHI-base/phi-weaver` is allowed. On the `z:` Windows
   mount, `git config` / `git remote set-url` fail (lock-file chmod) — edit `.git/config`
   directly.
+- **Do not `git stash` on the `z:` mount** — same lock-file class of failure, but far nastier
+  because it strikes mid-operation. Observed 2026-07-24: `git stash pop` applied the working
+  tree, then died with `fatal: Unable to write index`, leaving a half-written index in which
+  `git status` reported **every tracked file as deleted**. Nothing was actually lost (commits
+  intact, stash entry still present since `pop` drops only on success, all files on disk), and
+  a plain `git reset` — mixed, rebuilding the index from `HEAD` — put it right.
+  - **Never reach for `git reset --hard` here.** The tree looks catastrophic at exactly the
+    moment the working tree is the only copy of the un-stashed work; `--hard` would delete it.
+  - To set aside work-in-progress, **commit it to a scratch branch** instead of stashing. If
+    you must stash, copy the affected files somewhere outside the repo first and diff against
+    that copy afterwards.
 - **Keep commits simple.** A coherent unit of work is **one commit** — don't split into
   micro-commits or agonise over logical separation unless asked. Commit straight to `main`;
   stage only the task's files (leave unrelated dirty files like `.obsidian/` alone). Short
