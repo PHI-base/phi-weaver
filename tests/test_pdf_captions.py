@@ -214,5 +214,63 @@ class TokenEstimateCapTests(unittest.TestCase):
         self.assertEqual(estimate_tokens(self._jpeg(0, 0)), 0)
 
 
+@unittest.skipUnless(HAS_FITZ, "PyMuPDF not installed")
+class FigureRosterTests(unittest.TestCase):
+    """The conversion report must carry a `figures` roster in the same shape the JATS
+    converter emits, so phiweaver.figure_ledger can audit a PDF-route ledger against it."""
+
+    def _skill(self, figures):
+        import tempfile
+        from pathlib import Path
+        d = tempfile.TemporaryDirectory()
+        self.addCleanup(d.cleanup)
+        skill = pc.PDFConvertSkill()
+        skill.images_dir = Path(d.name)
+        skill.all_figures = figures
+        return skill, Path(d.name)
+
+    @staticmethod
+    def _fig(filename, number, page=1, captioned=True):
+        caption = ({"number": number, "caption": "c", "confidence": 1.0}
+                   if captioned else None)
+        return {"filename": filename, "type": "figure", "page": page,
+                "number": number, "caption": caption}
+
+    def test_captioned_figure_gets_its_label(self):
+        skill, media = self._skill([self._fig("Fig03.png", "3", page=4)])
+        (media / "Fig03.png").write_bytes(b"x")
+        entry, = skill._figure_roster()
+        self.assertEqual(entry["label"], "Figure 3")
+        self.assertEqual(entry["id"], "Fig03")
+        self.assertEqual(entry["graphics"], ["Fig03.png"])
+        self.assertEqual(entry["page"], 4)
+        self.assertTrue(entry["openable"])
+        self.assertTrue(entry["has_caption"])
+
+    def test_uncaptioned_image_keeps_its_filename_as_label(self):
+        # An image the caption matcher could not label is still a figure someone must
+        # account for — dropping it would silently shrink the ledger's denominator.
+        skill, media = self._skill(
+            [self._fig("page-03-img-01.png", "", page=3, captioned=False)])
+        (media / "page-03-img-01.png").write_bytes(b"x")
+        entry, = skill._figure_roster()
+        self.assertEqual(entry["label"], "page-03-img-01.png")
+        self.assertFalse(entry["has_caption"])
+
+    def test_missing_file_is_reported_not_openable(self):
+        skill, _ = self._skill([self._fig("gone.png", "1", captioned=False)])
+        self.assertFalse(skill._figure_roster()[0]["openable"])
+
+    def test_roster_feeds_the_ledger_audit(self):
+        from phiweaver import figure_ledger
+        skill, media = self._skill([self._fig("Fig01.png", "1", page=2)])
+        (media / "Fig01.png").write_bytes(b"x")
+        report = {"figures": skill._figure_roster()}
+        # A draft that inspected nothing must show the figure as missing from its ledger.
+        result = figure_ledger.audit({"figure_inspection": {"figures": []}}, report)
+        self.assertEqual(result["missing"], ["Figure 1"])
+        self.assertEqual(result["total_figures"], 1)
+
+
 if __name__ == "__main__":
     unittest.main()

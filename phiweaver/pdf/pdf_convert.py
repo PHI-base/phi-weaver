@@ -685,6 +685,29 @@ class PDFConvertSkill:
 
         return issues
 
+    def _figure_roster(self):
+        """The extracted figures, in the roster shape phiweaver.figure_ledger audits against.
+
+        Same contract as the JATS converter's ``figures`` key, so a draft's figure-inspection
+        ledger can be cross-checked whether the paper arrived as XML or as a PDF. An image
+        the caption extractor could not label keeps its filename as the label rather than
+        being dropped — an unlabelled panel is still a figure somebody has to account for.
+        """
+        roster = []
+        for figure in self.all_figures:
+            caption = figure['caption']
+            image_path = self.images_dir / figure['filename']
+            roster.append({
+                'label': f"Figure {caption['number']}" if caption else figure['filename'],
+                'id': Path(figure['filename']).stem,
+                'page': figure['page'],
+                'graphics': [figure['filename']],
+                'images_on_disk': [str(image_path)],
+                'openable': image_path.exists(),
+                'has_caption': bool(caption),
+            })
+        return roster
+
     def _generate_conversion_report(self, output_file):
         """Generate detailed conversion report"""
         report = {
@@ -697,6 +720,7 @@ class PDFConvertSkill:
                 'tables_found': len(self.all_tables),
                 'sections_detected': len(self.document_sections),
             },
+            'figures': self._figure_roster(),
             'quality_metrics': {
                 'high_confidence_captions': len([
                     f for f in (self.all_figures + self.all_tables)
