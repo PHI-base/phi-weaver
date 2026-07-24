@@ -40,12 +40,13 @@ Concise "start here" pointer. Full history is the latest session log
 5. Register: `python3 -m phiweaver.curation_examples` then `--check`.
 
 ## Ground rules
-- Work in `/mnt/z/phi-weaver`; on WSL launch `claude --dangerously-skip-permissions`. On the `z:`
-  mount edit `.git/config` directly (`git config` fails on the lock-file chmod).
-- Green gate before/after every change.
-- Each change: branch → commit → `--ff-only` merge to `main` → push → delete branch (PR-free, solo
-  repo). **No Claude co-author / provenance trailer** — see AGENTS.md §5. The benign
-  `chmod .git/config.lock failed` warning on the z: mount does not affect the merge/push.
+- Work in `/mnt/z/phi-weaver`; on WSL launch `claude --dangerously-skip-permissions`.
+- **Green gate before *and* after every change**: `python3 -m phiweaver.smoke` +
+  `python3 -m unittest discover -s tests`.
+- **Git rules live in [AGENTS.md](AGENTS.md) §5 — follow them there, not here.** They cover
+  commit style, what must never be committed, and the `z:` mount's lock-file traps
+  (`git config`, `git stash`). This file used to restate them and drifted out of sync twice,
+  so it no longer keeps its own copy.
 - Per-paper work products (PDFs, drafts, scorecards, entry queues) stay in external
   `active/`, **not committed**; only engine/skills/docs + wrapped gold-standard `.md` go in the repo.
 

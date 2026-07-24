@@ -93,7 +93,8 @@ PHI-Canto-ready annotation **drafts** and tracks curation progress.
   papers, or secrets. Respect `.gitignore`. Literature/media stay in external storage.
 - Git: commit when asked; pushing to `PHI-base/phi-weaver` is allowed. On the `z:` Windows
   mount, `git config` / `git remote set-url` fail (lock-file chmod) — edit `.git/config`
-  directly.
+  directly. A `chmod .git/config.lock failed` **warning** on that mount is benign and does
+  not affect the commit or push; a `fatal:` is not — see the stash rule below.
 - **Do not `git stash` on the `z:` mount** — same lock-file class of failure, but far nastier
   because it strikes mid-operation. Observed 2026-07-24: `git stash pop` applied the working
   tree, then died with `fatal: Unable to write index`, leaving a half-written index in which
