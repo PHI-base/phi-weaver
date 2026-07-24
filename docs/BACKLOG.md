@@ -13,6 +13,36 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
 `PLUGIN-ARCHITECTURE.md`.
 
 ## Tooling / bugs
+- [ ] **PDF converter flattens tables and loses their columns** (added 2026-07-24, surfaced on
+  PMID:9927411). Figures survive conversion; **tables do not**. Table I came through as a flat
+  run of numbers with the row/column grid gone, and its "Appressorium formation >95%" row was
+  dropped entirely — it exists only in the page render. Both tables had to be re-read from PDF
+  pages rendered at 170 dpi. This matters more than it sounds: on that paper the tables carried
+  **most of the quantitative evidence**, and the single most consequential finding of the whole
+  curation (Table II lists EC50/MIC for the wild type only, with **no per-strain columns**, so the
+  paper's headline "no drug hypersensitivity" claim has no visible supporting data) is a statement
+  *about the column structure* — invisible to a reader of the flattened text. Options: extract
+  tables as images alongside figures (cheap, reuses the figure path, needs a vision read); or
+  `page.find_tables()` in PyMuPDF (structured, but unreliable on scanned/ruled 1990s layouts).
+  Until then, **render and read table pages by hand for any table-carrying paper** and say so in
+  the draft's provenance.
+- [ ] **Ontologies are re-parsed on every test run** (added 2026-07-24). The gate is ~45s, and a
+  large part of it is repeatedly parsing the bundled `.obo` files (`phipo-base.obo` is the big
+  one) across 30 test modules, amplified by the `z:` mount's 9p filesystem tax on per-file I/O.
+  `_load_phido` is already `lru_cache`d *within* a process, so the cost is per test process, not
+  per call. Options: cache the parsed index to disk and invalidate on mtime; or keep a native-
+  filesystem clone and sync (bigger change — **needs the user's call on where the repo lives**).
+  Mitigated 2026-07-24 by removing the doubled gate (`smoke` alone; `--no-tests`, `dd79ee6`), which
+  took ~89s → ~45s; this item is the remaining half.
+- [ ] **PomGeneEx IDs are unverified, and the protein half is missing** (added 2026-07-24). The
+  seven RNA-level qualifier IDs vendored in `5597729` (`data/pomgeneex.obo`) are **curator-supplied
+  and were never checked against a published PomGeneEx release** — no public artifact could be
+  found. The *phrases* have independent backing (PHI-Canto UI screenshot, 2026-07-11); the
+  **ID↔phrase pairing does not**. **(a)** Confirm the pairing in Canto, then either point the file
+  at an upstream copy or record here that none exists. **(b)** The parallel **protein**-level
+  vocabulary (`PomGeneExProt`, behind `wt_protein_expression`) has **no IDs recorded at all**, so
+  those annotations still carry a bare phrase — `entry_queue` accepts a blank `term_id` for both
+  types on that basis, and that carve-out should narrow once the IDs exist.
 - [ ] **Make the "host" label rule self-checking** (added 2026-07-17).
   `phiweaver/lookup/term_context.py` classifies a PHIPO term as in-host if its label contains the word
   "host". That rule was **verified live** before relying on it — "host-free", "axenic" and
@@ -452,6 +482,17 @@ decision and re-creating the term silently reopens it. See the `ontology-term-re
   species-neutral" above and lesson L2.
 
 ## Curation workflow
+- [ ] **Nothing checks whether a paper is already curated in PHI-base** (added 2026-07-24,
+  surfaced on PMID:9927411). Weaver drafted a foundational 1999 rice-blast paper end to end
+  without ever asking whether PHI-base already holds it — and for a paper of that vintage and
+  prominence it very likely does. A duplicate draft wastes the curator's review time, and worse,
+  it can **silently disagree with the established entry** on exactly the judgement calls a draft
+  is weakest on (there, the taxon — UniProtKB:O13407 is filed under *Pyricularia grisea* taxid
+  148305 while the experimental strain Guy11 is a rice isolate, now *P. oryzae* taxid 318829 —
+  and the allele type for an ORF-replacement mutant). An existing curated entry should win over a
+  fresh draft. Cheapest useful version: a lookup by PMID against PHI-base at **triage** time, so
+  the answer arrives before the drafting effort is spent, not after; surface a hit as a flag with
+  a link rather than refusing to draft.
 - [x] **Store input PDFs + output docs on Google Drive** (added + **verified 2026-07-19**; user has
   Google Drive for Desktop on Windows). **Low effort, no code change** — the pipeline's whole storage
   layer is a single filesystem path (`PHI_LITERATURE_ROOT` → `active/` input, `completed/` output,
