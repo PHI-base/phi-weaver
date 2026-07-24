@@ -15,6 +15,18 @@ from datetime import date
 from typing import List, Dict, Tuple
 import json
 
+# A caption line begins its own text block: "Figure 3. ..." / "Table 1 ..." / "Fig. 2 ...".
+CAPTION_BLOCK_RE = re.compile(r"^\s*(figure|fig\.?|table)\s*(\d+)", re.IGNORECASE)
+
+# How far (PDF points, 72/inch) a caption may sit from its image and still be its caption.
+# ~3 inches: generous enough for a full-width figure, tight enough that an image with no
+# caption near it stays unmatched rather than adopting one from elsewhere on the page.
+MAX_CAPTION_DISTANCE = 220
+
+# Slack for a caption that slightly overlaps its artwork's bounding box before it counts
+# as being on the wrong side of it.
+CAPTION_SIDE_TOLERANCE = 5
+
 class PDFConvertSkill:
     """Professional PDF to Obsidian converter with advanced features"""
 
@@ -233,12 +245,15 @@ class PDFConvertSkill:
         print(f"   📋 Found {len(tables)} table captions")
 
         # Process each page for images
+        used_names = set()
         for page_num in range(len(doc)):
             page = doc[page_num]
             image_list = page.get_images(full=True)
+            page_captions = self._page_caption_blocks(page)
 
             if image_list:
-                print(f"📄 Processing page {page_num + 1}: {len(image_list)} images")
+                print(f"📄 Processing page {page_num + 1}: {len(image_list)} images, "
+                      f"{len(page_captions)} caption(s) on page")
 
             for img_index, img in enumerate(image_list):
                 # Extract image
@@ -251,9 +266,10 @@ class PDFConvertSkill:
                     continue
 
                 # Determine image type and filename
-                filename, image_type = self._get_smart_filename(
-                    page_num, img_index, figures, tables
+                filename, image_type, number = self._get_smart_filename(
+                    page, page_num, img_index, img, page_captions, used_names
                 )
+                used_names.add(filename)
 
                 # Save image
                 image_path = self.images_dir / filename
@@ -272,9 +288,8 @@ class PDFConvertSkill:
                     'filename': filename,
                     'type': image_type,
                     'page': page_num + 1,
-                    'caption': self._match_caption_to_image(
-                        page_num, img_index, figures if image_type == 'figure' else tables
-                    )
+                    'number': number,
+                    'caption': self._caption_for_number(number, image_type, figures, tables),
                 }
 
                 if image_type == 'figure':
@@ -290,43 +305,116 @@ class PDFConvertSkill:
 
                 pix = None
 
-    def _get_smart_filename(self, page_num, img_index, figures, tables):
-        """Generate intelligent filename based on detected captions"""
-        # Try to match with detected captions
-        page_figures = [f for f in figures if self._is_caption_on_page(f, page_num)]
-        page_tables = [t for t in tables if self._is_caption_on_page(t, page_num)]
+    def _page_caption_blocks(self, page):
+        """Caption lines on this page, with their y-positions.
 
-        # Determine if this is likely a figure or table
-        if page_tables and img_index < len(page_tables):
-            # Likely a table
-            table_info = page_tables[img_index]
-            number = table_info['number'].zfill(2)
-            return f"{self.config['table_prefix']}{number}.png", 'table'
-        elif page_figures and img_index < len(page_figures):
-            # Likely a figure
-            figure_info = page_figures[img_index]
-            number = figure_info['number'].zfill(2)
-            # Handle subfigures (e.g., "2A" -> "02A")
-            if re.match(r'\d+[A-Za-z]', figure_info['number']):
-                return f"{self.config['figure_prefix']}{figure_info['number'].zfill(3)}.png", 'figure'
-            else:
-                return f"{self.config['figure_prefix']}{number}.png", 'figure'
-        else:
-            # Fallback naming
-            return f"page-{page_num + 1:02d}-img-{img_index + 1:02d}.png", 'figure'
+        Positions are the whole point: the previous implementation matched captions from
+        a document-wide list by an index that was per-page, so on a paper with 17 images
+        nearly every image resolved to the same caption and overwrote the last — 17
+        images became 2 files, and every one was labelled a table.
+        """
+        blocks = []
+        for block in page.get_text("blocks"):
+            if len(block) < 5:
+                continue
+            x0, y0, x1, y1, text = block[0], block[1], block[2], block[3], block[4]
+            match = CAPTION_BLOCK_RE.match(str(text or "").strip())
+            if not match:
+                continue
+            blocks.append({
+                'kind': 'table' if match.group(1).lower().startswith('table') else 'figure',
+                'number': match.group(2),
+                'y0': y0, 'y1': y1,
+                'text': str(text).strip(),
+            })
+        return blocks
 
-    def _is_caption_on_page(self, caption, page_num):
-        """Simple heuristic to check if caption might be on this page"""
-        # This could be improved with position analysis
-        return True
-
-    def _match_caption_to_image(self, page_num, img_index, captions):
-        """Match extracted caption to specific image"""
-        if not captions or img_index >= len(captions):
+    def _image_rect(self, page, img):
+        """Bounding box of an image on the page, or None if it cannot be located."""
+        xref = img[0]
+        try:
+            rects = page.get_image_rects(xref)
+            if rects:
+                return rects[0]
+        except (AttributeError, ValueError, RuntimeError):
+            pass
+        try:
+            return page.get_image_bbox(img)
+        except (AttributeError, ValueError, RuntimeError, TypeError):
             return None
 
-        # Simple matching - could be improved with position analysis
-        return captions[img_index] if img_index < len(captions) else None
+    def _match_by_geometry(self, page, img, page_captions):
+        """Pick the caption belonging to this image, by position on the page.
+
+        Journal convention: a figure caption sits **below** its artwork and a table
+        caption **above** it. Candidates on the wrong side are rejected outright, and the
+        nearest remaining one wins — but only within ``MAX_CAPTION_DISTANCE``, so an image
+        with no caption near it stays unmatched instead of borrowing a distant one.
+        """
+        rect = self._image_rect(page, img)
+        if rect is None or not page_captions:
+            return None
+
+        best, best_distance = None, None
+        for caption in page_captions:
+            if caption['kind'] == 'figure':
+                gap = caption['y0'] - rect.y1      # caption below the image
+            else:
+                gap = rect.y0 - caption['y1']      # caption above the image
+            if gap < -CAPTION_SIDE_TOLERANCE:      # on the wrong side entirely
+                continue
+            distance = abs(gap)
+            if best_distance is None or distance < best_distance:
+                best, best_distance = caption, distance
+
+        if best is None or best_distance > MAX_CAPTION_DISTANCE:
+            return None
+        return best
+
+    def _unique_name(self, base, suffix, used):
+        """A filename that never overwrites an earlier image.
+
+        A legitimate collision (one figure drawn as several images) keeps the association
+        by appending a letter — Fig03.png, Fig03b.png — because losing a tidy name is far
+        cheaper than losing the image.
+        """
+        name = f"{base}{suffix}"
+        if name not in used:
+            return name
+        for letter in "bcdefghijklmnopqrstuvwxyz":
+            candidate = f"{base}{letter}{suffix}"
+            if candidate not in used:
+                return candidate
+        index = 2
+        while f"{base}-{index}{suffix}" in used:
+            index += 1
+        return f"{base}-{index}{suffix}"
+
+    def _get_smart_filename(self, page, page_num, img_index, img, page_captions, used):
+        """Name an image from the caption physically nearest it, never overwriting."""
+        match = self._match_by_geometry(page, img, page_captions)
+
+        if match:
+            prefix = (self.config['table_prefix'] if match['kind'] == 'table'
+                      else self.config['figure_prefix'])
+            number = match['number'].zfill(2)
+            return (self._unique_name(f"{prefix}{number}", ".png", used),
+                    match['kind'], match['number'])
+
+        # Unmatched: a positional name that is always unique. An image kept under a dull
+        # name is evidence; an image overwritten by the next one is not.
+        return (self._unique_name(f"page-{page_num + 1:02d}-img-{img_index + 1:02d}",
+                                  ".png", used),
+                'figure', '')
+
+    def _caption_for_number(self, number, kind, figures, tables):
+        """The rich caption text for a matched label, from the document-wide extractor."""
+        if not number:
+            return None
+        for caption in (tables if kind == 'table' else figures):
+            if str(caption.get('number', '')) == str(number):
+                return caption
+        return None
 
     def _generate_structured_markdown(self, doc):
         """Generate well-structured markdown with clear separation"""

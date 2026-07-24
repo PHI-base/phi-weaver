@@ -158,6 +158,12 @@ def audit(rec: dict, report: Optional[dict] = None) -> dict:
 # the figures the annotations actually rest on and not on the rest.
 _TOKENS_PER_PIXEL_DIVISOR = 750
 
+# Large images are downscaled before they are billed, so raw pixels over-count badly:
+# a print-resolution PDF figure at 3.2 MP would look like ~4,300 tokens when it actually
+# costs ~1,500. The cap is a long edge of 1568 px and roughly 1.15 megapixels.
+_MAX_IMAGE_EDGE = 1568
+_MAX_IMAGE_PIXELS = 1_150_000
+
 
 def image_dimensions(path):
     """``(width, height)`` for a JPEG/PNG/GIF, or ``None``. Header parsing only — stdlib."""
@@ -197,12 +203,22 @@ def image_dimensions(path):
 
 
 def estimate_tokens(path) -> int:
-    """Rough token cost of showing this image to a vision model; 0 if unmeasurable."""
+    """Rough token cost of showing this image to a vision model; 0 if unmeasurable.
+
+    Models the downscale the API applies before billing, so a print-resolution figure
+    extracted from a PDF is priced at what it will actually cost rather than at its
+    raw pixel count.
+    """
     size = image_dimensions(path)
     if not size:
         return 0
     width, height = size
-    return round(width * height / _TOKENS_PER_PIXEL_DIVISOR)
+    if width <= 0 or height <= 0:
+        return 0
+    scale = min(1.0,
+                _MAX_IMAGE_EDGE / max(width, height),
+                (_MAX_IMAGE_PIXELS / (width * height)) ** 0.5)
+    return round((width * scale) * (height * scale) / _TOKENS_PER_PIXEL_DIVISOR)
 
 
 def needed_figures(rec: dict, report: Optional[dict] = None) -> dict:
