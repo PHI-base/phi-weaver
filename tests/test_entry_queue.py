@@ -137,6 +137,31 @@ class PhysicalInteractionAndTableSafetyTests(unittest.TestCase):
         self.assertIn("PHIDO:0000162", f5)
 
 
+class QualifierPhraseAnnotationTests(unittest.TestCase):
+    """RNA/protein-level annotations carry a controlled phrase, not an ontology ID."""
+
+    RNA = {"feature_type": "gene", "feature": "GeneA", "annotation_type": "wt_rna_expression",
+           "term_id": "", "term_name": "RNA level increased", "evidence": "Northern assay",
+           "extensions": [], "conditions": "PECO:0000257 + cycloheximide", "figure": "Figure 7A"}
+
+    def _render(self, annotation):
+        rec = _rec()
+        rec["canto"]["annotations"] = rec["canto"]["annotations"] + [annotation]
+        return eq.render_entry_queue(rec)
+
+    def test_qualifier_phrase_is_enterable_and_visible(self):
+        md, _ = self._render(self.RNA)
+        f6 = md.split("### F6. RNA / protein level")[1].split("## G.")[0]
+        self.assertIn("RNA level increased", f6)
+        self.assertIn("Northern assay", f6)
+
+    def test_blank_qualifier_is_still_parked(self):
+        # An empty term_name means nothing was resolved — that must stay parked.
+        md, _ = self._render({**self.RNA, "term_name": ""})
+        self.assertNotIn("### F6. RNA / protein level", md)
+        self.assertIn("no ontology term resolved", md)
+
+
 class IntegrityAndStatusTests(unittest.TestCase):
     def test_dangling_allele_reference_parked(self):
         # an allele pointing at an undefined gene must be parked, not entered

@@ -290,16 +290,16 @@ class EntryQueueIntegrationTests(unittest.TestCase):
                           "needs_figure": True,
                           "needs_figure_reason": "take-home claim"}])
         text = self._render(rec)
-        self.assertIn("F6. Figure evidence", text)
+        self.assertIn("F7. Figure evidence", text)
         self.assertIn("positive regulation of autophagy", text)
         # Advisory, not parked — the claim may still be right, it is just weaker.
-        self.assertLess(text.index("F6. Figure evidence"), text.index("G. Parked items"))
+        self.assertLess(text.index("F7. Figure evidence"), text.index("G. Parked items"))
 
     def test_draft_without_a_ledger_renders_unchanged(self):
         rec = {"meta": {"pmid": "1"}, "canto": {"genes": [], "annotations": []}}
         text = self._render(rec)
         self.assertNotIn("Figures inspected", text)
-        self.assertNotIn("F6. Figure evidence", text)
+        self.assertNotIn("F7. Figure evidence", text)
 
 
 if __name__ == "__main__":

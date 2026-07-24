@@ -140,6 +140,15 @@ def _classify(canto: dict):
                 host_names=host_names, path_names=path_names)
 
 
+# Annotation types whose "term" is a controlled qualifier phrase rather than an ontology ID.
+# The RNA/protein-level types draw on the seven PomGeneEx phrases (RNA level increased /
+# decreased / unchanged / constant / fluctuates, RNA present, RNA absent) and a draft is
+# explicitly not required to carry their numeric IDs — see
+# 06-Training/Gene-for-Gene-Curation-Methodology.md §9. Without this, a solid expression
+# annotation is parked as "no ontology term resolved", which reads as a defect it does not have.
+_QUALIFIER_PHRASE_TYPES = {"wt_rna_expression", "wt_protein_expression"}
+
+
 def _park_reason(a: dict, cl: dict, bad_terms: Optional[Dict[str, str]] = None) -> str:
     """Why an annotation is parked, or '' if it is enter-ready."""
     ft, fx = _s(a.get("feature_type")), _s(a.get("feature"))
@@ -157,6 +166,8 @@ def _park_reason(a: dict, cl: dict, bad_terms: Optional[Dict[str, str]] = None) 
     if not tid:
         if atype == "physical_interaction":
             return ""  # PI has no ontology term by design; evidence method carries it
+        if atype in _QUALIFIER_PHRASE_TYPES and _s(a.get("term_name")):
+            return ""  # the controlled qualifier phrase IS the term; numeric ID not required
         return "no ontology term resolved"
     if bad_terms and tid in bad_terms:
         return f"ontology ID {bad_terms[tid]} (--validate)"
@@ -349,14 +360,28 @@ def render_entry_queue(rec: dict, status: Optional[str] = None,
                 _cell(a.get("conditions") or a.get("figure"))] for a in _of("disease_name")]
     out += _table(["Tick", "Metagenotype", "Disease term", "Disease ontology ID", "Note"], dz_rows) + [""]
 
-    # --- F6. Figure-evidence advisories ---
+    # F6 carries the qualifier-phrase types. Without its own table these annotations pass
+    # _park_reason but match no section and vanish from the queue — enter-ready and invisible
+    # is the one outcome worse than parked.
+    el_rows = [["☐", _cell(a.get("feature")), _cell(_s(a.get("annotation_type")).replace("_", " ")),
+                _cell(a.get("term_name")), _cell(a.get("evidence")),
+                _cell(a.get("conditions")), _cell(a.get("figure"))]
+               for a in _of(*sorted(_QUALIFIER_PHRASE_TYPES))]
+    if el_rows:
+        out += ["### F6. RNA / protein level annotations", "",
+                "*The level qualifier is a controlled phrase, not an ontology ID — pick the "
+                "matching term in Canto.*", ""]
+        out += _table(["Tick", "Gene", "Annotation type", "Level qualifier", "Evidence summary",
+                       "Condition", "Figure/table"], el_rows) + [""]
+
+    # --- F7. Figure-evidence advisories ---
     # Deliberately NOT the parked table: parked means "do not enter", and an annotation
     # resting on a caption may still be correct. Only annotations the drafter marked
     # `needs_figure` appear here — under decline-by-default, curating from text and
     # captions is the normal path, so routine declines must not fill this section.
     uninspected = figure_audit.get("annotations_on_uninspected", [])
     if uninspected:
-        out += ["### F6. Figure evidence — marked needs_figure, but not inspected", "",
+        out += ["### F7. Figure evidence — marked needs_figure, but not inspected", "",
                 "*These annotations were judged to need their panel read — the claim is "
                 "qualitative, magnitude decides it, or it is the paper's take-home "
                 "message — and the figure was not inspected. Enterable, but weaker than "
