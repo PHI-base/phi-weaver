@@ -174,6 +174,27 @@ class IngestProvenanceDBTests(unittest.TestCase):
         counts = {r["source_route"]: r["article_count"] for r in ip.route_counts(conn)}
         self.assertEqual(counts["pdf"], 2)
 
+    def test_v2_coverage_columns_exist_and_record(self):
+        conn = self._db()
+        self._article(conn)
+        ip.record(conn, pmid="39852455", route="jats-europepmc",
+                  figures_inspected=True, figures_read=6, figures_total=7)
+        row = conn.execute(
+            "SELECT figures_inspected, figures_total FROM articles"
+            " WHERE pmid = '39852455'").fetchone()
+        self.assertEqual(row, (6, 7))
+
+    def test_unread_figure_articles_is_distinct_from_captions_only(self):
+        conn = self._db()
+        self._article(conn, pmid="1", title="figures available, not all read")
+        self._article(conn, pmid="2", title="figures available, all read")
+        self._article(conn, pmid="3", title="captions only")
+        ip.record(conn, pmid="1", route="jats-europepmc", figures_read=2, figures_total=7)
+        ip.record(conn, pmid="2", route="jats-europepmc", figures_read=7, figures_total=7)
+        ip.record(conn, pmid="3", route="jats-publisher")
+        self.assertEqual([r["pmid"] for r in ip.unread_figure_articles(conn)], ["1"])
+        self.assertEqual([r["pmid"] for r in ip.captions_only_articles(conn)], ["3"])
+
     def test_pre_existing_articles_read_as_unknown_not_backfilled(self):
         conn = self._db()
         self._article(conn)

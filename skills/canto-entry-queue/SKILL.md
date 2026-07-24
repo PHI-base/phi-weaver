@@ -66,6 +66,24 @@ The queue prints a **`Curated from:`** line above the first table, from three `m
 - **`figures_inspected`** — `true`/`false`. Overrides the route's default, because a
   publisher XML whose images were fetched separately is no longer captions-only.
 
+## Figure-inspection ledger (`figure_inspection`, top-level in the json block)
+`figures_inspected: true` is an **assertion nothing verifies**. Record instead one entry per
+figure — `{label, file, inspected, read, supports/weakens, note}` — where **`read` is what you
+actually saw in the panel**. An entry with `inspected: true` and an empty `read` counts as *not*
+inspected: ticking a box is not looking at a figure. Declining a figure is fine when nothing
+depends on it, but say so in `note`.
+
+Audit it with `python3 -m phiweaver.figure_ledger <draft.md>` (add `--record` to write coverage
+to the tracking DB, `--strict` to fail a build). The queue then prints **`Figures inspected:
+n/N`**, and any annotation citing an un-inspected figure lands in **F6 — enterable, but
+caption-only** (an advisory, *not* the parked table: a caption-based claim may still be right,
+it is just weaker).
+
+This catches real errors. On PMID:39852455 the draft declared "no annotation depends on
+Figure 7"; the audit showed `GO:0010508` and `GO:0032995` both cite it, and inspecting it
+revealed the transcript data run *opposite* to the naive reading of `positive regulation of
+autophagy` — a qualification that would otherwise have shipped unnoticed.
+
 Record these: the route decides what evidence a draft could rest on. A publisher JATS names
 image files it does not ship, so figures are captions only, and a draft written that way can
 misjudge the evidence — on PMID:39852455 a cell-wall-thickness measurement read as a marginal

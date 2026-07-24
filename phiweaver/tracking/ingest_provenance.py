@@ -37,11 +37,21 @@ ALTER TABLE articles ADD COLUMN figures_available INTEGER;
 """
 
 
+# v2 records figure-inspection *coverage* rather than the v1 boolean. "The images were
+# retrievable" and "someone read them" are different claims, and only the second one
+# licenses a figure-derived annotation.
+_INGEST_PROVENANCE_V2_SQL = """
+ALTER TABLE articles ADD COLUMN figures_inspected INTEGER;
+ALTER TABLE articles ADD COLUMN figures_total INTEGER;
+"""
+
+
 def _register_migration() -> None:
     """Register this module's schema migrations once (idempotent)."""
     from phiweaver.tracking import migrations
     migrations.register_migrations("ingest_provenance", [
         ("v1 article ingest-route columns", _INGEST_PROVENANCE_V1_SQL),
+        ("v2 figure-inspection coverage columns", _INGEST_PROVENANCE_V2_SQL),
     ])
 
 
@@ -50,7 +60,9 @@ _register_migration()
 
 def record(conn: sqlite3.Connection, pmid: str = "", route: str = "",
            source_file: str = "", figures_inspected: Optional[bool] = None,
-           note_path: str = "", title: str = "") -> bool:
+           note_path: str = "", title: str = "",
+           figures_read: Optional[int] = None,
+           figures_total: Optional[int] = None) -> bool:
     """Attach the ingest route to an article row. Returns True if a row was updated.
 
     The article is located by PMID, then note path, then title — the same order
@@ -77,9 +89,11 @@ def record(conn: sqlite3.Connection, pmid: str = "", route: str = "",
 
     conn.execute(
         "UPDATE articles SET source_route = ?, source_file = ?, figures_available = ?,"
+        " figures_inspected = ?, figures_total = ?,"
         " updated_date = CURRENT_TIMESTAMP WHERE id = ?",
         (route or None, source_file or None,
-         None if available is None else int(available), article_id))
+         None if available is None else int(available),
+         figures_read, figures_total, article_id))
     conn.commit()
     return True
 
@@ -103,3 +117,18 @@ def captions_only_articles(conn: sqlite3.Connection) -> List[sqlite3.Row]:
     return conn.execute(
         "SELECT pmid, title, source_route, source_file, status FROM articles"
         " WHERE figures_available = 0 ORDER BY updated_date DESC").fetchall()
+
+
+def unread_figure_articles(conn: sqlite3.Connection) -> List[sqlite3.Row]:
+    """Articles whose figures were *available* but not fully read.
+
+    Distinct from :func:`captions_only_articles`, and the sharper question: those papers
+    had readable panels and nobody opened them, so a figure-derived claim in the draft
+    rests on a caption by choice rather than by necessity.
+    """
+    conn.row_factory = sqlite3.Row
+    return conn.execute(
+        "SELECT pmid, title, source_route, figures_inspected, figures_total FROM articles"
+        " WHERE figures_available = 1 AND figures_total IS NOT NULL"
+        "   AND COALESCE(figures_inspected, 0) < figures_total"
+        " ORDER BY updated_date DESC").fetchall()

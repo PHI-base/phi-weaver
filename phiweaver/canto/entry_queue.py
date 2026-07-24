@@ -38,6 +38,8 @@ import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
+from phiweaver.figure_ledger import audit as audit_figures
+from phiweaver.figure_ledger import summary_line as figure_summary_line
 from phiweaver.source_routes import describe_source
 
 from phiweaver.common import provenance_line
@@ -231,6 +233,13 @@ def render_entry_queue(rec: dict, status: Optional[str] = None,
     if source_line:
         out += [source_line, ""]
 
+    # Figure-inspection coverage, derived from the draft's ledger rather than from its
+    # `figures_inspected` boolean, which is an assertion nothing verifies.
+    figure_audit = audit_figures(rec)
+    figure_line = figure_summary_line(figure_audit)
+    if figure_line:
+        out += [figure_line, ""]
+
     # --- A. Genes ---
     out += ["## A. Enter genes first", ""]
     grows = []
@@ -339,6 +348,21 @@ def render_entry_queue(rec: dict, status: Optional[str] = None,
     dz_rows = [["☐", _cell(a.get("feature")), _cell(a.get("term_name")), _cell(a.get("term_id")),
                 _cell(a.get("conditions") or a.get("figure"))] for a in _of("disease_name")]
     out += _table(["Tick", "Metagenotype", "Disease term", "Disease ontology ID", "Note"], dz_rows) + [""]
+
+    # --- F6. Figure-evidence advisories ---
+    # Deliberately NOT the parked table: parked means "do not enter", and an annotation
+    # resting on a caption may still be correct. These are enterable but weaker than the
+    # rest, and a curator should know which ones they are.
+    uninspected = figure_audit.get("annotations_on_uninspected", [])
+    if uninspected:
+        out += ["### F6. Figure evidence — enterable, but caption-only", "",
+                "*These annotations cite a figure whose panel was not inspected, so the "
+                "claim rests on the caption. On PMID:39852455 that distinction changed "
+                "three annotations.*", ""]
+        out += _table(
+            ["Annotation", "Cites", "Why it is weaker"],
+            [[_cell(f"{i['term_name'] or i['term_id']} on {i['feature']}"),
+              _cell(i["figure"]), _cell(i["reason"])] for i in uninspected]) + [""]
 
     # --- G. Parked items ---
     out += ["## G. Parked items — do not enter yet", ""]

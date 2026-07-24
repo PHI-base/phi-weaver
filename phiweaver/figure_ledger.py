@@ -1,0 +1,289 @@
+#!/usr/bin/env python3
+"""
+phiweaver.figure_ledger — did anyone actually look at the figures?
+
+``figures_inspected: true`` in a draft is an **assertion**, not evidence. Nothing forces
+it to be true, and a draft that claims it falsely is worse than one that admits captions
+only — it launders a guess as an observation.
+
+This module replaces the boolean with a **ledger**: one entry per figure, saying what was
+read from the panel. The claim then becomes auditable, because the ledger is checked
+against the converter's own figure roster (``figures`` in ``<stem>_converted_report.json``)
+and against the figures the annotations actually cite.
+
+It exists because the difference is not theoretical. On PMID:39852455, re-reading the
+panels changed three annotations:
+
+- **Figure 5B** — from its caption ("*, p < 0.05") the cell-wall-thickness effect looked
+  marginal. The panel is a labelled nm axis: ~95 → ~45 nm, complementation-rescued.
+- **Figure 3** — the hyphal-branching claim looked quantified. The panel quantifies tip
+  diameter and septal distance and **never** branching.
+- **Figure 4C** — the described lesion difference is not visible at the available
+  resolution, so the annotation needed flagging rather than asserting.
+
+Ledger shape, as a top-level ``figure_inspection`` key in the draft's ```json block::
+
+    "figure_inspection": {
+      "media_dir": "active/03-Media/PMC11767236",
+      "figures": [
+        {"label": "Figure 5", "file": "jof-11-00036-g005.jpg", "inspected": true,
+         "read": "5B labelled nm axis: WT ~95, sec2D ~45, sec2D-C ~100; *** vs WT, ns vs complement",
+         "supports": ["PHIPO:0000379"]}
+      ]
+    }
+
+An entry with ``inspected: true`` and no ``read`` text is treated as **not inspected** —
+ticking a box is not looking at a figure.
+
+Usage (from the repo root):
+    python3 -m phiweaver.figure_ledger /path/active/PMID..-phiweaver-DRAFT.md
+    python3 -m phiweaver.figure_ledger draft.md --json
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import re
+import sys
+from pathlib import Path
+from typing import Dict, List, Optional
+
+# "Figure 5A,B" / "Fig 5" / "Figures 3 and 4" -> the figure numbers cited.
+_FIGURE_REF_RE = re.compile(r"\bfig(?:ure)?s?\.?\s*(\d+)", re.IGNORECASE)
+
+
+def normalise_label(label: str) -> str:
+    """'Fig 5A' / 'figure 5' / '5' -> 'Figure 5'. Unparseable labels pass through."""
+    text = str(label or "").strip()
+    if not text:
+        return ""
+    match = _FIGURE_REF_RE.search(text) or re.match(r"^\s*(\d+)", text)
+    return f"Figure {match.group(1)}" if match else text
+
+
+def figures_cited(text: str) -> List[str]:
+    """Every figure a citation string refers to, e.g. 'Figure 5A,B; Figure 7' -> both."""
+    seen, out = set(), []
+    for number in _FIGURE_REF_RE.findall(str(text or "")):
+        label = f"Figure {number}"
+        if label not in seen:
+            seen.add(label)
+            out.append(label)
+    return out
+
+
+def parse_ledger(rec: dict) -> Dict[str, dict]:
+    """The draft's ledger, keyed by normalised figure label."""
+    block = (rec.get("figure_inspection") or {})
+    out = {}
+    for entry in block.get("figures") or []:
+        label = normalise_label(entry.get("label") or entry.get("file") or "")
+        if label:
+            out[label] = entry
+    return out
+
+
+def _is_inspected(entry: dict) -> bool:
+    """Inspected means a panel was read and something was recorded from it."""
+    return bool(entry.get("inspected")) and bool(str(entry.get("read") or "").strip())
+
+
+def roster_from_report(report: dict) -> List[dict]:
+    """The converter's figure roster, if the conversion report carries one."""
+    return list((report or {}).get("figures") or [])
+
+
+def audit(rec: dict, report: Optional[dict] = None) -> dict:
+    """Cross-check the ledger against the figure roster and the annotations.
+
+    Reports four failure modes, all of which the old boolean hid:
+    ``missing`` (a figure exists but has no ledger entry), ``claimed_not_read``
+    (ticked without recorded content), ``unknown`` (a ledger entry for a figure the
+    converter never found — usually a typo), and ``annotations_on_uninspected``
+    (an annotation resting on a figure nobody opened — the Figure 3 case).
+    """
+    ledger = parse_ledger(rec)
+    roster = roster_from_report(report)
+
+    expected = [normalise_label(f.get("label") or f.get("id") or "") for f in roster]
+    expected = [e for e in expected if e]
+    not_openable = {normalise_label(f.get("label") or f.get("id") or "")
+                    for f in roster if not f.get("openable", True)}
+
+    inspected = sorted(label for label, e in ledger.items() if _is_inspected(e))
+    claimed_not_read = sorted(label for label, e in ledger.items()
+                              if e.get("inspected") and not _is_inspected(e))
+    # A figure deliberately skipped *with a stated reason* is honest, not an error —
+    # provided nothing depends on it, which annotations_on_uninspected then checks.
+    declined = sorted(label for label, e in ledger.items()
+                      if not e.get("inspected") and str(e.get("note") or "").strip())
+    missing = sorted(set(expected) - set(ledger))
+    unknown = sorted(set(ledger) - set(expected)) if expected else []
+
+    annotations_on_uninspected = []
+    for ann in ((rec.get("canto") or {}).get("annotations") or []):
+        for label in figures_cited(ann.get("figure", "")):
+            if label not in inspected:
+                annotations_on_uninspected.append({
+                    "term_id": ann.get("term_id", ""),
+                    "term_name": ann.get("term_name", ""),
+                    "feature": ann.get("feature", ""),
+                    "figure": label,
+                    "reason": ("image not available" if label in not_openable
+                               else "figure not inspected"),
+                })
+
+    total = len(expected) if expected else len(ledger)
+    return {
+        "has_ledger": bool(ledger),
+        "total_figures": total,
+        "inspected": inspected,
+        "inspected_count": len(inspected),
+        "missing": missing,
+        "declined": declined,
+        "claimed_not_read": claimed_not_read,
+        "unknown": unknown,
+        "not_openable": sorted(not_openable),
+        "annotations_on_uninspected": annotations_on_uninspected,
+        "complete": bool(ledger) and not missing and not claimed_not_read,
+    }
+
+
+def summary_line(result: dict) -> str:
+    """One markdown line for the entry queue; '' when the draft carries no ledger."""
+    if not result.get("has_ledger"):
+        return ""
+    total = result["total_figures"]
+    count = result["inspected_count"]
+    problems = []
+    if result["missing"]:
+        problems.append(f"{len(result['missing'])} never opened")
+    if result["claimed_not_read"]:
+        problems.append(f"{len(result['claimed_not_read'])} ticked without a reading")
+    if result["annotations_on_uninspected"]:
+        problems.append(
+            f"{len(result['annotations_on_uninspected'])} annotation(s) rest on an "
+            f"un-inspected figure")
+    if problems:
+        return f"⚠️ **Figures inspected:** {count}/{total} — " + "; ".join(problems)
+    return f"**Figures inspected:** {count}/{total}"
+
+
+def figures_inspected_flag(rec: dict, report: Optional[dict] = None):
+    """Derive the flag instead of trusting it. ``None`` when no ledger exists."""
+    result = audit(rec, report)
+    if not result["has_ledger"]:
+        return None
+    return result["complete"]
+
+
+# ---------------------------------------------------------------------------- CLI
+
+def _load_draft(path: Path) -> dict:
+    from phiweaver.canto.entry_queue import extract_record  # shared json-block parser
+    rec = extract_record(Path(path).read_text(encoding="utf-8"))
+    if rec is None:
+        raise SystemExit(f"no json block found in {path}")
+    return rec
+
+
+def _load_report(draft_path: Path) -> Optional[dict]:
+    """The conversion report beside the draft, if the draft names its source file."""
+    rec = _load_draft(draft_path)
+    source = str((rec.get("meta") or {}).get("source_file") or "")
+    if not source:
+        return None
+    stem = Path(source).stem
+    for directory in (draft_path.parent, Path(source).parent):
+        candidate = directory / f"{stem}_converted_report.json"
+        if candidate.exists():
+            try:
+                return json.loads(candidate.read_text(encoding="utf-8"))
+            except ValueError:
+                return None
+    return None
+
+
+def _record_coverage(rec: dict, result: dict, db_path: str = "") -> str:
+    """Write the audited coverage to the tracking DB. Never raises — reports instead."""
+    try:
+        import sqlite3
+
+        from phiweaver import repo_root
+        from phiweaver.tracking import ingest_provenance
+        from phiweaver.tracking.migrations import run_migrations
+
+        meta = rec.get("meta") or {}
+        path = db_path or str(
+            repo_root() / "11-CLAUDE-AI" / "db" / "phi_canto_tracking.db")
+        conn = sqlite3.connect(path)
+        run_migrations(conn)
+        # The audited count, not the draft's self-declared boolean.
+        ok = ingest_provenance.record(
+            conn, pmid=str(meta.get("pmid") or ""),
+            route=str(meta.get("source_route") or ""),
+            source_file=str(meta.get("source_file") or ""),
+            figures_inspected=result["complete"],
+            figures_read=result["inspected_count"],
+            figures_total=result["total_figures"])
+        conn.close()
+        return ("📊 recorded coverage in the tracking DB" if ok else
+                "⚠️  no matching article row — coverage not recorded")
+    except Exception as e:
+        return f"⚠️  coverage not recorded: {e}"
+
+
+def main(argv=None) -> int:
+    parser = argparse.ArgumentParser(
+        description="Audit a draft's figure-inspection ledger against the figures that exist.")
+    parser.add_argument("draft", help="phiweaver draft .md")
+    parser.add_argument("--report", default="", help="conversion report JSON (default: auto)")
+    parser.add_argument("--json", action="store_true", help="emit the audit as JSON")
+    parser.add_argument("--strict", action="store_true",
+                        help="exit non-zero unless every figure was inspected")
+    parser.add_argument("--record", action="store_true",
+                        help="write the coverage to the tracking DB (articles.figures_*)")
+    parser.add_argument("--db", default="", help="tracking DB path (default: repo default)")
+    args = parser.parse_args(argv)
+
+    draft_path = Path(args.draft)
+    rec = _load_draft(draft_path)
+    report = (json.loads(Path(args.report).read_text(encoding="utf-8"))
+              if args.report else _load_report(draft_path))
+    result = audit(rec, report)
+
+    if args.record:
+        print(_record_coverage(rec, result, args.db))
+
+    if args.json:
+        print(json.dumps(result, indent=2))
+        return 0 if result["complete"] or not args.strict else 1
+
+    if not result["has_ledger"]:
+        print("⚠️  No figure_inspection ledger — figure claims in this draft rest on "
+              "captions unless stated otherwise.")
+        return 1 if args.strict else 0
+
+    print(f"Figures inspected: {result['inspected_count']}/{result['total_figures']}")
+    for label in result["inspected"]:
+        print(f"  ✅ {label}")
+    for label in result["declined"]:
+        reason = str(parse_ledger(rec).get(label, {}).get("note") or "").strip()
+        print(f"  ➖ {label} — deliberately not inspected: {reason}")
+    for label in result["missing"]:
+        note = " (image not available)" if label in result["not_openable"] else ""
+        print(f"  ❌ {label} — no ledger entry{note}")
+    for label in result["claimed_not_read"]:
+        print(f"  ❌ {label} — marked inspected but nothing was recorded from it")
+    for label in result["unknown"]:
+        print(f"  ⚠️  {label} — ledger entry for a figure the converter never found")
+    for item in result["annotations_on_uninspected"]:
+        print(f"  ⚠️  annotation {item['term_id']} ({item['feature']}) cites "
+              f"{item['figure']} — {item['reason']}")
+
+    return 0 if result["complete"] or not args.strict else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

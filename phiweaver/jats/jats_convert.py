@@ -862,6 +862,16 @@ class JATSConvertSkill:
                 'graphics_present': sum(1 for v in status.values() if v),
                 'graphics_absent': sorted(h for h, v in status.items() if not v),
             },
+            # The figure roster a curation draft's inspection ledger is checked against:
+            # "which figures exist, and is each one's image actually openable".
+            'figures': [{
+                'label': f['label'] or f['id'],
+                'id': f['id'],
+                'graphics': f['graphics'],
+                'images_on_disk': [status.get(h, '') for h in f['graphics'] if status.get(h)],
+                'openable': any(status.get(h) for h in f['graphics']),
+                'has_caption': bool(f['caption']),
+            } for f in self.all_figures],
             'quality_metrics': {
                 'figures_with_captions': len([f for f in self.all_figures if f['caption']]),
                 'tables_with_captions': len([t for t in self.all_tables if t['caption']]),
