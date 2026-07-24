@@ -9,9 +9,16 @@ unit-test suite, all **network-free and with no install required** — the optio
 (`requests`, PyMuPDF) are only needed for live lookups / PDF conversion, not for this.
 
 Usage (from the repo root):
-    python3 -m phiweaver.smoke            # human checklist, exit 0/1
+    python3 -m phiweaver.smoke            # human checklist, exit 0/1 — INCLUDES the suite
     python3 -m phiweaver.smoke --quiet    # only the final summary + failures
+    python3 -m phiweaver.smoke --no-tests # the 7 fresh-checkout checks, skipping the suite
     python3 scripts/smoke_test.py         # compatibility shim, same thing
+
+**This command already runs the unit tests**, so `smoke` alone is the whole green gate.
+Running `unittest discover` beside it executes every test a second time, which on the `z:`
+mount roughly doubles the wait (~34s suite, ~55s smoke, ~89s for both). Use ``--no-tests``
+when you are running the suite yourself — to read failures directly, or while iterating on
+a single module (`python3 -m unittest tests.test_entry_queue` is a few seconds).
 
 Exit code: 0 if every check passes, 1 otherwise.
 """
@@ -152,6 +159,9 @@ def check_unit_tests():
         raise AssertionError("unit tests failed:\n    " + "\n    ".join(tail))
 
 
+# Named so --no-tests can drop exactly this check without matching on a literal twice.
+_UNIT_TEST_CHECK = "unit-test suite"
+
 CHECKS = [
     ("repo layout", check_repo_layout),
     ("module imports (stdlib only)", check_imports),
@@ -160,21 +170,31 @@ CHECKS = [
     ("offline tools", check_offline_tooling),
     ("skill contract + registry", check_skill_contract),
     ("unique note names", check_note_names),
-    ("unit-test suite", check_unit_tests),
+    (_UNIT_TEST_CHECK, check_unit_tests),
 ]
+
+
+def selected_checks(no_tests: bool = False):
+    """The checks to run: all of them, or all but the bundled suite."""
+    return [c for c in CHECKS if not (no_tests and c[0] == _UNIT_TEST_CHECK)]
 
 
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(description="Fresh-checkout smoke test for PHI-Weaver.")
     p.add_argument("--quiet", action="store_true",
                    help="print only the summary and any failures")
+    p.add_argument("--no-tests", action="store_true",
+                   help="skip the bundled unit-test suite (use when running it yourself; "
+                        "avoids executing every test twice)")
     args = p.parse_args(argv)
+
+    checks = selected_checks(args.no_tests)
 
     if not args.quiet:
         print(f"PHI-Weaver smoke test  (repo: {REPO_ROOT})\n")
 
     failures = []
-    for name, fn in CHECKS:
+    for name, fn in checks:
         try:
             fn()
         except Exception as exc:  # noqa: BLE001 - report any failure, keep going
@@ -186,9 +206,12 @@ def main(argv=None) -> int:
 
     print()
     if failures:
-        print(f"SMOKE TEST FAILED — {len(failures)}/{len(CHECKS)} check(s) failed.")
+        print(f"SMOKE TEST FAILED — {len(failures)}/{len(checks)} check(s) failed.")
         return 1
-    print(f"SMOKE TEST PASSED — all {len(CHECKS)} checks green. Fresh checkout is healthy.")
+    # Say so when the suite was skipped: "all N checks green" must not read as a full gate.
+    note = " (unit tests skipped)" if args.no_tests else ""
+    print(f"SMOKE TEST PASSED — all {len(checks)} checks green{note}. "
+          "Fresh checkout is healthy.")
     return 0
 
 
