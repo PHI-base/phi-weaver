@@ -268,6 +268,28 @@ differently-shaped queues for the same paper. Same reasoning that keeps `map_phe
 filter on the committed ontology. The cost of hardcoding is drift, paid back by a test that compares
 the list against the live config **when the deploy file is present** and *skips* when it is not.
 
+**Columns and capitalisation followed, from a captured session (2026-07-25).** The curator saved the
+PMID:9927411 session page into `active/`, which gave the *rendered* tables a static fetch cannot
+reach (Canto builds them client-side). It confirmed the section set and order above exactly, and
+supplied two corrections: the UI **capitalises the first letter** (`Pathogen phenotype`, where the
+config stores `pathogen phenotype` — applied at render time so `ANNOTATION_SECTIONS` stays a verbatim
+copy of the config), and its columns are **`Term name` + `Term ID` as two columns**, `Conditions`
+plural, and `Figure`. Physical interaction uses `Interactor A` / `Interactor B`.
+
+**One column deliberately keeps weaver's wording: `Evidence summary`, not Canto's `Evidence code`.**
+Canto's field takes a controlled code from `canto_config`'s 82 `evidence_codes`; a draft carries
+prose that only sometimes *is* one. Measured on PMID:9927411: **5 of 8 distinct evidence strings are
+not valid codes** ("Penetration assay", "Microscopy (cellular)", "Macroscopic observation
+(quantitative observation)", …), while "Cell growth assay" and "Northern assay" are. Labelling the
+column `Evidence code` would tell the curator a cell is ready to paste into a controlled field when
+it often is not. `Physical interaction` is the exception — its evidence genuinely is a code there —
+so that column *is* `Evidence code`. Canto's `Comment` column and its genotype `Strain` /
+`Background` columns have no counterpart: `note` is kept out of the lean queue by D14, and the draft
+schema has no strain/background fields (the genotype `name` currently carries the strain, e.g.
+`Guy11`). **Left open by this decision:** nothing validates evidence strings against
+`canto_config.evidence_codes` even though `validate_evidence_code` exists and is unused — the same
+shape as the annotation-type gap closed on 2026-07-21.
+
 **Alternatives:** rename the headings but keep the merged tables (rejected — leaves GO, RNA/protein
 and gene-for-gene grouped in ways the UI doesn't, and the curator asked for the UI's shape); render
 all 12 sections always, matching the UI's full menu (rejected — most papers would carry many empty

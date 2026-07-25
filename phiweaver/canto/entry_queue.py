@@ -21,6 +21,20 @@ by the curator's structured decision — the preferred signal for interpretive/u
 and a ``"note"`` field for caveats kept out of the lean entry tables. When ``hold`` is absent the
 renderer falls back to a heuristic that parks interpretive molecular-function claims.
 
+Section and column labels follow PHI-Canto's own (D19), captured from a saved session page
+(2026-07-25) rather than guessed: `Term name` and `Term ID` are separate columns, `Conditions` is
+plural, the figure column is `Figure`.
+
+**One column is deliberately NOT Canto's wording.** Canto's phenotype tables head that column
+`Evidence code`, because the field takes a controlled code from `canto_config`'s `evidence_codes`.
+A phiweaver draft carries a prose *summary* of the evidence ("growth assay", "disease index"), so
+this queue says **`Evidence summary`** — labelling prose as a code would tell the curator the cell
+is ready to paste into a controlled field when it is not. The exception is `Physical interaction`,
+whose evidence genuinely is a code there (Co-purification / PCA / Two-hybrid), so that column *is*
+`Evidence code`. Canto's `Comment` column and its genotype `Strain` / `Background` columns have no
+counterpart here: `note` is deliberately kept out of the lean queue (D14), and the draft schema has
+no strain/background fields — the genotype `name` currently carries the strain (e.g. `Guy11`).
+
 Pure stdlib; emits markdown.
 
 Usage (from the repo root):
@@ -63,6 +77,27 @@ def _term(a: dict) -> str:
     if tid:
         return _cell(f"{tname} — {tid}" if tname else tid)
     return _cell(f"⚠ {tname or '(unresolved)'}")
+
+
+def _term_name(a: dict) -> str:
+    """The term's name for PHI-Canto's `Term name` column; ⚠ when nothing resolved."""
+    tname = _s(a.get("term_name"))
+    return _cell(tname) if _s(a.get("term_id")) or tname else "⚠ (unresolved)"
+
+
+def _term_id(a: dict) -> str:
+    """The term's ID for PHI-Canto's `Term ID` column."""
+    return _cell(a.get("term_id")) or "—"
+
+
+def _heading(display_name: str) -> str:
+    """PHI-Canto's `display_name` as the UI actually renders it — first letter capitalised.
+
+    The config stores most names lower-case (`pathogen phenotype`) but the session page shows
+    `Pathogen phenotype`. Capitalising here rather than in ANNOTATION_SECTIONS keeps that table a
+    verbatim copy of the config, so the drift test stays a plain equality check.
+    """
+    return display_name[:1].upper() + display_name[1:]
 
 
 def _compared_with(a: dict) -> str:
@@ -177,21 +212,25 @@ ANNOTATION_SECTIONS = (
 
 # Column headers per shape. Splitting GO into its three aspects and RNA/protein into two lets the
 # old "Annotation type" column go — the heading now carries what the column used to.
+# Column labels follow the session page's own tables (captured from a saved PHI-Canto session,
+# 2026-07-25): `Term name` and `Term ID` are two columns there, not one cell; `Conditions` is
+# plural; the figure column is just `Figure`. `Evidence summary` is deliberately NOT renamed to
+# Canto's `Evidence code` — see the note in the module docstring.
 _ANNOTATION_HEADERS = {
-    "go":             ["Tick", "Subject", "Term", "Evidence summary", "Figure/table"],
-    "host_phenotype": ["Tick", "Host genotype", "PHIPO term", "Evidence summary", "Condition",
-                       "Figure/table"],
-    "phenotype":      ["Tick", "Genotype", "PHIPO term", "Evidence summary", "Condition",
-                       "Figure/table"],
-    "interaction":    ["Tick", "Metagenotype", "PHIPO term", "Compared with", "Evidence summary",
-                       "Figure/table"],
-    "modification":   ["Tick", "Subject", "Modification term", "Evidence summary", "Condition",
-                       "Figure/table"],
-    "physical":       ["Tick", "Subject", "Interactor", "Interaction term", "Evidence method",
-                       "Figure/table", "Status"],
-    "level":          ["Tick", "Gene", "Level qualifier", "Evidence summary", "Condition",
-                       "Figure/table"],
-    "disease":        ["Tick", "Metagenotype", "Disease term", "Disease ontology ID", "Note"],
+    "go":             ["Tick", "Gene", "Term name", "Term ID", "Evidence summary", "Figure"],
+    "host_phenotype": ["Tick", "Host genotype", "Term name", "Term ID", "Evidence summary",
+                       "Conditions", "Figure"],
+    "phenotype":      ["Tick", "Genotype", "Term name", "Term ID", "Evidence summary",
+                       "Conditions", "Figure"],
+    "interaction":    ["Tick", "Metagenotype", "Term name", "Term ID", "Compared with",
+                       "Evidence summary", "Figure"],
+    "modification":   ["Tick", "Gene", "Term name", "Term ID", "Evidence summary", "Conditions",
+                       "Figure"],
+    "physical":       ["Tick", "Interactor A", "Interactor B", "Term name", "Evidence code",
+                       "Figure", "Status"],
+    "level":          ["Tick", "Gene", "Level qualifier", "Evidence summary", "Conditions",
+                       "Figure"],
+    "disease":        ["Tick", "Metagenotype", "Term name", "Term ID", "Comment"],
 }
 
 
@@ -203,28 +242,33 @@ def _interactor(a: dict) -> str:
 
 # One row builder per shape. Signatures match so the renderer can dispatch on `shape` alone.
 _ANNOTATION_ROWS = {
-    "go": lambda a: ["☐", _cell(a.get("feature")), _term(a), _cell(a.get("evidence")),
-                     _cell(a.get("figure"))],
-    "host_phenotype": lambda a: ["☐", _cell(a.get("feature")), _term(a), _cell(a.get("evidence")),
-                                 _cell(a.get("conditions")), _cell(a.get("figure"))],
-    "phenotype": lambda a: ["☐", _cell(a.get("feature")), _term(a), _cell(a.get("evidence")),
-                            _cell(a.get("conditions")), _cell(a.get("figure"))],
-    "interaction": lambda a: ["☐", _cell(a.get("feature")), _term(a), _compared_with(a) or "—",
-                              _cell(a.get("evidence")), _cell(a.get("figure"))],
+    "go": lambda a: ["☐", _cell(a.get("feature")), _term_name(a), _term_id(a),
+                     _cell(a.get("evidence")), _cell(a.get("figure"))],
+    "host_phenotype": lambda a: ["☐", _cell(a.get("feature")), _term_name(a), _term_id(a),
+                                 _cell(a.get("evidence")), _cell(a.get("conditions")),
+                                 _cell(a.get("figure"))],
+    "phenotype": lambda a: ["☐", _cell(a.get("feature")), _term_name(a), _term_id(a),
+                            _cell(a.get("evidence")), _cell(a.get("conditions")),
+                            _cell(a.get("figure"))],
+    "interaction": lambda a: ["☐", _cell(a.get("feature")), _term_name(a), _term_id(a),
+                              _compared_with(a) or "—", _cell(a.get("evidence")),
+                              _cell(a.get("figure"))],
     # No "pick the term at entry" fallback here, unlike physical interaction: PI is exempt from
     # the term requirement because it genuinely has no ontology term (the evidence method carries
     # it), whereas a protein-modification annotation *does* take a PSI-MOD term, so a term-less
     # one is correctly parked by _park_reason and never reaches this row builder.
-    "modification": lambda a: ["☐", _cell(a.get("feature")), _term(a), _cell(a.get("evidence")),
-                               _cell(a.get("conditions")), _cell(a.get("figure"))],
+    "modification": lambda a: ["☐", _cell(a.get("feature")), _term_name(a), _term_id(a),
+                               _cell(a.get("evidence")), _cell(a.get("conditions")),
+                               _cell(a.get("figure"))],
+    # Canto's physical-interaction table is Interactor A / Interactor B, and its evidence field
+    # really is a controlled code here (Co-purification / PCA / Two-hybrid), so the label is exact.
     "physical": lambda a: ["☐", _cell(a.get("feature")), _interactor(a) or "—",
-                           _term(a) if _s(a.get("term_id")) else "pick PSI-MI at entry",
+                           _term_name(a) if _s(a.get("term_id")) else "pick PSI-MI at entry",
                            _cell(a.get("evidence")), _cell(a.get("figure")), "enter"],
     "level": lambda a: ["☐", _cell(a.get("feature")), _cell(a.get("term_name")),
                         _cell(a.get("evidence")), _cell(a.get("conditions")),
                         _cell(a.get("figure"))],
-    "disease": lambda a: ["☐", _cell(a.get("feature")), _cell(a.get("term_name")),
-                          _cell(a.get("term_id")),
+    "disease": lambda a: ["☐", _cell(a.get("feature")), _term_name(a), _term_id(a),
                           _cell(a.get("conditions") or a.get("figure"))],
 }
 
@@ -420,7 +464,7 @@ def render_entry_queue(rec: dict, status: Optional[str] = None,
             continue          # empty sections are omitted; the UI's full menu is not a checklist
         rendered_types.add(atype)
         n += 1
-        out += [f"### F{n}. {display}", ""]
+        out += [f"### F{n}. {_heading(display)}", ""]
         if shape == "level":
             out += ["*The level qualifier is a controlled phrase, not an ontology ID — pick the "
                     "matching term in Canto.*", ""]

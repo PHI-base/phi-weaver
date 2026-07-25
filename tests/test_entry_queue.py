@@ -16,7 +16,7 @@ def _section(md: str, display_name: str) -> str:
     of them when the headings moved to PHI-Canto's own display names.
     """
     for line in md.splitlines():
-        if line.startswith("### F") and line.split(". ", 1)[-1] == display_name:
+        if line.startswith("### F") and line.split(". ", 1)[-1].lower() == display_name.lower():
             return md.split(line, 1)[1].split("\n### ", 1)[0].split("\n## ", 1)[0]
     raise AssertionError(f"no section titled {display_name!r} in the queue")
 
@@ -286,10 +286,12 @@ class AnnotationSectionsMirrorCantoTests(unittest.TestCase):
 
     def test_headings_use_canto_display_names(self):
         md = self._with(self.HOST_PHEN, self.PTM)
-        for expected in ("### F1. host phenotype", "### F2. pathogen phenotype",
-                         "### F3. pathogen-host interaction phenotype",
-                         "### F4. protein modification", "### F5. physical interaction",
-                         "### F6. disease name"):
+        # Capitalisation is the session page's, not the config's: canto_deploy.yaml stores
+        # "pathogen phenotype" but the UI renders "Pathogen phenotype".
+        for expected in ("### F1. Host phenotype", "### F2. Pathogen phenotype",
+                         "### F3. Pathogen-host interaction phenotype",
+                         "### F4. Protein modification", "### F5. Physical interaction",
+                         "### F6. Disease name"):
             self.assertIn(expected, md)
 
     def test_host_phenotype_is_enterable(self):
@@ -312,7 +314,7 @@ class AnnotationSectionsMirrorCantoTests(unittest.TestCase):
     def test_empty_sections_are_omitted(self):
         md = self._with()
         self.assertNotIn("GO biological process", md)   # fixture has no BP annotation
-        self.assertNotIn("gene-for-gene phenotype", md)
+        self.assertNotIn("Gene-for-gene phenotype", md)
 
     def test_sections_are_numbered_without_gaps(self):
         md = self._with(self.HOST_PHEN, self.PTM)
