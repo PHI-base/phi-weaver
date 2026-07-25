@@ -535,10 +535,20 @@ decision and re-creating the term silently reopens it. See the `ontology-term-re
     `Strain` column honestly. (`Background` is a separate question the ruling did not cover — for a
     mutant derived from Guy11, Canto's `Background` field may be where `Guy11` belongs. Ask before
     assuming.)
-  - **③ A control with no alleles is not necessarily wild type.** A2 can only test "has alleles", so
-    **AM30** — an ectopic-integration transformation control — is listed beside `Guy11` as a
-    candidate. The queue says so in the section note; an explicit `strain` field (②) removes the
-    guesswork.
+  - **③ ✅ RULED 2026-07-25: a mutant's parent strain goes in `Background`.** `Guy11` is the
+    background of every mutant derived from it, never their strain — the two fields are
+    complementary and never both set. **AM30 is an insertion mutant in wild-type Guy11**, not a
+    wild type, which confirms "has alleles" alone cannot decide: a `background` is the second
+    signal, and A2 now excludes on either. Genotype tables carry Canto's `Strain` and `Background`
+    columns, and a genotype with a background but no allele renders `⚠ no allele recorded` — that
+    is a mutant whose allele the draft failed to capture, exactly AM30's case.
+  - **④ ⚠ `Background` may mean two things — unresolved.** The team's `#157` transformant rule says
+    a background field records the **endogenous copy's status** (`endogenous <gene> present` /
+    `absent` / `<gene>delta`); this ruling puts the **parent strain** there. Either they are two
+    different fields (allele-level in `#157` vs the genotype-level `Background` column) or one
+    free-text field carries both. Flagged in `PHI-Canto-Curation-Conventions.md`; the renderer
+    writes whatever `background` says and asserts neither reading. **Ask before the schema work in
+    ②.**
   - *Worth knowing:* the concept is **first-class in PHI-base already** — the v4-19 release carries
     `Experimental_strain` (`Guy11`) and `Pathogen_NCBI_strain_Taxonomy_ID`, both surfaced by
     `phibase_index`. So the target shape exists; only weaver's draft schema is missing it.

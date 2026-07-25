@@ -309,8 +309,11 @@ def _strains_section(canto: dict, cl: dict) -> List[str]:
         role = ("host" if name in cl["host_names"]
                 else "pathogen" if name in cl["path_names"] else "")
         e = _entry(org, role)
-        # A genotype carrying alleles is a mutant: per the ruling it contributes no strain.
-        if [x for x in (g.get("alleles") or []) if _s(x)]:
+        # A mutant contributes no strain (2026-07-25 ruling). Two independent signals, because
+        # neither alone is sufficient: alleles catch the ordinary case, and an explicit
+        # `background` catches a mutant the draft lists without alleles — AM30 on PMID:9927411 is
+        # an ectopic insertion in wild-type Guy11 and looked wild type until it gained a background.
+        if [x for x in (g.get("alleles") or []) if _s(x)] or _s(g.get("background")):
             continue
         strain = _s(g.get("strain"))
         if strain and strain not in e["strains"]:
@@ -328,10 +331,11 @@ def _strains_section(canto: dict, cl: dict) -> List[str]:
              "proper. Use the strain picker under each organism, **Add strain** for one not in the "
              "list, or **Unknown strain** if the paper does not say. **Wild types only** — a mutant "
              "is named by its allele and carries no strain, so mutant genotypes are not listed "
-             "here. Where the strain cell is unset the draft carries no `strain` field; the "
-             "allele-free genotype names are shown to recognise it from, not as the strain itself "
-             "— and a control that merely has no alleles listed (an ectopic-integration "
-             "transformant, say) appears among them, so confirm which is the true wild type.*",
+             "here — a mutant's parent strain goes in its **Background** instead. Where the strain "
+             "cell is unset the draft carries no `strain` field; the names beside it are shown to "
+             "recognise the strain from, not as the strain itself — and a mutant the draft lists "
+             "without alleles or a background appears among them, so confirm which is the true "
+             "wild type.*",
              ""]
             + _table(["Tick", "Organism", "Role", "Strain / cultivar",
                       "Wild-type genotype in the draft"], rows)
@@ -475,21 +479,33 @@ def render_entry_queue(rec: dict, status: Optional[str] = None,
     path_rows, host_rows = [], []
     for g in canto.get("genotypes") or []:
         name = _s(g.get("name"))
-        al = ", ".join(_s(x) for x in (g.get("alleles") or []) if _s(x)) or "wild type"
+        al = ", ".join(_s(x) for x in (g.get("alleles") or []) if _s(x))
+        if not al:
+            # "wild type" is only true without a background: a genotype derived from a parent
+            # strain but carrying no allele is a mutant whose allele the draft failed to record
+            # (AM30 on PMID:9927411, an ectopic insertion in Guy11), so say that instead.
+            al = "⚠ no allele recorded" if _s(g.get("background")) else "wild type"
         use = _cell(_s(g.get("role")) or "experimental")
         if ("genotype", name) in cl["exclude"]:
             reason = cl["exclude"][("genotype", name)]
             parked.append((f"genotype {name}", _cell(reason),
                            "fix the canto block" if "undefined" in reason else "enter after gene resolved"))
             continue
+        # Canto's genotype table carries Strain and Background beside the alleles. Per the
+        # 2026-07-25 ruling a wild type has a strain and no background; a mutant has a background
+        # (its parent wild-type strain, e.g. Guy11) and no strain of its own.
+        strain, background = _s(g.get("strain")) or "—", _s(g.get("background")) or "—"
         if name in cl["host_names"] and name not in cl["path_names"]:
-            host_rows.append(["☐", _cell(name), _cell(_s(g.get("organism"))), _cell(al), use])
+            host_rows.append(["☐", _cell(name), _cell(_s(g.get("organism"))), _cell(strain),
+                              _cell(background), _cell(al), use])
         else:
-            path_rows.append(["☐", _cell(name), _cell(al), use])
+            path_rows.append(["☐", _cell(name), _cell(strain), _cell(background), _cell(al), use])
     out += ["## C. Create pathogen genotypes", ""]
-    out += _table(["Tick", "Genotype name", "Alleles", "Use"], path_rows) + [""]
+    out += _table(["Tick", "Genotype name", "Strain", "Background", "Alleles", "Use"],
+                  path_rows) + [""]
     out += ["## D. Create host genotype", ""]
-    out += _table(["Tick", "Host genotype", "Species", "Alleles / cultivar", "Use"], host_rows) + [""]
+    out += _table(["Tick", "Host genotype", "Species", "Strain / cultivar", "Background",
+                   "Alleles", "Use"], host_rows) + [""]
 
     # --- E. Metagenotypes ---
     out += ["## E. Create metagenotypes", ""]

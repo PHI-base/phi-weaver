@@ -379,6 +379,46 @@ class StrainsSectionTests(unittest.TestCase):
         self.assertIn("WT", self.a2)          # the allele-free wild type is offered
         self.assertIn("host wt", self.a2)
 
+    def test_a_background_marks_a_mutant_even_with_no_alleles(self):
+        """AM30 on PMID:9927411 is an ectopic insertion in Guy11 but lists no allele.
+
+        "has alleles" alone therefore cannot decide wild type; a `background` is the second
+        signal, and without it such a genotype was wrongly offered as a strain.
+        """
+        rec = _rec()
+        rec["canto"]["genotypes"].append(
+            {"name": "AM30-like", "organism": "Fusarium x", "alleles": [], "role": "control",
+             "background": "Guy11"})
+        md, _ = eq.render_entry_queue(rec)
+        a2 = md.split("### A2.")[1].split("\n## ", 1)[0]
+        self.assertNotIn("AM30-like", a2)
+
+    def test_a_background_without_an_allele_is_flagged_not_called_wild_type(self):
+        rec = _rec()
+        rec["canto"]["genotypes"].append(
+            {"name": "AM30-like", "organism": "Fusarium x", "alleles": [], "role": "control",
+             "background": "Guy11"})
+        md, _ = eq.render_entry_queue(rec)
+        row = [l for l in md.splitlines() if "AM30-like" in l and l.startswith("| ☐ |")][0]
+        self.assertIn("⚠ no allele recorded", row)
+        self.assertNotIn("wild type", row)
+
+    def test_genotype_tables_carry_canto_strain_and_background_columns(self):
+        rec = _rec()
+        for g in rec["canto"]["genotypes"]:
+            if g["name"] == "WT":
+                g["strain"] = "Guy11"
+            if g["name"] == "geneAΔ":
+                g["background"] = "Guy11"
+        md, _ = eq.render_entry_queue(rec)
+        c = md.split("## C. Create pathogen genotypes")[1].split("## D.")[0]
+        self.assertIn("| Tick | Genotype name | Strain | Background | Alleles | Use |", c)
+        wt = [l for l in c.splitlines() if l.startswith("| ☐ | WT |")][0]
+        mut = [l for l in c.splitlines() if l.startswith("| ☐ | geneAΔ |")][0]
+        # Complementary, never both set: strain on the wild type, background on the mutant.
+        self.assertIn("| Guy11 | — |", wt)
+        self.assertIn("| — | Guy11 |", mut)
+
     def test_an_explicit_strain_field_is_used_verbatim(self):
         rec = _rec()
         for g in rec["canto"]["genotypes"]:

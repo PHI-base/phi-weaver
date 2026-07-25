@@ -113,11 +113,34 @@ named by its **allele**, not by whatever isolate label the paper gives it.
 | `AM25` | deletion mutant | genotype **`abc1Δ`** — *no strain name* |
 | `TF7-3131` | insertion mutant | genotype **`abc1-1`** — *no strain name* |
 | rice `Sariceltic` | wild-type host | **cultivar** `Sariceltic`, genotype wild type |
+| `AM30` | insertion mutant in wild-type Guy11 | genotype with **background** `Guy11` — *no strain name* |
+
+**A mutant's parent strain goes in `Background`.** For a mutant derived from wild-type Guy11, `Guy11`
+is the **background**, not the strain. So the two fields are complementary and never both set:
+
+| | `Strain` | `Background` |
+|---|---|---|
+| wild type | the strain / cultivar (`Guy11`, `Sariceltic`) | — |
+| mutant | — | the parent wild-type strain (`Guy11`) |
+
+> **⚠ Unresolved against `#157`.** The *Allele typing* section above, from the team tracker, says a
+> **background field records the endogenous copy's status** for transformants (`endogenous <gene>
+> present` / `absent` / `<gene>delta`). This ruling puts the **parent strain** (`Guy11`) there. Those
+> are different contents for a similarly-named field, so either (a) they are two different fields —
+> an allele-level background in `#157` versus the genotype-level `Background` column in Canto's
+> genotype table — or (b) one free-text field is being asked to carry both. **Do not treat this as
+> settled**; the renderer writes whatever a genotype's `background` says and asserts nothing about
+> which reading is right.
 
 **Why it matters:** PHI-Canto builds a genotype from a strain plus alleles, so putting `AM25` in the
 strain field asserts a strain that does not exist as such, and hides the allele that is the actual
-curatable fact. **Consequence for drafts:** a genotype's `strain` is populated for wild types and
-left empty for mutants; the entry queue's table A2 offers strains from wild-type genotypes only.
+curatable fact. `Background` keeps the parentage without making the mutant look like its own strain.
+
+**Consequence for drafts:** a genotype carries `strain` when wild type and `background` when a
+mutant. The entry queue's table A2 offers strains from wild-type genotypes only — excluding anything
+with alleles *or* a background — and its genotype tables carry Canto's `Strain` and `Background`
+columns. **A genotype with a background but no allele is flagged `⚠ no allele recorded`**: that is a
+mutant whose allele the draft failed to capture, which is exactly what `AM30` was.
 
 ## Interaction phenotype — primary term is a measurement; interpretation goes in the extension
 > **Provenance:** curator review (Hsin-Yun Chang, 2026-07-15); logged as **L5**.
