@@ -78,8 +78,10 @@ any single rule as current — some were reversed at least once before settling.
   - allele description: `<strain>-<gene>(<allele>)` — give the AA change if known, but not for
     a plain wild-type transgene;
   - **background field records the endogenous copy's status:** `endogenous <gene> present`,
-    `endogenous <gene> absent` (naturally absent in that strain), or `<gene>delta` (deleted by
-    the researchers).
+    `endogenous <gene> absent` (naturally absent in that strain), or `<gene>modified` (changed by
+    the researchers). *Third form updated 2026-07-25 from `<gene>delta` — `modified` covers an
+    insertion or substitution too, not only a deletion.* See "Strains and cultivars" below for how
+    this sits alongside the parent strain in the same field.
 - **Deletion + substitution in one allele** → allele type `partial deletion and amino acid
   change`. (`#16`)
 - **Remove `overexpression` from an allele when the experiment is not in-host** — with no
@@ -123,14 +125,18 @@ is the **background**, not the strain. So the two fields are complementary and n
 | wild type | the strain / cultivar (`Guy11`, `Sariceltic`) | — |
 | mutant | — | the parent wild-type strain (`Guy11`) |
 
-> **⚠ Unresolved against `#157`.** The *Allele typing* section above, from the team tracker, says a
-> **background field records the endogenous copy's status** for transformants (`endogenous <gene>
-> present` / `absent` / `<gene>delta`). This ruling puts the **parent strain** (`Guy11`) there. Those
-> are different contents for a similarly-named field, so either (a) they are two different fields —
-> an allele-level background in `#157` versus the genotype-level `Background` column in Canto's
-> genotype table — or (b) one free-text field is being asked to carry both. **Do not treat this as
-> settled**; the renderer writes whatever a genotype's `background` says and asserts nothing about
-> which reading is right.
+**`Background` carries both facts — resolved 2026-07-25.** It is one field, and it records the
+parent strain *and* the endogenous copy's status (the `#157` rule above). Worked on PMID:9927411:
+
+| Genotype | What happened | `Background` |
+|---|---|---|
+| `AM30` | ectopic vector integration, native gene untouched | `Guy11; endogenous ABC1 present` |
+| `AM25` | `ABC1` deleted | `Guy11; endogenous ABC1 absent`\* |
+| `TF7-3131` | insertion into `ABC1` | `Guy11; ABC1modified`\* |
+
+\* *AM25 and TF7-3131 are shown for illustration; only AM30 has been written into the draft so far.*
+Note `<gene>modified` replaced `<gene>delta` in the `#157` vocabulary on the same date, so an
+insertion mutant like `TF7-3131` now has a form that fits it.
 
 **Why it matters:** PHI-Canto builds a genotype from a strain plus alleles, so putting `AM25` in the
 strain field asserts a strain that does not exist as such, and hides the allele that is the actual

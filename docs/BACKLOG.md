@@ -542,13 +542,15 @@ decision and re-creating the term silently reopens it. See the `ontology-term-re
     signal, and A2 now excludes on either. Genotype tables carry Canto's `Strain` and `Background`
     columns, and a genotype with a background but no allele renders `⚠ no allele recorded` — that
     is a mutant whose allele the draft failed to capture, exactly AM30's case.
-  - **④ ⚠ `Background` may mean two things — unresolved.** The team's `#157` transformant rule says
-    a background field records the **endogenous copy's status** (`endogenous <gene> present` /
-    `absent` / `<gene>delta`); this ruling puts the **parent strain** there. Either they are two
-    different fields (allele-level in `#157` vs the genotype-level `Background` column) or one
-    free-text field carries both. Flagged in `PHI-Canto-Curation-Conventions.md`; the renderer
-    writes whatever `background` says and asserts neither reading. **Ask before the schema work in
-    ②.**
+  - **④ ✅ RESOLVED 2026-07-25: `Background` is one field carrying both facts** — the parent strain
+    *and* the endogenous copy's status from `#157`. `AM30` is now written into the draft as
+    `Guy11; endogenous ABC1 present`. The `#157` vocabulary's third form was updated the same day
+    from `<gene>delta` to **`<gene>modified`**, so an insertion mutant like `TF7-3131` has a form
+    that fits it. Both recorded in `PHI-Canto-Curation-Conventions.md`.
+  - **⑤ Only AM30 has been written so far.** `AM25` (`Guy11; endogenous ABC1 absent`) and
+    `TF7-3131` (`Guy11; ABC1modified`) are the obvious remaining cases on this paper, and the
+    wild types still need `strain` (`Guy11`, and the three host cultivars) before A2 pre-fills.
+    Not applied unasked — these are curation work products.
   - *Worth knowing:* the concept is **first-class in PHI-base already** — the v4-19 release carries
     `Experimental_strain` (`Guy11`) and `Pathogen_NCBI_strain_Taxonomy_ID`, both surfaced by
     `phibase_index`. So the target shape exists; only weaver's draft schema is missing it.
