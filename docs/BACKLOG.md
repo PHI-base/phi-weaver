@@ -482,17 +482,36 @@ decision and re-creating the term silently reopens it. See the `ontology-term-re
   species-neutral" above and lesson L2.
 
 ## Curation workflow
-- [ ] **Nothing checks whether a paper is already curated in PHI-base** (added 2026-07-24,
-  surfaced on PMID:9927411). Weaver drafted a foundational 1999 rice-blast paper end to end
-  without ever asking whether PHI-base already holds it — and for a paper of that vintage and
-  prominence it very likely does. A duplicate draft wastes the curator's review time, and worse,
-  it can **silently disagree with the established entry** on exactly the judgement calls a draft
-  is weakest on (there, the taxon — UniProtKB:O13407 is filed under *Pyricularia grisea* taxid
-  148305 while the experimental strain Guy11 is a rice isolate, now *P. oryzae* taxid 318829 —
-  and the allele type for an ORF-replacement mutant). An existing curated entry should win over a
-  fresh draft. Cheapest useful version: a lookup by PMID against PHI-base at **triage** time, so
-  the answer arrives before the drafting effort is spent, not after; surface a hit as a flag with
-  a link rather than refusing to draft.
+- [x] **Nothing checks whether a paper is already curated in PHI-base** — *resolved 2026-07-25*
+  (added 2026-07-24, surfaced on PMID:9927411). Built **`phiweaver/lookup/phibase_index.py`**
+  (+ `tests/test_phibase_index.py`, 20 tests, network-free): `python3 -m
+  phiweaver.lookup.phibase_index <PMID>` indexes a pinned PHI-base release by PMID and reports a
+  hit with the record's PHI accession, gene, pathogen taxon, host, phenotype and a verified
+  record link, or an explicit miss. Wired in as **step 1 of `paper-triage`**, before conversion,
+  so the answer lands before the drafting effort. Confirmed on the trigger paper: PMID:9927411 =
+  **PHI:132** (ABC1, O13407), pathogen **taxid 318829** — the taxon the draft got wrong.
+  - **Source:** `releases/` in <https://github.com/PHI-base/data> (CC-BY-4.0), pinned to
+    `phi-base_v4-19_2026-03-25.csv` (24,122 records / **5,994 distinct PMIDs**); `--release`
+    takes any release filename, `phi-base_current.csv` tracks the newest. Cached under
+    `phiweaver/lookup/.cache/phibase/` (gitignored, ~17 MB); `PHIBASE_CACHE` relocates it —
+    worth pointing at a native filesystem, since reading it costs ~3 s on the `z:` 9p mount.
+  - **Two undocumented release quirks handled** (both pinned by tests): the CSV repeats its
+    **header as the first data row**, and the PMID column was **renamed** (`PMID` → v4-08,
+    `Literature_ID` since) — both spellings are accepted.
+  - **Recall ceiling, printed with every miss:** releases exclude in-progress PHI-Canto
+    sessions, and 61 records in v4-19 cite no PubMed ID, so a miss is never reported as
+    "uncurated". *Deferred:* auto-diffing a draft's `canto` block against the matched record —
+    the fields are surfaced for a curator to reconcile, but nothing compares them automatically.
+  - **Why it mattered** (the original note): weaver drafted a foundational 1999 rice-blast paper
+    end to end without ever asking whether PHI-base already holds it — and for a paper of that
+    vintage and prominence it very likely does. A duplicate draft wastes the curator's review
+    time, and worse, it can **silently disagree with the established entry** on exactly the
+    judgement calls a draft is weakest on (there, the taxon — UniProtKB:O13407 is filed under
+    *Pyricularia grisea* taxid 148305 while the experimental strain Guy11 is a rice isolate, now
+    *P. oryzae* taxid 318829 — and the allele type for an ORF-replacement mutant). An existing
+    curated entry should win over a fresh draft. Cheapest useful version: a lookup by PMID
+    against PHI-base at **triage** time, so the answer arrives before the drafting effort is
+    spent, not after; surface a hit as a flag with a link rather than refusing to draft.
 - [x] **Store input PDFs + output docs on Google Drive** (added + **verified 2026-07-19**; user has
   Google Drive for Desktop on Windows). **Low effort, no code change** — the pipeline's whole storage
   layer is a single filesystem path (`PHI_LITERATURE_ROOT` → `active/` input, `completed/` output,
