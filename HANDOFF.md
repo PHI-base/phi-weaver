@@ -14,7 +14,7 @@ Concise "start here" pointer. Full history is the latest session log
   the validation step. A **coverage lint** (`phiweaver.canto.coverage`) warns (stderr) about block
   genotypes in no metagenotype. (The fuller `canto-worksheet` renderer was retired — see **D16**.)
 - **11 skills** (`skills/REGISTRY.md`); green gate: `python3 -m phiweaver.smoke` (8/8, and the
-  last of those 8 checks *is* the unit suite — 490 tests).
+  last of those 8 checks *is* the unit suite — 517 tests).
 
 ## Next tasks
 1. **Resolve the 2 remaining accession blockers**: **URA5** (PMID:1541525, ambiguous) then
@@ -44,10 +44,10 @@ Concise "start here" pointer. Full history is the latest session log
 ## Ground rules
 - Work in `/mnt/z/phi-weaver`; on WSL launch `claude --dangerously-skip-permissions`.
 - **Green gate: `python3 -m phiweaver.smoke`, on its own.** It already runs the unit suite,
-  so adding `unittest discover` beside it executes every test twice (~89s instead of ~55s on
+  so adding `unittest discover` beside it executes every test twice (~55s instead of ~34s on
   the `z:` mount). While iterating, run the one relevant module
   (`python3 -m unittest tests.test_entry_queue`, a few seconds) and keep the full gate for
-  pre-commit; `--no-tests` (~17s) gives the fresh-checkout checks alone.
+  pre-commit; `--no-tests` (~15s) gives the fresh-checkout checks alone.
 - **Git rules live in [AGENTS.md](AGENTS.md) §5 — follow them there, not here.** They cover
   commit style, what must never be committed, and the `z:` mount's lock-file traps
   (`git config`, `git stash`). This file used to restate them and drifted out of sync twice,

@@ -26,14 +26,32 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
   `page.find_tables()` in PyMuPDF (structured, but unreliable on scanned/ruled 1990s layouts).
   Until then, **render and read table pages by hand for any table-carrying paper** and say so in
   the draft's provenance.
-- [ ] **Ontologies are re-parsed on every test run** (added 2026-07-24). The gate is ~45s, and a
-  large part of it is repeatedly parsing the bundled `.obo` files (`phipo-base.obo` is the big
-  one) across 30 test modules, amplified by the `z:` mount's 9p filesystem tax on per-file I/O.
-  `_load_phido` is already `lru_cache`d *within* a process, so the cost is per test process, not
-  per call. Options: cache the parsed index to disk and invalidate on mtime; or keep a native-
-  filesystem clone and sync (bigger change — **needs the user's call on where the repo lives**).
-  Mitigated 2026-07-24 by removing the doubled gate (`smoke` alone; `--no-tests`, `dd79ee6`), which
-  took ~89s → ~45s; this item is the remaining half.
+- [x] **~~Ontologies are re-parsed on every test run~~ — misdiagnosed; the real cost was
+  `git_commit()`** (added 2026-07-24, *measured and fixed 2026-07-25*). The slow gate was real; the
+  cause was not ontology parsing.
+  - **The premise was wrong.** This item assumed the `.obo` parse cost was paid "per test process,
+    across 30 test modules". But **no test file spawns a subprocess** — `unittest discover` runs the
+    whole suite in **one** process, where the existing `lru_cache(maxsize=1)` already parses each
+    ontology exactly once. Measured cost of that one parse: `phipo-base.obo` = 61 ms read + 28 ms
+    parse (1327 terms); `map_phenotype.load_terms` = 32 ms. **Total ontology parsing across all
+    bundled files is ~0.2 s**, not "a large part" of the gate. A disk cache would have saved
+    essentially nothing, and would have added an mtime-invalidation bug surface for free.
+  - **The real hotspot, from `cProfile`:** `test_entry_queue` spent **7.49 s of its 8.17 s** in
+    `render_entry_queue` → `provenance_line` → **`git_commit()` → `subprocess.run`**, 20 times at
+    ~330 ms per call. Shelling out to git costs ~330 ms on the `z:` 9p mount, and every rendered
+    entry queue asks for the commit once.
+  - **Fix:** `@lru_cache(maxsize=1)` on `phiweaver.common.git_commit` — a process cannot
+    meaningfully change commit underneath its own provenance stamp, and a `None` (git absent, or the
+    5 s timeout tripped) is now paid once rather than per render. `git_commit.cache_clear()` covers
+    the rare long-lived-process case. `tests/test_common.py` (7 tests) pins the call count, so
+    removing the decorator fails the suite rather than silently costing 10 s again.
+  - **Result: unit suite 22.1 s → ~11.6 s, full `smoke` gate 57.5 s → 34.0 s** (~41%), 8/8 green.
+    The saving is larger than `test_entry_queue` alone because several other modules render
+    provenance stamps too.
+  - **Lesson:** profile before optimising a guess. This item named a plausible culprit (big files, a
+    slow mount) and was written without measuring; the actual cost was 30× larger and elsewhere.
+    *Still true and unfixed:* the 9p mount tax on per-file I/O is real — it just lands on process
+    spawns and imports, not on ontology parsing.
 - [ ] **PomGeneEx IDs are unverified, and the protein half is missing** (added 2026-07-24). The
   seven RNA-level qualifier IDs vendored in `5597729` (`data/pomgeneex.obo`) are **curator-supplied
   and were never checked against a published PomGeneEx release** — no public artifact could be

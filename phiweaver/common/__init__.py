@@ -17,6 +17,7 @@ import json
 import sqlite3
 import subprocess
 from datetime import datetime, timezone
+from functools import lru_cache
 from pathlib import Path
 from typing import Callable, Optional
 
@@ -28,12 +29,21 @@ def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
 
+@lru_cache(maxsize=1)
 def git_commit() -> Optional[str]:
     """The framework's current short git revision, or ``None`` if unavailable.
 
     This is phiweaver's real *version number*: one token that pins the rules and examples
     that produced an output (reproduce by checking out this commit + rerunning the model).
     Resolved against the package's own repo, so it is correct regardless of the caller's cwd.
+
+    **Cached per process**, because this shells out to git and a process cannot meaningfully
+    change commit underneath its own provenance stamp. Uncached it was the single largest cost
+    in the test suite: rendering one entry queue calls it once, ~330 ms per call on the ``z:``
+    9p mount, so 20 render tests spent ~6.5 s — about 30% of the whole unit suite — asking git
+    the same question. A ``None`` (git missing, or the 5 s timeout tripped) is cached too, so a
+    slow failure is paid once rather than per render. Call ``git_commit.cache_clear()`` in the
+    rare case a long-lived process commits and then needs to re-stamp.
     """
     repo = Path(__file__).resolve().parents[2]   # phiweaver/common/__init__.py -> repo root
     try:
