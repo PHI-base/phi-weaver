@@ -547,10 +547,19 @@ decision and re-creating the term silently reopens it. See the `ontology-term-re
     `Guy11; endogenous ABC1 present`. The `#157` vocabulary's third form was updated the same day
     from `<gene>delta` to **`<gene>modified`**, so an insertion mutant like `TF7-3131` has a form
     that fits it. Both recorded in `PHI-Canto-Curation-Conventions.md`.
-  - **⑤ Only AM30 has been written so far.** `AM25` (`Guy11; endogenous ABC1 absent`) and
-    `TF7-3131` (`Guy11; ABC1modified`) are the obvious remaining cases on this paper, and the
-    wild types still need `strain` (`Guy11`, and the three host cultivars) before A2 pre-fills.
-    Not applied unasked — these are curation work products.
+  - **⑤ ✅ PMID:9927411 fully populated 2026-07-25.** Mutants carry a background (`AM25` =
+    `Guy11; endogenous ABC1 absent`, `TF7-3131` = `Guy11; ABC1modified`, `AM30` =
+    `Guy11; endogenous ABC1 present`) and the four wild types carry a strain/cultivar (`Guy11`,
+    `Sariceltic`, `CO-39`, `Golden Promise`), so A2 pre-fills for all three organisms. The allele
+    `abc1-2delta` was also respelled **`abc1-2Δ`** (12 occurrences) per the Δ-suffix convention.
+    Queue + docx regenerated. This is the reference draft for the strain/background shape.
+  - **⑥ Genotype names still use isolate labels.** The ruling says a mutant is named by its allele,
+    so `AM25` should be the `abc1-2Δ` genotype and `TF7-3131` the `abc1-1` genotype. Renaming
+    cascades into metagenotype names and every annotation's `feature`, so it was not done with the
+    field work. Do it as one deliberate pass.
+  - **⑦ `AM30` has a background but no allele** — the queue renders `⚠ no allele recorded`. Its
+    ectopic vector integration is a real allele that the draft never captured; `#157` points at
+    allele type `ectopic expression` for random/plasmid integration.
   - *Worth knowing:* the concept is **first-class in PHI-base already** — the v4-19 release carries
     `Experimental_strain` (`Guy11`) and `Pathogen_NCBI_strain_Taxonomy_ID`, both surfaced by
     `phibase_index`. So the target shape exists; only weaver's draft schema is missing it.
