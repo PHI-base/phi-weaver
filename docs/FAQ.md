@@ -363,6 +363,22 @@ blind/scored runs. Instead: mine a **resolved** decision → write it into the o
 skill/standard/FAQ with a `See:` issue-number pointer → the pipeline reads the curated convention,
 never the raw issue. *(This FAQ + `docs/BACKLOG.md` are the record for this decision.)*
 
+### How do phiweaver drafts get into PHI-Canto, and why isn't the data entry automated?
+**A curator enters them, working through the generated entry queue — and that stays true.** There
+is no write API. The one server-side import (`canto_add.pl --sessions-from-json`, admin only) can
+create a session's **genes, alleles and genotypes but not its metagenotypes or annotations**, so the
+annotation layer is hand-entered permanently; the entry queue is not an interim step.
+
+**Browser automation was assessed and rejected (2026-07-25) on arithmetic, not principle.** Entry
+costs a curator ~30–40 min per paper; automating it costs 60–100 h to build, so it breaks even at
+roughly 150–250 papers. More decisively, **typing isn't the bottleneck** — accession resolution,
+ontology gaps and evidence rulings are, and those are judgement, not keystrokes. Reversing this
+needs two measurements, not an argument: recurring throughput in the hundreds of papers, or a
+baseline showing mechanical entry dominates curator time.
+**See:** `docs/DESIGN-DECISIONS.md` **D18** (the decision of record, with the rejected alternatives
+and the two hazards any revival must answer); `docs/CANTO-SUBMISSION-ROUTES.md` (the three routes in
+detail); `docs/BACKLOG.md` → "Submit drafts into PHI-Canto".
+
 ### What is end-to-end (E2E) testing here, and how is it different from the smoke/unit tests?
 Three different questions. **Unit** (`tests/`): is one function correct in isolation? **Smoke**
 (`phiweaver.smoke`): on a fresh checkout, is the whole thing *alive* — imports, wiring, storage,

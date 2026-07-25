@@ -241,6 +241,41 @@ into each skill only (rejected — no single auditable source, provenance scatte
 tacit in the examples library (rejected — the exclusions and evidence-code rules never surface in
 a worked example).
 
+### D18 — PHI-Canto transport: entry queue permanently, scaffold import if allowed, no browser bot
+D14/D16 settled *what* Route 1 emits; this settles *whether anything replaces it*. **Decision:** the
+end state is the **Route-1 entry queue permanently, plus Route 2 (`canto_add.pl
+--sessions-from-json`) for the scaffold if admin access to canto.phi-base.org exists.** Browser
+automation (Route 3) is **rejected**. Route 1 is not an interim MVP — the documented import format
+carries session/genes/alleles/genotypes and **not metagenotypes or annotations**, so the annotation
+layer is hand-entered for good, and server access decides only *how much* the curator clicks.
+
+**Why:** arithmetic, not principle. Mechanical entry costs a fluent curator ~1 min/annotation, so
+~30–40 min per paper; supervised prefill might halve it, against 60–100 h to build (ontology
+autocomplete with ID read-back, DOM re-derivation, provenance display, a local Canto instance) —
+**break-even ≈ 150–250 papers**. And typing is not the bottleneck: the live blockers are accession
+resolution, hand-scoring, PHIPO gaps and evidence-code rulings, all judgement. The entry queue
+already captured most of the win by removing the *"what do I enter next"* thinking; Route 3 competes
+for the residual keystrokes only.
+
+**Alternatives:** autonomous Playwright submission (rejected — brittle against a multi-step AJAX UI,
+and it fires unattended writes at a shared community resource); **supervised one-step prefill**, the
+strongest form, where the curator drives and the bot fills a single wizard screen while the curator
+clicks every Next and the final Finish (rejected on economics alone — it *does* survive the
+brittleness objection, since a broken selector degrades to typing, and it preserves the "entry *is*
+validation" model, so this is the design to revive if the numbers change); server-side session
+injection beyond the documented format (rejected — undocumented, and `canto_load.pl` cannot create
+sessions at all, a factual error this repo carried in three files until 2026-07-25).
+
+**Two hazards any revival must answer**, found while designing the rejected option: (1) **bind the
+term ID, not the label** — Canto's ontology fields are server-backed autocompletes, so a fill must
+select from the dropdown and verify the *bound ID*, else it silently yields a plausible sibling term;
+(2) **automation complacency degrades provenance** — after ~30 correct fills a reviewer
+rubber-stamps, and a machine error then ships with a human's approval attached, laundered as a
+curator decision. Mitigation: never auto-fill what the draft flagged uncertain; leave it blank and
+highlighted. **Reversal test:** recurring throughput in the hundreds of papers, or a measured
+baseline showing mechanical entry dominates curator time. **See:** `docs/CANTO-SUBMISSION-ROUTES.md`;
+`docs/BACKLOG.md` → "Submit drafts into PHI-Canto"; `docs/FAQ.md`.
+
 ### D11 — Deliberately deferred / not done
 - **Full vault renumbering** — low value; numbering gaps left cosmetic.
 - **JSON curation-record schema** — a machine consumer now exists (the benchmarking-scorecard

@@ -660,11 +660,46 @@ decision and re-creating the term silently reopens it. See the `ontology-term-re
   it carries **genes/alleles/genotypes only** — not metagenotypes or annotations (`canto_load.pl`,
   named here until 2026-07-25, loads reference data and cannot create sessions). Three routes
   assessed (assisted-entry queue / Canto import JSON + `canto_add.pl` / browser automation) with
-  recommendation and open questions in **`docs/CANTO-SUBMISSION-ROUTES.md`**. Pivotal decision
-  pending: server/admin access to canto.phi-base.org vs web login only. Route 1 (assisted-entry queue) is built — a structured
+  recommendation and open questions in **`docs/CANTO-SUBMISSION-ROUTES.md`**. Route 1 (assisted-entry queue) is built — a structured
   `canto` block in the draft + a deterministic `entry_queue.py` (the single Route-1 output; the
   earlier `worksheet.py` was retired, D16). Scope notes in **`docs/CANTO-ROUTE1-BUILD-SPEC.md`** —
   biocurator entry into PHI-Canto *is* the validation step.
+
+  **Decision, 2026-07-25 — browser automation is rejected; do not re-litigate without new numbers.**
+  Recorded as **D18** in `docs/DESIGN-DECISIONS.md`, which is the decision of record; this entry is
+  the working summary.
+  The end state is **Route 1 permanently + Route 2 for the scaffold if admin access exists**. Route 1
+  is not an interim MVP: because the import format stops at genotypes, annotations are hand-entered
+  for good. The only open input is server/admin access to canto.phi-base.org, and it now decides
+  *how much* the curator clicks, not whether the approach works.
+
+  **Why Route 3 is rejected — arithmetic, not principle.** A fluent curator spends ~1 min per
+  annotation, so ~30–40 min of mechanical entry per paper; prefill might halve it (~15–20 min saved)
+  against **60–100 h** to build (ontology-autocomplete handling with ID read-back, DOM re-derivation,
+  provenance display, a local Canto instance). **Break-even ≈ 150–250 papers.**
+
+  **The stronger reason: typing is not the bottleneck.** The live blockers are accession resolution
+  (URA5, FleQ/GcbB), hand-scoring, PHIPO gaps and evidence-code rulings — all research or judgement.
+  Route 3 would optimise the cheapest link. The entry queue already took most of the available win by
+  removing the *"what do I enter next"* thinking; Route 3 competes only for the residual keystrokes.
+
+  **What was actually considered, so it isn't reinvented worse.** The strongest form of Route 3 is
+  *not* an autonomous bot — it is **supervised one-step prefill**: the curator drives, Playwright
+  fills one wizard screen, the curator clicks every Next and the final Finish, and the bot never
+  commits. That shape survives the brittleness objection (a broken selector degrades to typing) and
+  preserves the "entry *is* validation" model. It was rejected on economics alone. Two further
+  hazards found while designing it, which any revival must answer:
+  - **Bind the term ID, not the label.** Canto's ontology fields are server-backed autocompletes; a
+    fill must select from the dropdown and then **verify the bound ID**, or it silently produces a
+    plausible sibling term — worse than no tool.
+  - **Automation complacency degrades provenance.** After ~30 correct fills a reviewer rubber-stamps,
+    and a machine error ships with a human's approval attached — laundered as a curator decision.
+    Mitigation: never auto-fill anything the draft flagged uncertain; leave it blank and highlighted.
+
+  **What would reverse this:** recurring throughput in the hundreds of papers, or a measured baseline
+  showing mechanical entry is a much larger share of curator time than ~30–40 min/paper. Measure
+  those two numbers before rebuilding anything. **See:** `docs/FAQ.md` ("How do phiweaver drafts get
+  into PHI-Canto…").
 
 - [ ] **Activate the benchmark sandbox allowlist**: the airtight profile exists
   (`07-Standards/curation-benchmarking/benchmark-sandbox.settings.json`) — network allowlisted to
