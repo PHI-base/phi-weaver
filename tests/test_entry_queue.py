@@ -364,14 +364,32 @@ class StrainsSectionTests(unittest.TestCase):
                 self.assertIn("host", line)
 
     def test_strain_is_never_guessed_from_the_genotype_name(self):
-        # 'WT' / 'geneAΔ' are genotype names, not strains; the strain cell must stay unset.
+        # The fixture carries no `strain` field, so every cell must stay unset.
         for line in self.a2.splitlines():
             if line.startswith("| ☐ |"):
                 self.assertIn("— set in Canto", line)
 
-    def test_genotype_names_are_shown_to_recognise_the_strain_from(self):
-        self.assertIn("geneAΔ", self.a2)
+    def test_mutant_genotypes_are_excluded(self):
+        """Curator ruling 2026-07-25: only a wild type carries a strain.
+
+        `geneAΔ` is the allele-bearing mutant — it is named by its allele, so it must not be
+        offered as a strain the way `AM25` wrongly was before the ruling.
+        """
+        self.assertNotIn("geneAΔ", self.a2)
+        self.assertIn("WT", self.a2)          # the allele-free wild type is offered
         self.assertIn("host wt", self.a2)
+
+    def test_an_explicit_strain_field_is_used_verbatim(self):
+        rec = _rec()
+        for g in rec["canto"]["genotypes"]:
+            if g["name"] == "WT":
+                g["strain"] = "Guy11"
+        md, _ = eq.render_entry_queue(rec)
+        a2 = md.split("### A2.")[1].split("\n## ", 1)[0]
+        for line in a2.splitlines():
+            if "Fusarium x" in line:
+                self.assertIn("Guy11", line)
+                self.assertNotIn("— set in Canto", line)
 
     def test_comes_before_the_genotype_sections(self):
         # Canto requires a strain before a genotype can be created.

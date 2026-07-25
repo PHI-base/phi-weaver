@@ -523,12 +523,22 @@ decision and re-creating the term silently reopens it. See the `ontology-term-re
     to set the strain in Canto — **nothing is pre-filled**, because splitting a strain out of those
     names would be guessing at curated data. The draft's genotype names are shown alongside so the
     curator can recognise it. See **D19**.
-  - **① Needs a curator ruling on the model (Hsin-Yu).** Is `Guy11` a *strain* whose genotype is
-    "wild type", or a genotype name? Same for `WT Oryza sativa Sariceltic` — is `Sariceltic` the
-    strain/cultivar with a wild-type genotype? This decides the schema, so it comes first.
-  - **② Then schema + drafting:** add `strain` (and possibly `background`) to genotypes, populate it
-    during drafting, and A2 pre-fills while the genotype tables gain Canto's `Strain` / `Background`
-    columns. Until then the queue cannot mirror those columns honestly.
+  - **① ✅ RULED 2026-07-25 (Martin Urban): only a wild type carries a strain or cultivar; a mutant
+    carries none and is named by its allele.** `Guy11` = strain, genotype wild type; `AM25` = the
+    `abc1Δ` genotype; `TF7-3131` = the `abc1-1` genotype; rice `Sariceltic` = cultivar, genotype wild
+    type. Written up in `07-Standards/PHI-Canto-Curation-Conventions.md` ("Strains and cultivars —
+    wild type only") and applied in the renderer: **A2 excludes allele-bearing genotypes entirely**,
+    and uses a genotype's optional `strain` verbatim when present.
+  - **② Still open — schema + drafting.** Nothing yet *writes* `strain`, so A2's cells are unset on
+    every existing draft. Needed: `strain` on genotypes in the draft schema, populated during
+    drafting for wild types only; then A2 pre-fills and the genotype tables can carry Canto's
+    `Strain` column honestly. (`Background` is a separate question the ruling did not cover — for a
+    mutant derived from Guy11, Canto's `Background` field may be where `Guy11` belongs. Ask before
+    assuming.)
+  - **③ A control with no alleles is not necessarily wild type.** A2 can only test "has alleles", so
+    **AM30** — an ectopic-integration transformation control — is listed beside `Guy11` as a
+    candidate. The queue says so in the section note; an explicit `strain` field (②) removes the
+    guesswork.
   - *Worth knowing:* the concept is **first-class in PHI-base already** — the v4-19 release carries
     `Experimental_strain` (`Guy11`) and `Pathogen_NCBI_strain_Taxonomy_ID`, both surfaced by
     `phibase_index`. So the target shape exists; only weaver's draft schema is missing it.

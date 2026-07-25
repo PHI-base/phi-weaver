@@ -100,6 +100,25 @@ any single rule as current — some were reversed at least once before settling.
 - **Write "Figure" in full**, not "Fig." (whether this extends to other abbreviations, e.g.
   "Table", is pending confirmation).
 
+### Strains and cultivars — wild type only
+> **Provenance:** curator ruling (Martin Urban, 2026-07-25) on PMID:9927411, answering the modelling
+> question raised when the entry queue gained its strain step (**D19**).
+
+**Only a wild-type genotype carries a strain or cultivar name. A mutant carries none** — a mutant is
+named by its **allele**, not by whatever isolate label the paper gives it.
+
+| Paper's label | What it is | Curated as |
+|---|---|---|
+| `Guy11` | wild-type pathogen | **strain** `Guy11`, genotype wild type |
+| `AM25` | deletion mutant | genotype **`abc1Δ`** — *no strain name* |
+| `TF7-3131` | insertion mutant | genotype **`abc1-1`** — *no strain name* |
+| rice `Sariceltic` | wild-type host | **cultivar** `Sariceltic`, genotype wild type |
+
+**Why it matters:** PHI-Canto builds a genotype from a strain plus alleles, so putting `AM25` in the
+strain field asserts a strain that does not exist as such, and hides the allele that is the actual
+curatable fact. **Consequence for drafts:** a genotype's `strain` is populated for wild types and
+left empty for mutants; the entry queue's table A2 offers strains from wild-type genotypes only.
+
 ## Interaction phenotype — primary term is a measurement; interpretation goes in the extension
 > **Provenance:** curator review (Hsin-Yun Chang, 2026-07-15); logged as **L5**.
 

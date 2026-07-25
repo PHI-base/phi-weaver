@@ -280,18 +280,27 @@ def _strains_section(canto: dict, cl: dict) -> List[str]:
     *before* genotypes can be created, and its notion of strain is broad: subspecies, varieties,
     pathovars, **cultivars** and strains proper.
 
-    **Nothing is pre-filled, deliberately.** The draft schema has no `strain` field, and the
-    genotype `name` is currently doing double duty — `Guy11`/`AM25` are pathogen strains, and
-    `WT Oryza sativa Sariceltic` folds in a cultivar. Splitting a strain out of those names would
-    be guessing at curated data, so the strain cell says where to set it and the draft's own
-    genotype names are shown alongside for the curator to recognise it from. See the backlog item
-    on giving genotypes an explicit `strain` field.
+    **Only wild-type genotypes contribute a strain** (curator ruling, 2026-07-25 — see
+    `07-Standards/PHI-Canto-Curation-Conventions.md`, "Strains and cultivars"). A mutant is named by
+    its allele, not by the isolate label the paper gives it: on PMID:9927411 `Guy11` is the strain,
+    while `AM25` and `TF7-3131` are the `abc1Δ` and `abc1-1` **genotypes** and carry no strain. So
+    allele-bearing genotypes are excluded from this table entirely rather than offered as strains.
+
+    A genotype's optional `strain` field is used verbatim when present. When it is absent the cell
+    stays unset and the wild-type genotype names are shown beside it, because splitting a strain out
+    of a name like `WT Oryza sativa Sariceltic` would be guessing at curated data.
     """
     organisms: Dict[str, dict] = {}
+
+    def _entry(org: str, role: str = "") -> dict:
+        e = organisms.setdefault(org, {"role": role, "strains": [], "wild_type": []})
+        if role and not e["role"]:
+            e["role"] = role
+        return e
+
     for g in canto.get("genes") or []:
-        org = _s(g.get("organism"))
-        if org:
-            organisms.setdefault(org, {"role": "pathogen", "genotypes": []})
+        if _s(g.get("organism")):
+            _entry(_s(g.get("organism")), "pathogen")
     for g in canto.get("genotypes") or []:
         org, name = _s(g.get("organism")), _s(g.get("name"))
         if not org:
@@ -299,23 +308,33 @@ def _strains_section(canto: dict, cl: dict) -> List[str]:
         # Role from how the genotype is used in metagenotypes, never from the species name.
         role = ("host" if name in cl["host_names"]
                 else "pathogen" if name in cl["path_names"] else "")
-        entry = organisms.setdefault(org, {"role": role, "genotypes": []})
-        if role and not entry["role"]:
-            entry["role"] = role
-        if name:
-            entry["genotypes"].append(name)
+        e = _entry(org, role)
+        # A genotype carrying alleles is a mutant: per the ruling it contributes no strain.
+        if [x for x in (g.get("alleles") or []) if _s(x)]:
+            continue
+        strain = _s(g.get("strain"))
+        if strain and strain not in e["strains"]:
+            e["strains"].append(strain)
+        elif not strain and name:
+            e["wild_type"].append(name)
     if not organisms:
         return []
-    rows = [["☐", _cell(org), _cell(d["role"] or "—"), "— set in Canto",
-             _cell("; ".join(d["genotypes"]) or "—")]
+    rows = [["☐", _cell(org), _cell(d["role"] or "—"),
+             _cell("; ".join(d["strains"])) if d["strains"] else "— set in Canto",
+             _cell("; ".join(d["wild_type"]) or ("(from the strain field)" if d["strains"] else "—"))]
             for org, d in organisms.items()]
     return (["### A2. Strains — one or more per organism, before any genotype", "",
              "*Canto's \"strain\" covers subspecies, varieties, pathovars, cultivars and strains "
              "proper. Use the strain picker under each organism, **Add strain** for one not in the "
-             "list, or **Unknown strain** if the paper does not say. Not pre-filled: the draft has "
-             "no strain field, so the genotype names are shown to recognise it from — do not assume "
-             "the name is the strain.*", ""]
-            + _table(["Tick", "Organism", "Role", "Strain", "Genotype names in the draft"], rows)
+             "list, or **Unknown strain** if the paper does not say. **Wild types only** — a mutant "
+             "is named by its allele and carries no strain, so mutant genotypes are not listed "
+             "here. Where the strain cell is unset the draft carries no `strain` field; the "
+             "allele-free genotype names are shown to recognise it from, not as the strain itself "
+             "— and a control that merely has no alleles listed (an ectopic-integration "
+             "transformant, say) appears among them, so confirm which is the true wild type.*",
+             ""]
+            + _table(["Tick", "Organism", "Role", "Strain / cultivar",
+                      "Wild-type genotype in the draft"], rows)
             + [""])
 
 
