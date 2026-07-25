@@ -628,10 +628,12 @@ decision and re-creating the term silently reopens it. See the `ontology-term-re
 
 - [ ] **Submit drafts into PHI-Canto for biocurator review** (planning; no code yet) — get the
   information from phiweaver drafts into the PHI-Canto web tool (<https://canto.phi-base.org/>).
-  No write API exists; `canto_load.pl` is server-side only. Three routes assessed (assisted-entry
-  queue / Canto session JSON + load / browser automation) with recommendation and open
-  questions in **`docs/CANTO-SUBMISSION-ROUTES.md`**. Pivotal decision pending: server/admin access
-  to canto.phi-base.org vs web login only. Route 1 (assisted-entry queue) is built — a structured
+  No write API exists; session import is `canto_add.pl --sessions-from-json`, server-side only, and
+  it carries **genes/alleles/genotypes only** — not metagenotypes or annotations (`canto_load.pl`,
+  named here until 2026-07-25, loads reference data and cannot create sessions). Three routes
+  assessed (assisted-entry queue / Canto import JSON + `canto_add.pl` / browser automation) with
+  recommendation and open questions in **`docs/CANTO-SUBMISSION-ROUTES.md`**. Pivotal decision
+  pending: server/admin access to canto.phi-base.org vs web login only. Route 1 (assisted-entry queue) is built — a structured
   `canto` block in the draft + a deterministic `entry_queue.py` (the single Route-1 output; the
   earlier `worksheet.py` was retired, D16). Scope notes in **`docs/CANTO-ROUTE1-BUILD-SPEC.md`** —
   biocurator entry into PHI-Canto *is* the validation step.

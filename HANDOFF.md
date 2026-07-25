@@ -23,8 +23,10 @@ Concise "start here" pointer. Full history is the latest session log
    A0A8H4CVH4.)
 2. **Hand-score** the 10 benchmark scorecards (`07-Standards/curation-benchmarking/`) → then
    `scorecards_to_csv` → `benchmark_report`. phiweaver must not grade its own drafts.
-3. **Canto route decision**: if server access to canto.phi-base.org exists, Route 2
-   (`canto_load.pl`, server-side) vs the Route 1 entry queue. See `docs/CANTO-SUBMISSION-ROUTES.md`.
+3. **Canto route decision**: if server access to canto.phi-base.org exists, add Route 2
+   (`canto_add.pl --sessions-from-json`, server-side) *on top of* the Route 1 entry queue — it
+   imports genes/alleles/genotypes only, so annotations stay manual. See
+   `docs/CANTO-SUBMISSION-ROUTES.md`.
 4. Ongoing depth work: more validated **gold-standard examples** (12/12 annotation-type breadth is
    already done; add depth). How-to below.
 
