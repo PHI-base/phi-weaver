@@ -509,6 +509,29 @@ decision and re-creating the term silently reopens it. See the `ontology-term-re
   species-neutral" above and lesson L2.
 
 ## Curation workflow
+- [ ] **Genotypes have no explicit `strain` — the name is doing two jobs** (added 2026-07-25, found
+  while aligning the entry queue to PHI-Canto's UI). PHI-Canto requires **one or more "experimental
+  strains" for every organism** in a session *before* any genotype can be created
+  (`docs/getting_started#adding_strains`), and its "strain" is broad — subspecies, varieties,
+  pathovars, **cultivars**, and strains proper. Its genotype tables carry **`Strain`** and
+  **`Background`** columns. The draft schema has neither field, and the genotype `name` is currently
+  carrying the strain: on PMID:9927411 the pathogen genotypes are `Guy11` / `AM25` / `TF7-3131` /
+  `AM30` (strain names), and the hosts are `WT Oryza sativa Sariceltic` / `WT Hordeum vulgare Golden
+  Promise` (organism + cultivar folded into one string).
+  - **Interim (done 2026-07-25):** the queue's **table A2** lists one row per organism with its
+    pathogen/host role (derived from metagenotype use, not the species name) and prompts the curator
+    to set the strain in Canto — **nothing is pre-filled**, because splitting a strain out of those
+    names would be guessing at curated data. The draft's genotype names are shown alongside so the
+    curator can recognise it. See **D19**.
+  - **① Needs a curator ruling on the model (Hsin-Yu).** Is `Guy11` a *strain* whose genotype is
+    "wild type", or a genotype name? Same for `WT Oryza sativa Sariceltic` — is `Sariceltic` the
+    strain/cultivar with a wild-type genotype? This decides the schema, so it comes first.
+  - **② Then schema + drafting:** add `strain` (and possibly `background`) to genotypes, populate it
+    during drafting, and A2 pre-fills while the genotype tables gain Canto's `Strain` / `Background`
+    columns. Until then the queue cannot mirror those columns honestly.
+  - *Worth knowing:* the concept is **first-class in PHI-base already** — the v4-19 release carries
+    `Experimental_strain` (`Guy11`) and `Pathogen_NCBI_strain_Taxonomy_ID`, both surfaced by
+    `phibase_index`. So the target shape exists; only weaver's draft schema is missing it.
 - [x] **Nothing checks whether a paper is already curated in PHI-base** — *resolved 2026-07-25*
   (added 2026-07-24, surfaced on PMID:9927411). Built **`phiweaver/lookup/phibase_index.py`**
   (+ `tests/test_phibase_index.py`, 20 tests, network-free): `python3 -m

@@ -345,6 +345,45 @@ class AnnotationSectionsMirrorCantoTests(unittest.TestCase):
         self.assertIn("no entry-queue section for annotation type 'some_future_type'", parked)
 
 
+class StrainsSectionTests(unittest.TestCase):
+    """A2 prompts Canto's required *Adding strains* step without inventing a strain."""
+
+    def setUp(self):
+        self.md, _ = eq.render_entry_queue(_rec())
+        self.a2 = self.md.split("### A2.")[1].split("\n## ", 1)[0]
+
+    def test_one_row_per_organism(self):
+        self.assertIn("Fusarium x", self.a2)
+        self.assertIn("Triticum aestivum", self.a2)
+
+    def test_roles_come_from_metagenotype_use_not_the_species_name(self):
+        for line in self.a2.splitlines():
+            if "Fusarium x" in line:
+                self.assertIn("pathogen", line)
+            if "Triticum aestivum" in line:
+                self.assertIn("host", line)
+
+    def test_strain_is_never_guessed_from_the_genotype_name(self):
+        # 'WT' / 'geneAΔ' are genotype names, not strains; the strain cell must stay unset.
+        for line in self.a2.splitlines():
+            if line.startswith("| ☐ |"):
+                self.assertIn("— set in Canto", line)
+
+    def test_genotype_names_are_shown_to_recognise_the_strain_from(self):
+        self.assertIn("geneAΔ", self.a2)
+        self.assertIn("host wt", self.a2)
+
+    def test_comes_before_the_genotype_sections(self):
+        # Canto requires a strain before a genotype can be created.
+        self.assertLess(self.md.index("### A2."),
+                        self.md.index("## C. Create pathogen genotypes"))
+
+    def test_omitted_when_no_organism_is_known(self):
+        md, _ = eq.render_entry_queue(_rec(canto={"genes": [], "genotypes": [],
+                                                  "metagenotypes": [], "annotations": []}))
+        self.assertNotIn("### A2.", md)
+
+
 class CantoDisplayNamesMatchTheLiveConfigTests(unittest.TestCase):
     """Our hardcoded display names must still match PHI-Canto's own.
 

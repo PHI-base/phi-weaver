@@ -117,7 +117,10 @@ revisiting if the paper later becomes open access.
 
 ## Expected outputs
 - A short header (citation, system, status, model/tool, date) **and the `Curated from:` line**.
-- Setup tables A–E, then one annotation table per PHI-Canto annotation type, headed with the
+- Setup tables A–E — where **A splits into A1 genes and A2 strains**, mirroring Canto's own
+  gene-entry page, and A2 prompts the required per-organism strain step without pre-filling a
+  strain (the draft carries no strain field) — then one annotation table per PHI-Canto
+  annotation type, headed with the
   label the web interface itself shows (`GO molecular function`, `pathogen phenotype`,
   `pathogen-host interaction phenotype`, `protein modification`, `disease name`, …). Sections
   are numbered F1, F2, … over the types the paper actually has — empty ones are omitted — so

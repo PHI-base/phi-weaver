@@ -290,6 +290,17 @@ schema has no strain/background fields (the genotype `name` currently carries th
 `canto_config.evidence_codes` even though `validate_evidence_code` exists and is unused — the same
 shape as the annotation-type gap closed on 2026-07-21.
 
+**Strains added as table A2, not a new lettered section (2026-07-25).** PHI-Canto requires one or
+more experimental strains per organism *before* a genotype can be created, and the queue had no
+prompt for it at all. It sits inside A rather than earning its own letter because Canto's strain
+picker is on the **same page** as gene/organism entry (`getting_started#adding_genes_and_organisms`
+and `#adding_strains` are two anchors on one page) — and that also avoids renumbering C–G, which a
+dozen tests and the reviewer guide use as landmarks. **Nothing is pre-filled:** the draft schema has
+no `strain` field and the genotype `name` is carrying it (`Guy11`; `WT Oryza sativa Sariceltic`), so
+splitting one out would be guessing. A2 shows the draft's genotype names beside an unset strain cell
+for the curator to recognise it from, and roles come from metagenotype use rather than the species
+name. Schema fix and the curator ruling it needs are tracked in the backlog.
+
 **Alternatives:** rename the headings but keep the merged tables (rejected — leaves GO, RNA/protein
 and gene-for-gene grouped in ways the UI doesn't, and the curator asked for the UI's shape); render
 all 12 sections always, matching the UI's full menu (rejected — most papers would carry many empty

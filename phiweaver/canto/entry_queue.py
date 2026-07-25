@@ -273,6 +273,52 @@ _ANNOTATION_ROWS = {
 }
 
 
+def _strains_section(canto: dict, cl: dict) -> List[str]:
+    """Table A2 — one row per organism, prompting Canto's required *Adding strains* step.
+
+    PHI-Canto requires "one or more 'experimental strains' for every organism" in the session
+    *before* genotypes can be created, and its notion of strain is broad: subspecies, varieties,
+    pathovars, **cultivars** and strains proper.
+
+    **Nothing is pre-filled, deliberately.** The draft schema has no `strain` field, and the
+    genotype `name` is currently doing double duty — `Guy11`/`AM25` are pathogen strains, and
+    `WT Oryza sativa Sariceltic` folds in a cultivar. Splitting a strain out of those names would
+    be guessing at curated data, so the strain cell says where to set it and the draft's own
+    genotype names are shown alongside for the curator to recognise it from. See the backlog item
+    on giving genotypes an explicit `strain` field.
+    """
+    organisms: Dict[str, dict] = {}
+    for g in canto.get("genes") or []:
+        org = _s(g.get("organism"))
+        if org:
+            organisms.setdefault(org, {"role": "pathogen", "genotypes": []})
+    for g in canto.get("genotypes") or []:
+        org, name = _s(g.get("organism")), _s(g.get("name"))
+        if not org:
+            continue
+        # Role from how the genotype is used in metagenotypes, never from the species name.
+        role = ("host" if name in cl["host_names"]
+                else "pathogen" if name in cl["path_names"] else "")
+        entry = organisms.setdefault(org, {"role": role, "genotypes": []})
+        if role and not entry["role"]:
+            entry["role"] = role
+        if name:
+            entry["genotypes"].append(name)
+    if not organisms:
+        return []
+    rows = [["☐", _cell(org), _cell(d["role"] or "—"), "— set in Canto",
+             _cell("; ".join(d["genotypes"]) or "—")]
+            for org, d in organisms.items()]
+    return (["### A2. Strains — one or more per organism, before any genotype", "",
+             "*Canto's \"strain\" covers subspecies, varieties, pathovars, cultivars and strains "
+             "proper. Use the strain picker under each organism, **Add strain** for one not in the "
+             "list, or **Unknown strain** if the paper does not say. Not pre-filled: the draft has "
+             "no strain field, so the genotype names are shown to recognise it from — do not assume "
+             "the name is the strain.*", ""]
+            + _table(["Tick", "Organism", "Role", "Strain", "Genotype names in the draft"], rows)
+            + [""])
+
+
 def _park_reason(a: dict, cl: dict, bad_terms: Optional[Dict[str, str]] = None) -> str:
     """Why an annotation is parked, or '' if it is enter-ready."""
     ft, fx = _s(a.get("feature_type")), _s(a.get("feature"))
@@ -375,8 +421,11 @@ def render_entry_queue(rec: dict, status: Optional[str] = None,
     if figure_line:
         out += [figure_line, ""]
 
-    # --- A. Genes ---
-    out += ["## A. Enter genes first", ""]
+    # --- A. Genes and strains ---
+    # Both are one step in Canto: the strain picker sits below each pathogen and host on the
+    # gene-entry page (docs/getting_started, anchors #adding_genes_and_organisms and
+    # #adding_strains are the same page), so A carries two tables rather than earning a letter each.
+    out += ["## A. Enter genes and strains", "", "### A1. Genes", ""]
     grows = []
     for g in canto.get("genes") or []:
         name, org, acc = _s(g.get("name")), _s(g.get("organism")), _s(g.get("uniprot"))
@@ -387,6 +436,7 @@ def render_entry_queue(rec: dict, status: Optional[str] = None,
             parked.append((f"gene {name}", "unresolved UniProtKB accession",
                            _cell(_s(g.get("note")) or "resolve accession before add-gene")))
     out += _table(["Tick", "Gene name", "Species", "Add-gene identifier", "Status"], grows) + [""]
+    out += _strains_section(canto, cl)
 
     # --- B. Alleles ---
     out += ["## B. Create alleles", ""]
