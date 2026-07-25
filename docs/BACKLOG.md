@@ -143,7 +143,9 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
   §9; a controlled-phrase step in the `phenotype-annotation` skill; and a QC flag in the `curation-qc`
   skill for free-prose RNA-level qualifiers. Motivating case: PMID:40756215 (Pt31812/Lr42), where the
   qRT-PCR "RNA level increased during infection" item was left as prose.
-- [ ] **Per-article token attribution** (tool landed 2026-07-11) — `phiweaver/article_tokens.py`
+- [x] **Per-article token attribution** — *both follow-ups done 2026-07-11; box ticked 2026-07-25
+  after verifying `article_tokens.py` is `benchmark` SKILL step 7 (`BATCH-TOKENS.md`) and `--db`
+  defaults to `CANONICAL_DB`.* (tool landed 2026-07-11) — `phiweaver/article_tokens.py`
   attributes a batch session's token spend to each curated paper (PMID) + a shared-overhead split
   (equal 1/N, or `--weight-by-direct`), joining First-author/Year/Title from the tracking DB. Reads
   batch PMIDs from the draft `meta` blocks and segments turns by the per-paper draft references
@@ -152,7 +154,12 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
   batch skill~~ **done 2026-07-11** — `benchmark` SKILL step 7 emits `BATCH-TOKENS.md` for the
   session log; (2) ~~confirm the tracking-DB filename so `--db` auto-detects~~ **done 2026-07-11**
   — defaults to the canonical `11-CLAUDE-AI/db/phi_canto_tracking.db`.
-- [ ] **Persisted token history + recuration comparison** (landed 2026-07-11) — `--record` writes
+- [x] **Persisted token history + recuration comparison** — *both follow-ups done 2026-07-11; box
+  ticked 2026-07-25 after verifying the `article_token_costs` table + migration, `PRICES`,
+  `--history`, the registry's "💰 Token Costs" section and `daily_curation tokens`.* Note the
+  trailing "recuration comparison" in the title refers only to the DB shape this shares with the
+  **Recuration-comparison workflow** item below — that item is separate and still open.
+  (landed 2026-07-11) — `--record` writes
   the **raw** per-article numbers (direct tokens + session `overhead_total` + `n_articles`, never
   the allocated `1/N` total) to the tracking DB via an `article_tokens`-namespaced migration
   (`article_token_costs` table). Keyed by `(pmid, session_id, model)`: re-running on one transcript
@@ -331,7 +338,10 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
   - **Validate before relying on it** — a YAML typo silently kills the GitHub button with no error.
     `cffconvert` or the `cff-validator` Action.
 
-- [x] **PMC full text as an input format — part (b) DONE 2026-07-24**; part (a) still open.
+- [x] **PMC full text as an input format — parts (a) and (b) both DONE 2026-07-24.** *(The title
+  read "part (a) still open" until 2026-07-25, contradicting its own body, which had recorded (a)
+  as done since the day it shipped. That mismatch is what made the duplicate entry below look
+  necessary — see the note at the end of this item.)*
   **(b) JATS → markdown converter** shipped as `phiweaver/jats/jats_convert.py` with
   `tests/test_jats_convert.py` (33 tests, offline). The pipeline now dispatches on file
   extension (`CONVERTERS` in `phiweaver/pipeline/curation_pipeline.py`): `.pdf` → the PyMuPDF
@@ -384,57 +394,39 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
   returns one for an embargoed article, embargoes lift, and a remembered 404 would permanently
   hide a paper that has since become open access. Measured on PMID:39852455: 1.93 s cold →
   0.50 s warm, and the 1.9 MB ZIP stops being re-fetched on every run.
-  **Still open:** a policy decision on `source=PPR` preprints (currently flagged as a scope
-  question, not silently ingested), and the author-manuscript check — for some deposits PMC
-  holds the *accepted manuscript* rather than the version of record, and whether Europe PMC
-  exposes a clean flag for that is unverified. Original note kept below.
+  **Two residual questions were promoted out of this closed item on 2026-07-25** — preprint policy
+  and the author-manuscript check — because open work buried inside an `[x]` entry is invisible to
+  anyone scanning the checkboxes. See "**Europe PMC ingest: preprint policy + author-manuscript
+  check**" below.
 
-- [x] **PMC full text as an input format (PMID→PMCID check + JATS parser)** — *shipped 2026-07-24
-  in `ebd73af` ("Add JATS XML and Europe PMC ingest routes"); item closed 2026-07-25* (added
-  2026-07-21). Both halves landed three days after this was written and the box was never ticked;
-  the entry stayed open and misdescribed the code for a month.
-
-  **(a) PMID → PMCID** — `phiweaver/jats/europepmc.py` (`resolve`, `classify_identifier`,
-  `route_for`, `fetch_full_text`, `fetch_supplementary`, `extract_media`, `acquire`,
-  `fetch_annotations`; disk cache added in `2a90d43`; `tests/test_europepmc.py`). It took the
-  **Europe PMC** option this item flagged as worth checking, rather than NCBI's ID Converter —
-  and **corrected the item's premise**: the gate is *open access*, not "a PMCID exists", because
-  Europe PMC returns 404 for an embargoed article that has a PMCID. The idconv test proposed here
-  would have produced false positives. Beyond scope: supplementary-file and media acquisition,
-  and Europe PMC text-mined annotations.
-
-  **(b) JATS → markdown converter** — `phiweaver/jats/jats_convert.py` (949 lines;
-  `tests/test_jats_convert.py`). Recursive `<body>` walk preserving nesting depth and `sec-type`;
-  `<fig>` and `<table-wrap>` collected wherever they sit, with `table-wrap-foot` footers and real
-  row extraction. `<front>` is read for **declared metadata** rather than dumped as prose, and
-  `<ref-list>` is parsed into structured references (`element-citation` / `mixed-citation`) for
-  cross-referencing — both better than the "drop as boilerplate" this item asked for.
-
-  Wired into the pipeline: `.xml` / `.nxml` / `.jats` dispatch to the JATS converter, with the
-  ingest route recorded in the outputs and the tracking DB (`69196bb`;
-  `tests/test_source_routes.py`). `paper-triage` step 2 prefers JATS where both formats exist,
-  subject to the converter's `graphics_absent` warning.
+  *Why this item had a duplicate:* on 2026-07-25 a second entry was opened and closed for the same
+  work, because the stale title above said (a) was outstanding. The duplicate has been removed and
+  its one distinct observation folded in here: both halves shipped in `ebd73af` on 2026-07-24,
+  three days after the original note was written, and no box was ticked — so the entry stayed open
+  and misdescribed the code for a month.
 
   *Original rationale, for the record:* the only ingest route was PDF
   (`phiweaver/pdf/pdf_convert.py`, PyMuPDF). For open-access papers — most of what PHI-base
   curates — PMC's JATS XML is a strictly better input: sections, tables and references are already
   tagged, so gene symbols, strain IDs and table structure survive instead of being reconstructed
-  from page layout.
+  from page layout. *(The original note's ballpark token estimates and "figures are the open
+  question" caveat are superseded by the measured numbers and "Figures: solved" above.)*
 
-  **On token cost — the intuition is backwards, but only after parsing.** *Raw* JATS is far more
-  expensive than a PDF (every citation an `<xref>`, every author a name nest, the whole reference
-  list marked up structurally): order 80–150k tokens vs 15–25k for PDF-extracted text. *Parsed*, it
-  wins: ~10–15k, because PDF extraction drags per-page furniture (running heads, page numbers, DOI
-  footers) through the whole document and can't cleanly cut the reference list, which is often
-  30–40% of the extracted text. **So the real cost of this item is the parser, not context size.**
-  Figures are the open question — `pdf_convert.py`'s caption extraction has no obvious JATS
-  counterpart to reuse. *(Numbers are ballpark from typical article sizes, **not measured on our
-  corpus** — worth confirming on one already-curated paper before committing to (b).)*
-
-  **Timing note for (a):** the PMID→PMC gap is set by the journal's access model, not by PMC
-  processing. Fully-OA journals deposit at publication (full text within ~2 weeks); paywalled ones
-  are 6–12 months or never. So recent OA papers usually *are* in PMC — don't assume otherwise.
+  **Timing note:** the PMID→PMC gap is set by the journal's access model, not by PMC processing.
+  Fully-OA journals deposit at publication (full text within ~2 weeks); paywalled ones are 6–12
+  months or never. So recent OA papers usually *are* in PMC — don't assume otherwise.
   **See:** `docs/FAQ.md` ("Should I curate from PDF or EPUB?").
+
+- [ ] **Europe PMC ingest: preprint policy + author-manuscript check** (promoted 2026-07-25 out of
+  the closed PMC-ingest item above, where it was invisible). Two residual questions from the
+  Europe PMC route:
+  - **`source=PPR` preprints** — currently *flagged as a scope question*, never silently ingested.
+    Needs a policy decision: does PHI-base curate from preprints at all, and if so under what
+    caveat? (Curator call, not a code change.)
+  - **Author manuscript vs version of record** — for some deposits PMC holds the *accepted
+    manuscript*, not the published version, so figure/table numbering and wording can differ from
+    what a curator cites. Whether Europe PMC exposes a clean flag for this is **unverified**; find
+    out before trusting the route on non-fully-OA deposits.
 
 ## Ontology coverage gaps (PHIPO term requests)
 _Curatable phenotypes seen in papers that have **no** PHIPO term — captured and flagged in the draft,
