@@ -149,6 +149,86 @@ def _classify(canto: dict):
 _QUALIFIER_PHRASE_TYPES = {"wt_rna_expression", "wt_protein_expression"}
 
 
+# PHI-Canto's twelve annotation types, in the order its own config lists them, labelled with the
+# `display_name` the web interface shows — so the queue's headings read like the screen the curator
+# is typing into. `shape` picks the column set below.
+#
+# Hardcoded rather than read from `canto_config` at render time, deliberately: the deploy config is
+# gitignored (it comes from the private PHI-base/config repo), so config-driven headings would
+# differ between a machine that has the file and a fresh clone that falls back to pombase's base —
+# handing two curators differently-shaped queues for the same paper. Same reasoning that keeps
+# `map_phenotype`'s subset filter on the committed ontology rather than the deploy file.
+# `tests/test_entry_queue.py` checks this list against the live config whenever the deploy file
+# *is* present, so an upstream rename or a new type fails a test instead of drifting silently.
+ANNOTATION_SECTIONS = (
+    ("molecular_function",                  "GO molecular function",               "go"),
+    ("biological_process",                  "GO biological process",               "go"),
+    ("cellular_component",                  "GO cellular component",               "go"),
+    ("host_phenotype",                      "host phenotype",                      "host_phenotype"),
+    ("pathogen_phenotype",                  "pathogen phenotype",                  "phenotype"),
+    ("pathogen_host_interaction_phenotype", "pathogen-host interaction phenotype", "interaction"),
+    ("gene_for_gene_phenotype",             "gene-for-gene phenotype",             "interaction"),
+    ("post_translational_modification",     "protein modification",                "modification"),
+    ("physical_interaction",                "physical interaction",                "physical"),
+    ("wt_rna_expression",                   "Wild-type RNA level",                 "level"),
+    ("wt_protein_expression",               "Wild-type protein level",             "level"),
+    ("disease_name",                        "disease name",                        "disease"),
+)
+
+# Column headers per shape. Splitting GO into its three aspects and RNA/protein into two lets the
+# old "Annotation type" column go — the heading now carries what the column used to.
+_ANNOTATION_HEADERS = {
+    "go":             ["Tick", "Subject", "Term", "Evidence summary", "Figure/table"],
+    "host_phenotype": ["Tick", "Host genotype", "PHIPO term", "Evidence summary", "Condition",
+                       "Figure/table"],
+    "phenotype":      ["Tick", "Genotype", "PHIPO term", "Evidence summary", "Condition",
+                       "Figure/table"],
+    "interaction":    ["Tick", "Metagenotype", "PHIPO term", "Compared with", "Evidence summary",
+                       "Figure/table"],
+    "modification":   ["Tick", "Subject", "Modification term", "Evidence summary", "Condition",
+                       "Figure/table"],
+    "physical":       ["Tick", "Subject", "Interactor", "Interaction term", "Evidence method",
+                       "Figure/table", "Status"],
+    "level":          ["Tick", "Gene", "Level qualifier", "Evidence summary", "Condition",
+                       "Figure/table"],
+    "disease":        ["Tick", "Metagenotype", "Disease term", "Disease ontology ID", "Note"],
+}
+
+
+def _interactor(a: dict) -> str:
+    """The `interactor` extension value(s) of a physical-interaction annotation."""
+    return _cell("; ".join(_s(e.get("value")) for e in (a.get("extensions") or [])
+                           if _s(e.get("relation")) == "interactor"))
+
+
+# One row builder per shape. Signatures match so the renderer can dispatch on `shape` alone.
+_ANNOTATION_ROWS = {
+    "go": lambda a: ["☐", _cell(a.get("feature")), _term(a), _cell(a.get("evidence")),
+                     _cell(a.get("figure"))],
+    "host_phenotype": lambda a: ["☐", _cell(a.get("feature")), _term(a), _cell(a.get("evidence")),
+                                 _cell(a.get("conditions")), _cell(a.get("figure"))],
+    "phenotype": lambda a: ["☐", _cell(a.get("feature")), _term(a), _cell(a.get("evidence")),
+                            _cell(a.get("conditions")), _cell(a.get("figure"))],
+    "interaction": lambda a: ["☐", _cell(a.get("feature")), _term(a), _compared_with(a) or "—",
+                              _cell(a.get("evidence")), _cell(a.get("figure"))],
+    # No "pick the term at entry" fallback here, unlike physical interaction: PI is exempt from
+    # the term requirement because it genuinely has no ontology term (the evidence method carries
+    # it), whereas a protein-modification annotation *does* take a PSI-MOD term, so a term-less
+    # one is correctly parked by _park_reason and never reaches this row builder.
+    "modification": lambda a: ["☐", _cell(a.get("feature")), _term(a), _cell(a.get("evidence")),
+                               _cell(a.get("conditions")), _cell(a.get("figure"))],
+    "physical": lambda a: ["☐", _cell(a.get("feature")), _interactor(a) or "—",
+                           _term(a) if _s(a.get("term_id")) else "pick PSI-MI at entry",
+                           _cell(a.get("evidence")), _cell(a.get("figure")), "enter"],
+    "level": lambda a: ["☐", _cell(a.get("feature")), _cell(a.get("term_name")),
+                        _cell(a.get("evidence")), _cell(a.get("conditions")),
+                        _cell(a.get("figure"))],
+    "disease": lambda a: ["☐", _cell(a.get("feature")), _cell(a.get("term_name")),
+                          _cell(a.get("term_id")),
+                          _cell(a.get("conditions") or a.get("figure"))],
+}
+
+
 def _park_reason(a: dict, cl: dict, bad_terms: Optional[Dict[str, str]] = None) -> str:
     """Why an annotation is parked, or '' if it is enter-ready."""
     ft, fx = _s(a.get("feature_type")), _s(a.get("feature"))
@@ -328,60 +408,45 @@ def render_entry_queue(rec: dict, status: Optional[str] = None,
     def _of(*types):
         return [a for a in enter if _s(a.get("annotation_type")) in types]
 
-    out += ["## F. Annotation entry queue", "", "### F1. GO annotations", ""]
-    go_rows = [["☐", _cell(a.get("feature")), _cell(_s(a.get("annotation_type")).replace("_", " ")),
-                _term(a), _cell(a.get("evidence")), _cell(a.get("figure"))]
-               for a in enter if _s(a.get("annotation_type")) in GO_ASPECTS]
-    out += _table(["Tick", "Subject", "Annotation type", "Term", "Evidence summary", "Figure/table"], go_rows) + [""]
+    # --- F. Annotation entry queue: one section per PHI-Canto annotation type ---
+    # Sections follow ANNOTATION_SECTIONS (PHI-Canto's own order and display names) and are
+    # numbered over the sections actually rendered, so a curator reads F1, F2, F3… with no gaps.
+    out += ["## F. Annotation entry queue", ""]
+    rendered_types: set = set()
+    n = 0
+    for atype, display, shape in ANNOTATION_SECTIONS:
+        rows = [_ANNOTATION_ROWS[shape](a) for a in _of(atype)]
+        if not rows:
+            continue          # empty sections are omitted; the UI's full menu is not a checklist
+        rendered_types.add(atype)
+        n += 1
+        out += [f"### F{n}. {display}", ""]
+        if shape == "level":
+            out += ["*The level qualifier is a controlled phrase, not an ontology ID — pick the "
+                    "matching term in Canto.*", ""]
+        out += _table(_ANNOTATION_HEADERS[shape], rows) + [""]
 
-    out += ["### F2. Physical interaction annotations", ""]
-    pi_rows = []
-    for a in _of("physical_interaction"):
-        interactor = _cell("; ".join(_s(e.get("value")) for e in (a.get("extensions") or [])
-                                     if _s(e.get("relation")) == "interactor"))
-        pi_rows.append(["☐", _cell(a.get("feature")), interactor or "—",
-                        _term(a) if _s(a.get("term_id")) else "pick PSI-MI at entry",
-                        _cell(a.get("evidence")), _cell(a.get("figure")), "enter"])
-    out += _table(["Tick", "Subject", "Interactor", "Interaction term", "Evidence method", "Figure/table", "Status"], pi_rows) + [""]
+    # Backstop: an enter-ready annotation whose type has no section above would otherwise pass
+    # _park_reason, match nothing, and vanish — enter-ready and invisible is the one outcome
+    # worse than parked. `host_phenotype` and `post_translational_modification` did exactly that
+    # until 2026-07-25. Rather than only adding those two, anything unrecognised is now parked
+    # with a reason, so a 13th PHI-Canto type fails loudly instead of silently.
+    for a in enter:
+        atype = _s(a.get("annotation_type"))
+        if atype in rendered_types:
+            continue
+        parked.append((_cell(f"{atype.replace('_', ' ')} on {_s(a.get('feature'))}: {_term(a)}"),
+                       _cell(f"no entry-queue section for annotation type '{atype}'"),
+                       "enter by hand in Canto; then report this gap"))
 
-    out += ["### F3. Pathogen phenotype annotations", ""]
-    pp_rows = [["☐", _cell(a.get("feature")), _term(a), _cell(a.get("evidence")),
-                _cell(a.get("conditions")), _cell(a.get("figure"))] for a in _of("pathogen_phenotype")]
-    out += _table(["Tick", "Genotype", "PHIPO term", "Evidence summary", "Condition", "Figure/table"], pp_rows) + [""]
-
-    out += ["### F4. Pathogen–host interaction phenotype annotations", ""]
-    ip_rows = [["☐", _cell(a.get("feature")), _term(a), _compared_with(a) or "—",
-                _cell(a.get("evidence")), _cell(a.get("figure"))]
-               for a in _of("pathogen_host_interaction_phenotype", "gene_for_gene_phenotype")]
-    out += _table(["Tick", "Metagenotype", "PHIPO term", "Compared with", "Evidence summary", "Figure/table"], ip_rows) + [""]
-
-    out += ["### F5. Disease annotation", ""]
-    dz_rows = [["☐", _cell(a.get("feature")), _cell(a.get("term_name")), _cell(a.get("term_id")),
-                _cell(a.get("conditions") or a.get("figure"))] for a in _of("disease_name")]
-    out += _table(["Tick", "Metagenotype", "Disease term", "Disease ontology ID", "Note"], dz_rows) + [""]
-
-    # F6 carries the qualifier-phrase types. Without its own table these annotations pass
-    # _park_reason but match no section and vanish from the queue — enter-ready and invisible
-    # is the one outcome worse than parked.
-    el_rows = [["☐", _cell(a.get("feature")), _cell(_s(a.get("annotation_type")).replace("_", " ")),
-                _cell(a.get("term_name")), _cell(a.get("evidence")),
-                _cell(a.get("conditions")), _cell(a.get("figure"))]
-               for a in _of(*sorted(_QUALIFIER_PHRASE_TYPES))]
-    if el_rows:
-        out += ["### F6. RNA / protein level annotations", "",
-                "*The level qualifier is a controlled phrase, not an ontology ID — pick the "
-                "matching term in Canto.*", ""]
-        out += _table(["Tick", "Gene", "Annotation type", "Level qualifier", "Evidence summary",
-                       "Condition", "Figure/table"], el_rows) + [""]
-
-    # --- F7. Figure-evidence advisories ---
+    # --- Figure-evidence advisories ---
     # Deliberately NOT the parked table: parked means "do not enter", and an annotation
     # resting on a caption may still be correct. Only annotations the drafter marked
     # `needs_figure` appear here — under decline-by-default, curating from text and
     # captions is the normal path, so routine declines must not fill this section.
     uninspected = figure_audit.get("annotations_on_uninspected", [])
     if uninspected:
-        out += ["### F7. Figure evidence — marked needs_figure, but not inspected", "",
+        out += [f"### F{n + 1}. Figure evidence — marked needs_figure, but not inspected", "",
                 "*These annotations were judged to need their panel read — the claim is "
                 "qualitative, magnitude decides it, or it is the paper's take-home "
                 "message — and the figure was not inspected. Enterable, but weaker than "

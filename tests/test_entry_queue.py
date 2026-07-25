@@ -8,6 +8,30 @@ from pathlib import Path
 from phiweaver.canto import entry_queue as eq
 
 
+def _section(md: str, display_name: str) -> str:
+    """The body of the `### Fn. <display_name>` section, located by name not by number.
+
+    Section numbers are assigned over the sections actually rendered, so they shift from paper
+    to paper. Tests must therefore never hard-code `### F3.` — that coupling is what broke five
+    of them when the headings moved to PHI-Canto's own display names.
+    """
+    for line in md.splitlines():
+        if line.startswith("### F") and line.split(". ", 1)[-1] == display_name:
+            return md.split(line, 1)[1].split("\n### ", 1)[0].split("\n## ", 1)[0]
+    raise AssertionError(f"no section titled {display_name!r} in the queue")
+
+
+def _entry_tables(md: str) -> str:
+    """Everything in section F — i.e. every table a curator would actually type from.
+
+    Use this to assert a parked item is *not* enterable. Asserting against one named section is
+    too weak now that empty sections are omitted: if the only annotation of that type was parked,
+    its section legitimately does not exist and a name lookup would error rather than pass.
+    "Absent from every entry table" is the property these tests mean.
+    """
+    return md.split("## F. Annotation entry queue", 1)[1].split("## G.", 1)[0]
+
+
 def _rec(**over):
     """A compact draft record; override the canto sub-block as needed."""
     canto = {
@@ -99,9 +123,8 @@ class HeldGeneCascadeTests(unittest.TestCase):
     def test_interpretive_mf_parked(self):
         parked = self.md.split("## G. Parked items")[1]
         self.assertIn("interpretive molecular-function", parked)
-        # and NOT in the F1 GO table
-        f1 = self.md.split("### F1. GO annotations")[1].split("### F2.")[0]
-        self.assertNotIn("GEF activity", f1)
+        # and NOT enterable: absent from every table in section F
+        self.assertNotIn("GEF activity", _entry_tables(self.md))
 
 
 class HostPathogenSplitTests(unittest.TestCase):
@@ -122,9 +145,9 @@ class PhysicalInteractionAndTableSafetyTests(unittest.TestCase):
         self.md, _ = eq.render_entry_queue(_rec())
 
     def test_physical_interaction_enterable_despite_blank_term(self):
-        f2 = self.md.split("### F2. Physical interaction")[1].split("### F3.")[0]
-        self.assertIn("GeneB", f2)          # interactor listed
-        self.assertIn("pick PSI-MI at entry", f2)
+        f = _section(self.md, "physical interaction")
+        self.assertIn("GeneB", f)           # interactor listed
+        self.assertIn("pick PSI-MI at entry", f)
 
     def test_pipe_in_data_is_escaped(self):
         rec = _rec(canto={"genes": [
@@ -133,8 +156,7 @@ class PhysicalInteractionAndTableSafetyTests(unittest.TestCase):
         self.assertIn("wei\\|rd", md)       # escaped so the table can't corrupt
 
     def test_disease_name_uses_current_id(self):
-        f5 = self.md.split("### F5. Disease annotation")[1].split("## G.")[0]
-        self.assertIn("PHIDO:0000162", f5)
+        self.assertIn("PHIDO:0000162", _section(self.md, "disease name"))
 
 
 class QualifierPhraseAnnotationTests(unittest.TestCase):
@@ -151,14 +173,14 @@ class QualifierPhraseAnnotationTests(unittest.TestCase):
 
     def test_qualifier_phrase_is_enterable_and_visible(self):
         md, _ = self._render(self.RNA)
-        f6 = md.split("### F6. RNA / protein level")[1].split("## G.")[0]
-        self.assertIn("RNA level increased", f6)
-        self.assertIn("Northern assay", f6)
+        f = _section(md, "Wild-type RNA level")
+        self.assertIn("RNA level increased", f)
+        self.assertIn("Northern assay", f)
 
     def test_blank_qualifier_is_still_parked(self):
         # An empty term_name means nothing was resolved — that must stay parked.
         md, _ = self._render({**self.RNA, "term_name": ""})
-        self.assertNotIn("### F6. RNA / protein level", md)
+        self.assertNotIn("Wild-type RNA level", md)
         self.assertIn("no ontology term resolved", md)
 
 
@@ -202,9 +224,8 @@ class ExplicitHoldTests(unittest.TestCase):
         md, _ = eq.render_entry_queue(rec)
         parked = md.split("## G. Parked items")[1]
         self.assertIn("penetrance not quantified", parked)
-        # and it is NOT in the F3 entry table
-        f3 = md.split("### F3. Pathogen phenotype")[1].split("### F4.")[0]
-        self.assertNotIn("some phenotype", f3)
+        # and it is NOT enterable: absent from every table in section F
+        self.assertNotIn("some phenotype", _entry_tables(md))
 
     def test_note_stays_out_of_entry_queue(self):
         rec = _rec(canto={"annotations": [
@@ -232,6 +253,120 @@ class GuardTests(unittest.TestCase):
         p = self._write("```json\n{\"meta\": {}}\n```\n")
         with self.assertRaises(SystemExit):
             eq.queue_for_draft(p)
+
+
+class AnnotationSectionsMirrorCantoTests(unittest.TestCase):
+    """Section F mirrors PHI-Canto: one section per annotation type, its own display names."""
+
+    def _with(self, *annotations):
+        rec = _rec()
+        rec["canto"]["annotations"] = rec["canto"]["annotations"] + list(annotations)
+        return eq.render_entry_queue(rec)[0]
+
+    HOST_PHEN = {"feature_type": "genotype", "feature": "host wt",
+                 "annotation_type": "host_phenotype", "term_id": "PHIPO:0000001",
+                 "term_name": "host marker term", "evidence": "lesion assay",
+                 "extensions": [], "conditions": "", "figure": "Fig 9"}
+    PTM = {"feature_type": "gene", "feature": "GeneA",
+           "annotation_type": "post_translational_modification", "term_id": "MOD:00046",
+           "term_name": "O-phospho-L-serine", "evidence": "western", "extensions": [],
+           "conditions": "", "figure": "Fig 8"}
+
+    def test_every_configured_annotation_type_has_a_section(self):
+        """The regression guard: a type with no section vanished from the queue entirely.
+
+        `host_phenotype` and `post_translational_modification` did exactly that until
+        2026-07-25 — enter-ready, unparked, and invisible.
+        """
+        covered = {atype for atype, _display, _shape in eq.ANNOTATION_SECTIONS}
+        from phiweaver.lookup.canto_config import load_config
+        configured = set(load_config().annotation_types)
+        self.assertEqual(configured - covered, set(),
+                         "PHI-Canto annotation types with no entry-queue section")
+
+    def test_headings_use_canto_display_names(self):
+        md = self._with(self.HOST_PHEN, self.PTM)
+        for expected in ("### F1. host phenotype", "### F2. pathogen phenotype",
+                         "### F3. pathogen-host interaction phenotype",
+                         "### F4. protein modification", "### F5. physical interaction",
+                         "### F6. disease name"):
+            self.assertIn(expected, md)
+
+    def test_host_phenotype_is_enterable(self):
+        self.assertIn("host marker term", _section(self._with(self.HOST_PHEN), "host phenotype"))
+
+    def test_protein_modification_is_enterable(self):
+        self.assertIn("O-phospho-L-serine", _section(self._with(self.PTM), "protein modification"))
+
+    def test_a_term_less_protein_modification_stays_parked(self):
+        """Unlike physical interaction, PTM is not exempt from needing its term.
+
+        PI is exempt because it genuinely has no ontology term (the evidence method carries it).
+        A protein-modification annotation does take a PSI-MOD term, so a blank one is a real gap
+        and must stay parked rather than being offered for entry.
+        """
+        md = self._with({**self.PTM, "term_id": ""})
+        self.assertNotIn("O-phospho-L-serine", _entry_tables(md))
+        self.assertIn("no ontology term resolved", md.split("## G. Parked items")[1])
+
+    def test_empty_sections_are_omitted(self):
+        md = self._with()
+        self.assertNotIn("GO biological process", md)   # fixture has no BP annotation
+        self.assertNotIn("gene-for-gene phenotype", md)
+
+    def test_sections_are_numbered_without_gaps(self):
+        md = self._with(self.HOST_PHEN, self.PTM)
+        numbers = [int(ln.split(".", 1)[0][5:]) for ln in md.splitlines()
+                   if ln.startswith("### F")]
+        self.assertEqual(numbers, list(range(1, len(numbers) + 1)))
+
+    def test_gene_for_gene_is_its_own_section_not_merged(self):
+        md = self._with({"feature_type": "metagenotype", "feature": "geneAΔ x host",
+                         "annotation_type": "gene_for_gene_phenotype",
+                         "term_id": "PHIPO:0000015", "term_name": "gfg marker term",
+                         "evidence": "infection assay", "extensions": [], "conditions": "",
+                         "figure": "Fig 5"})
+        self.assertIn("gfg marker term", _section(md, "gene-for-gene phenotype"))
+        # and it did not also land in the interaction table it used to share
+        self.assertNotIn("gfg marker term",
+                         _section(md, "pathogen-host interaction phenotype"))
+
+    def test_an_unknown_type_is_parked_with_a_reason_not_dropped(self):
+        """A future 13th PHI-Canto type must fail loudly, not disappear."""
+        md = self._with({"feature_type": "gene", "feature": "GeneA",
+                         "annotation_type": "some_future_type", "term_id": "XX:1",
+                         "term_name": "future marker term", "evidence": "assay",
+                         "extensions": [], "conditions": "", "figure": "Fig 1"})
+        self.assertNotIn("future marker term", _entry_tables(md))
+        parked = md.split("## G. Parked items")[1]
+        self.assertIn("future marker term", parked)
+        self.assertIn("no entry-queue section for annotation type 'some_future_type'", parked)
+
+
+class CantoDisplayNamesMatchTheLiveConfigTests(unittest.TestCase):
+    """Our hardcoded display names must still match PHI-Canto's own.
+
+    The labels are hardcoded so the queue renders identically on every machine (the deploy
+    config is gitignored, so a config-driven heading would differ on a fresh clone). The cost
+    of hardcoding is drift, so this check pays it back: where the private deploy file *is*
+    present, an upstream rename or a new type fails here instead of silently diverging.
+    Skipped rather than failed when the file is absent — a skip says "couldn't check", which
+    is the truth, whereas a failure would claim weaver is broken when it is merely unconfigured.
+    """
+
+    def setUp(self):
+        from phiweaver.lookup.canto_config import DEPLOY_CONFIG, load_config
+        if not DEPLOY_CONFIG.exists():
+            self.skipTest("private canto_deploy.yaml absent; cannot compare display names")
+        self.raw = load_config().raw
+
+    def test_display_names_and_order_match_canto(self):
+        live = [(a["name"], a["display_name"])
+                for a in self.raw.get("available_annotation_type_list", [])
+                if isinstance(a, dict) and "display_name" in a]
+        ours = [(atype, display) for atype, display, _shape in eq.ANNOTATION_SECTIONS]
+        self.assertEqual(ours, live,
+                         "entry_queue.ANNOTATION_SECTIONS has drifted from PHI-Canto's config")
 
 
 if __name__ == "__main__":

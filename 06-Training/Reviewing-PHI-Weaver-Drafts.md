@@ -68,14 +68,14 @@ In a blocked draft, it does not:
 
 The identifier is `unresolved` and the status is `hold`. A held gene has a consequence that propagates through the whole paper: **everything that depends on it is parked.** Its alleles, its genotypes, its metagenotypes, and every annotation on them move to Section G rather than into the entry tables. This is deliberate — an annotation entered against an unresolved gene would be anchored to nothing — but it means a paper with a held gene can look almost empty in Sections A–F and very full in Section G. The FleQ/GcbB paper is the extreme case: two held genes, one enter-ready annotation, and forty-two parked items. That is not a failed draft; it is the tool telling you the single thing that unblocks the paper is resolving those two accessions.
 
-## The annotation tables (F1–F5)
+## The annotation tables (section F)
 
 Within the F tables the rows are ready to enter, but "ready" still means "ready for your confirmation." Read the evidence summary and the figure reference against your own reading of the paper before you accept a term. A few things the tool deliberately surfaces for you rather than deciding on its own:
 
 - **Negative and no-change results.** A phenotype row may be a deliberate negative — for example a phosphomimetic allele annotated as `normal hyphal growth — PHIPO:0001210` with the note "NEGATIVE result — curator policy on recording no-change." Whether and how to record no-change results is a curation-policy call that is yours, not the tool's.
 - **Gene-dosage and control subtleties.** A reintegrant control annotated with "modest haploinsufficiency (gene-dosage effect only)" is flagging a judgement about how to treat the control.
 - **Alternative terms.** A disease row may propose a term and then list alternatives, for example "alt narrower: PHIDO:0000458 invasive candidiasis." You pick the granularity that fits.
-- **The `Compared with` column** in the interaction-phenotype table (F4) records the control the phenotype was scored against — check it matches how you would frame the comparison.
+- **The `Compared with` column** in the interaction-phenotype tables (`pathogen-host interaction phenotype` and `gene-for-gene phenotype`) records the control the phenotype was scored against — check it matches how you would frame the comparison.
 
 ## Section G — the part that most needs you
 

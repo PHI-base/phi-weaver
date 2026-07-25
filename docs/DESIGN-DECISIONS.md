@@ -241,6 +241,42 @@ into each skill only (rejected — no single auditable source, provenance scatte
 tacit in the examples library (rejected — the exclusions and evidence-code rules never surface in
 a worked example).
 
+### D19 — Entry-queue section F mirrors PHI-Canto: one section per annotation type, its own labels
+D14 shipped section F as five hand-grouped tables (`F1. GO annotations`, `F3. Pathogen phenotype`,
+…). **Decision:** replace that grouping with **one section per PHI-Canto annotation type, in the
+order its config lists them, headed with the `display_name` the web interface shows** — so the queue
+reads like the screen the curator is typing into. Empty sections are omitted, and sections are
+numbered over those actually rendered, so a typical paper still shows three to six. Requested by the
+curator (2026-07-25): *"make it look more like the web interface and the headers in there."*
+
+**Why it was more than cosmetic:** the hand-grouping had no section for **`host_phenotype`** or
+**`post_translational_modification`** — 2 of PHI-Canto's 12 types. Both were enter-ready, passed
+`_park_reason`, matched no table, and **vanished from the queue**, the failure the F6 comment already
+named ("enter-ready and invisible is the one outcome worse than parked"). Both types have
+gold-standard examples (PMID:23498959 carries both), so real curations hit it. Verified by rendering
+before the change: a `host_phenotype` annotation with a resolvable subject produced no output at all.
+
+**The durable part is the backstop, not the two new sections.** Any enter-ready annotation whose type
+has no section is now **parked with the reason "no entry-queue section for annotation type '<x>'"**,
+so a future 13th type fails loudly instead of disappearing. Adding only the two missing sections
+would have left the same trap for the next one.
+
+**Display names are hardcoded, not read from `canto_config` at render time.** The deploy config is
+gitignored (private PHI-base/config repo), so config-driven headings would differ between a machine
+that has it and a fresh clone falling back to pombase's base — handing two curators
+differently-shaped queues for the same paper. Same reasoning that keeps `map_phenotype`'s subset
+filter on the committed ontology. The cost of hardcoding is drift, paid back by a test that compares
+the list against the live config **when the deploy file is present** and *skips* when it is not.
+
+**Alternatives:** rename the headings but keep the merged tables (rejected — leaves GO, RNA/protein
+and gene-for-gene grouped in ways the UI doesn't, and the curator asked for the UI's shape); render
+all 12 sections always, matching the UI's full menu (rejected — most papers would carry many empty
+tables, and the queue is a worklist, not a menu); read display names from `canto_config` live
+(rejected — machine-dependent output, above). **Consequence for tests:** section numbers are now
+dynamic, so nothing may assert `### F3.`; five tests in `test_entry_queue.py` and one in
+`test_figure_ledger.py` were coupled to fixed numbers and now locate sections by name via
+`_section()` / `_entry_tables()`. Suite 517 → 527.
+
 ### D18 — PHI-Canto transport: entry queue permanently, scaffold import if allowed, no browser bot
 D14/D16 settled *what* Route 1 emits; this settles *whether anything replaces it*. **Decision:** the
 end state is the **Route-1 entry queue permanently, plus Route 2 (`canto_add.pl

@@ -290,10 +290,13 @@ class EntryQueueIntegrationTests(unittest.TestCase):
                           "needs_figure": True,
                           "needs_figure_reason": "take-home claim"}])
         text = self._render(rec)
-        self.assertIn("F7. Figure evidence", text)
+        # Match the heading text, not its number: section F is numbered over the sections
+        # actually rendered, so the advisory's number depends on how many annotation types the
+        # paper carries. This fixture renders none, so the advisory is F1.
+        self.assertIn("Figure evidence — marked needs_figure, but not inspected", text)
         self.assertIn("positive regulation of autophagy", text)
         # Advisory, not parked — the claim may still be right, it is just weaker.
-        self.assertLess(text.index("F7. Figure evidence"), text.index("G. Parked items"))
+        self.assertLess(text.index("Figure evidence — marked"), text.index("G. Parked items"))
 
     def test_draft_without_a_ledger_renders_unchanged(self):
         rec = {"meta": {"pmid": "1"}, "canto": {"genes": [], "annotations": []}}

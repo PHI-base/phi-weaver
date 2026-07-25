@@ -117,7 +117,12 @@ revisiting if the paper later becomes open access.
 
 ## Expected outputs
 - A short header (citation, system, status, model/tool, date) **and the `Curated from:` line**.
-- Setup tables A–E and annotation tables F1–F5, each row one Canto entry action with a `☐`.
+- Setup tables A–E, then one annotation table per PHI-Canto annotation type, headed with the
+  label the web interface itself shows (`GO molecular function`, `pathogen phenotype`,
+  `pathogen-host interaction phenotype`, `protein modification`, `disease name`, …). Sections
+  are numbered F1, F2, … over the types the paper actually has — empty ones are omitted — so
+  the numbers shift between papers and nothing should cite them. Each row is one Canto entry
+  action with a `☐`.
 - A parked-items table (item / why parked / action needed) as the safety filter.
 - A queue summary with the counts and the list of unresolved blockers (held genes).
 
