@@ -389,20 +389,37 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
   holds the *accepted manuscript* rather than the version of record, and whether Europe PMC
   exposes a clean flag for that is unverified. Original note kept below.
 
-- [ ] **PMC full text as an input format (PMID→PMCID check + JATS parser)** (added 2026-07-21).
-  Today the only ingest route is PDF (`phiweaver/pdf/pdf_convert.py`, PyMuPDF). For open-access
-  papers — most of what PHI-base curates — **PMC's JATS XML is a strictly better input**: sections,
-  tables and references are already tagged, so gene symbols, strain IDs and table structure survive
-  instead of being reconstructed from page layout. Two pieces, and (a) is useful on its own:
+- [x] **PMC full text as an input format (PMID→PMCID check + JATS parser)** — *shipped 2026-07-24
+  in `ebd73af` ("Add JATS XML and Europe PMC ingest routes"); item closed 2026-07-25* (added
+  2026-07-21). Both halves landed three days after this was written and the box was never ticked;
+  the entry stayed open and misdescribed the code for a month.
 
-  **(a) Resolve PMID → PMCID.** One call to NCBI's ID Converter
-  (`https://www.ncbi.nlm.nih.gov/pmc/utils/idconv/v1.0/?ids=<PMID>&format=json`) answers "is there
-  full text?" definitively, so the PDF-vs-PMC choice stops being a guess. Worth checking **Europe
-  PMC** too — it mirrors PMC and adds content PMC doesn't carry, which matters for the UK/European
-  plant-pathology journals we curate from.
+  **(a) PMID → PMCID** — `phiweaver/jats/europepmc.py` (`resolve`, `classify_identifier`,
+  `route_for`, `fetch_full_text`, `fetch_supplementary`, `extract_media`, `acquire`,
+  `fetch_annotations`; disk cache added in `2a90d43`; `tests/test_europepmc.py`). It took the
+  **Europe PMC** option this item flagged as worth checking, rather than NCBI's ID Converter —
+  and **corrected the item's premise**: the gate is *open access*, not "a PMCID exists", because
+  Europe PMC returns 404 for an embargoed article that has a PMCID. The idconv test proposed here
+  would have produced false positives. Beyond scope: supplementary-file and media acquisition,
+  and Europe PMC text-mined annotations.
 
-  **(b) JATS → markdown converter**, the `pdf_convert.py` equivalent. Needs to handle JATS tables
-  and section nesting; drop `<ref-list>` and `<front>` boilerplate.
+  **(b) JATS → markdown converter** — `phiweaver/jats/jats_convert.py` (949 lines;
+  `tests/test_jats_convert.py`). Recursive `<body>` walk preserving nesting depth and `sec-type`;
+  `<fig>` and `<table-wrap>` collected wherever they sit, with `table-wrap-foot` footers and real
+  row extraction. `<front>` is read for **declared metadata** rather than dumped as prose, and
+  `<ref-list>` is parsed into structured references (`element-citation` / `mixed-citation`) for
+  cross-referencing — both better than the "drop as boilerplate" this item asked for.
+
+  Wired into the pipeline: `.xml` / `.nxml` / `.jats` dispatch to the JATS converter, with the
+  ingest route recorded in the outputs and the tracking DB (`69196bb`;
+  `tests/test_source_routes.py`). `paper-triage` step 2 prefers JATS where both formats exist,
+  subject to the converter's `graphics_absent` warning.
+
+  *Original rationale, for the record:* the only ingest route was PDF
+  (`phiweaver/pdf/pdf_convert.py`, PyMuPDF). For open-access papers — most of what PHI-base
+  curates — PMC's JATS XML is a strictly better input: sections, tables and references are already
+  tagged, so gene symbols, strain IDs and table structure survive instead of being reconstructed
+  from page layout.
 
   **On token cost — the intuition is backwards, but only after parsing.** *Raw* JATS is far more
   expensive than a PDF (every citation an `<xref>`, every author a name nest, the whole reference
