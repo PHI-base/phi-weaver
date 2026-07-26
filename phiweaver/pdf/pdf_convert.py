@@ -15,13 +15,11 @@ from datetime import date
 from typing import List, Dict, Tuple
 import json
 
+from phiweaver.pdf.enhanced_caption_extractor import CAPTION_NUMBER
+
 # A caption line begins its own text block: "Figure 3. ..." / "Table 1 ..." / "Fig. 2 ...".
-# The number may be Arabic ("1", "1a"), supplementary ("S1") or Roman ("I", "IV") — 1990s
-# journals number tables in Roman, and requiring \d+ made those tables invisible entirely.
-# `(?-i:[IVXL]+)` stays case-sensitive inside the IGNORECASE match so the word "in" is not
-# read as table `i`; C/D/M are excluded because they start too many English words and no
-# paper numbers tables past XXXIX.
-CAPTION_NUMBER = r"(\d+[A-Za-z]*|S\d+[A-Za-z]*|(?-i:[IVXL]+))\b"
+# See CAPTION_NUMBER's definition in enhanced_caption_extractor.py for why the number
+# pattern looks the way it does.
 CAPTION_BLOCK_RE = re.compile(r"^\s*(figure|fig\.?|table)\s*" + CAPTION_NUMBER, re.IGNORECASE)
 
 # How far (PDF points, 72/inch) a caption may sit from its image and still be its caption.
@@ -619,18 +617,27 @@ class PDFConvertSkill:
             pending.setdefault(str(entry.get('number')), entry)
 
         out = []
-        for line in lines:
-            match = CAPTION_BLOCK_RE.match(line)
-            if match and match.group(1).lower().startswith('table'):
-                entry = pending.pop(match.group(2), None)
-                if entry:
-                    out.extend([
-                        f"> ⚠ **FLATTENED TABLE — column structure lost.** Read "
-                        f"`{entry['filename']}` (page {entry['page']}) instead; rows may be "
-                        f"missing from the text below.",
-                        "",
-                    ])
-            out.append(line)
+        for block in lines:
+            if not pending:
+                out.append(block)
+                continue
+            marked = []
+            for text_line in block.split("\n"):
+                match = CAPTION_BLOCK_RE.match(text_line)
+                if match and match.group(1).lower().startswith('table'):
+                    entry = pending.pop(match.group(2), None)
+                    if entry:
+                        marked.extend([
+                            f"> ⚠ **FLATTENED TABLE — column structure lost.** Read "
+                            f"`{entry['filename']}` (page {entry['page']}) instead; rows may be "
+                            f"missing from the text below.",
+                            "",
+                        ])
+                marked.append(text_line)
+            # Individual lines, not a rejoined block: callers (and
+            # test_nothing_is_deleted) check for the original line as its own list
+            # element, and the eventual '\n'.join(content) makes the split harmless.
+            out.extend(marked)
         return out
 
     def _generate_figures_section(self):

@@ -7,8 +7,16 @@ Improves figure/table caption detection and text processing
 import re
 from typing import List, Dict, Tuple
 
-# Same numbering forms the converter's CAPTION_BLOCK_RE accepts — Arabic, supplementary,
-# Roman. Kept as one capturing group so the existing group indices are unchanged.
+# A caption line begins its own text block: "Figure 3. ..." / "Table 1 ..." / "Fig. 2 ...".
+# The number may be Arabic ("1", "1a"), supplementary ("S1") or Roman ("I", "IV") — 1990s
+# journals number tables in Roman, and requiring \d+ made those tables invisible entirely.
+# `(?-i:[IVXL]+)` stays case-sensitive inside the IGNORECASE match so the word "in" is not
+# read as table `i`; C/D/M are excluded because they start too many English words and no
+# paper numbers tables past XXXIX.
+#
+# Single definition: pdf_convert.py's CAPTION_BLOCK_RE imports this fragment rather than
+# redefining it. The two used to be hand-synced copies and drifted once — a missing
+# trailing \b in one copy manufactured phantom tables from prose.
 CAPTION_NUMBER = r"(\d+[A-Za-z]*|S\d+[A-Za-z]*|(?-i:[IVXL]+))\b"
 
 class AdvancedCaptionExtractor:

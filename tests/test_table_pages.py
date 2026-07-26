@@ -174,6 +174,19 @@ class FlatTextMarkerTests(unittest.TestCase):
             ["Table I. Growth", "prose referring to Table I again", "Table I. Growth"])
         self.assertEqual("\n".join(out).count("FLATTENED TABLE"), 1)
 
+    def test_marker_fires_inside_a_multi_line_block(self):
+        # the body generators append a whole page/section as ONE element, so the caption is
+        # not at position 0 — this is the shape that actually reaches the method
+        block = ("Results\n\nWe examined phenotypes of the mutants.\n\n"
+                 "Table I. Growth and pathogenicity\nGuy11 0.28 AM25 0.27")
+        out = self.skill._mark_flattened_tables([block])
+        joined = "\n".join(out)
+        self.assertIn("FLATTENED TABLE", joined)
+        self.assertIn("Table-p5.png", joined)
+        self.assertLess(joined.index("FLATTENED TABLE"), joined.index("Table I. Growth"))
+        self.assertIn("Guy11 0.28 AM25 0.27", joined)   # nothing deleted
+        self.assertIn("We examined phenotypes", joined)  # leading prose survives
+
 
 @unittest.skipUnless(HAS_FITZ, "PyMuPDF not installed")
 class ReportHonestyTests(unittest.TestCase):
