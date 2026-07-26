@@ -208,5 +208,35 @@ class ReportHonestyTests(unittest.TestCase):
         self.assertEqual(report["warnings"], [])
 
 
+@unittest.skipUnless(HAS_FITZ, "PyMuPDF not installed")
+class SuppliedConfigTests(unittest.TestCase):
+    """A caller-supplied config must not strip defaults — the CLI and pipeline both
+    build explicit dicts, and a missing key used to kill the whole conversion."""
+
+    def _cli_shaped_config(self):
+        # exactly the keys pdf_convert's own main() builds
+        return {"output_directory": ".", "images_directory": "03-Media",
+                "figure_prefix": "Fig", "table_prefix": "Table",
+                "confidence_threshold": 0.5, "quality_validation": True,
+                "create_index": True, "debug": False, "preserve_structure": True}
+
+    def test_supplied_config_keeps_defaults_for_absent_keys(self):
+        from phiweaver.pdf import pdf_convert as pc
+        skill = pc.PDFConvertSkill(self._cli_shaped_config())
+        self.assertEqual(skill.config["table_render_dpi"], 170)
+
+    def test_supplied_values_still_win(self):
+        from phiweaver.pdf import pdf_convert as pc
+        cfg = self._cli_shaped_config()
+        cfg["table_prefix"] = "Tbl"
+        skill = pc.PDFConvertSkill(cfg)
+        self.assertEqual(skill.config["table_prefix"], "Tbl")
+
+    def test_no_config_still_works(self):
+        from phiweaver.pdf import pdf_convert as pc
+        skill = pc.PDFConvertSkill()
+        self.assertEqual(skill.config["table_render_dpi"], 170)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -37,7 +37,7 @@ class PDFConvertSkill:
     """Professional PDF to Obsidian converter with advanced features"""
 
     def __init__(self, config=None):
-        self.config = config or self._load_default_config()
+        self.config = {**self._load_default_config(), **(config or {})}
         self.pdf_path = None
         self.pdf_name = None
         self.output_dir = None
