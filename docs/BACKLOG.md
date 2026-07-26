@@ -13,19 +13,54 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
 `PLUGIN-ARCHITECTURE.md`.
 
 ## Tooling / bugs
-- [ ] **PDF converter flattens tables and loses their columns** (added 2026-07-24, surfaced on
-  PMID:9927411). Figures survive conversion; **tables do not**. Table I came through as a flat
-  run of numbers with the row/column grid gone, and its "Appressorium formation >95%" row was
-  dropped entirely — it exists only in the page render. Both tables had to be re-read from PDF
-  pages rendered at 170 dpi. This matters more than it sounds: on that paper the tables carried
-  **most of the quantitative evidence**, and the single most consequential finding of the whole
-  curation (Table II lists EC50/MIC for the wild type only, with **no per-strain columns**, so the
-  paper's headline "no drug hypersensitivity" claim has no visible supporting data) is a statement
-  *about the column structure* — invisible to a reader of the flattened text. Options: extract
-  tables as images alongside figures (cheap, reuses the figure path, needs a vision read); or
-  `page.find_tables()` in PyMuPDF (structured, but unreliable on scanned/ruled 1990s layouts).
-  Until then, **render and read table pages by hand for any table-carrying paper** and say so in
-  the draft's provenance.
+- [x] **PDF converter flattens tables and loses their columns** — *fixed 2026-07-26* (added
+  2026-07-24, surfaced on PMID:9927411). Tables now arrive as **page renders**: the whole page a
+  table sits on is rendered to PNG at 170 dpi beside the figures, the flattened text is kept but
+  marked unreliable, and the report counts captions and renders separately so a miss can never
+  again look like "this paper has no tables". Spec: `docs/superpowers/specs/2026-07-26-pdf-table-extraction-design.md`;
+  plan: `docs/superpowers/plans/2026-07-26-pdf-table-page-renders.md`. 8 commits, `9c7fd06..783a218`.
+  - **The root cause was not the one this item named.** It was the **caption regex**:
+    `^\s*(figure|fig\.?|table)\s*(\d+)` accepts Arabic numerals only, and the paper numbers its
+    tables **Table I / Table II**. The converter found 22 figure captions and **0 table captions** —
+    it did not believe the paper had tables at all. Widening the pattern to Roman and supplementary
+    forms is the fix; everything else builds on it.
+  - **`find_tables()` was measured, not assumed** — the structured option this item proposed
+    returns **zero tables across all 10 pages** of the trigger PDF (PyMuPDF 1.27.2). Worse than the
+    "unreliable on 1990s layouts" guessed here. Rejected on evidence.
+  - **Whole page, not a crop.** A caption-anchored crop gives tidier images but a boundary
+    heuristic decides where the table ends, and a wrong boundary clips a row — reproducing the very
+    defect being fixed. The page render cannot clip.
+  - **Verified on the trigger paper.** Table I renders legibly and its
+    **"Appressorium formation (%) >95 >95 >95"** row — dropped entirely from the flattened text — is
+    visible with all three strain columns. Table II confirms this item's own claim: its columns are
+    `Compound | EC50 | MIC` with **no per-strain columns**, while its title names Guy11, AM25 and
+    TF7-3131.
+  - **Fact correction:** the paper has **three** tables, not two — `I` Phenotypic characterization,
+    `II` Sensitivity, `III` *M. grisea* strains used in this study. Table III is the strains table in
+    Methods.
+  - **Two defects were caught by the process itself**, neither findable by unit tests: a shared
+    regex fragment was duplicated into two modules with the word boundary in only one, manufacturing
+    phantom tables from prose (`Table Legend is described…` → table `L`); and `__init__` did
+    `config or defaults`, so a caller-supplied config *replaced* the defaults and the new
+    `table_render_dpi` key broke the CLI and pipeline outright. Both fixed and re-reviewed.
+- [ ] **Table captions are over-detected from in-text references** (added 2026-07-26; deferred by
+  the curator the same day as cosmetic). `AdvancedCaptionExtractor`'s patterns match `Table N`
+  **anywhere** in the text, so a sentence like *"Table I and Figure 6 show the results…"* is read as
+  a caption. On PMID:9927411: 11 mentions → **10 "captions" → 5 rendered pages, where 3 real tables
+  exist**. Two spurious PNGs per paper and inflated `table_captions_found` / `tables_rendered`
+  counts, which undercuts the honest-reporting work above.
+  - **Pre-existing, newly consequential.** The flaw predates the page-render work — it was
+    previously a harmless miscount, and only became visible files once each caption triggered a
+    render. It is *not* caused by widening the regex to Roman numerals.
+  - **Nothing is broken by it:** all three real tables render correctly, so this is noise, not loss.
+  - **The obvious fix does not work.** Anchoring to line-start cuts 10 to 4, but one survivor is a
+    sentence that wrapped. Additionally requiring a `.` or `:` after the number gives exactly 3 here
+    — but breaks `Table S1 Primers used in this study`, a real unpunctuated caption form with a
+    passing test. **A missed table is invisible; a spurious one is obvious** — so do not trade this
+    way round.
+  - **If picked up:** line-start anchor, then dedupe by table number preferring a punctuated match
+    (a paper has one Table I, whatever the layout). The deeper fix is to anchor captions to real
+    text blocks the way the geometry path already does, rather than scanning free text.
 - [x] **~~Ontologies are re-parsed on every test run~~ — misdiagnosed; the real cost was
   `git_commit()`** (added 2026-07-24, *measured and fixed 2026-07-25*). The slow gate was real; the
   cause was not ontology parsing.
