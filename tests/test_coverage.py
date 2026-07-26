@@ -67,5 +67,52 @@ class CoverageTests(unittest.TestCase):
         self.assertEqual(cov.coverage_warnings({}), [])
 
 
+class StrainBackgroundTests(unittest.TestCase):
+    """The 2026-07-25 ruling: wild type → strain, mutant → background, never both."""
+
+    def test_populated_block_is_clean(self):
+        c = {"genotypes": [
+            {"name": "Guy11", "alleles": [], "strain": "Guy11"},
+            {"name": "AM25", "alleles": ["abc1-2Δ"], "background": "Guy11; endogenous ABC1 absent"},
+            {"name": "WT rice Sariceltic", "alleles": [], "strain": "Sariceltic"}]}
+        self.assertEqual(cov.strain_background_warnings(c), [])
+
+    def test_wild_type_without_strain_flagged(self):
+        c = {"genotypes": [{"name": "Guy11", "alleles": []}]}
+        ws = cov.strain_background_warnings(c)
+        self.assertTrue(any("Guy11" in w and "wild type with no 'strain'" in w for w in ws))
+
+    def test_mutant_without_background_flagged(self):
+        c = {"genotypes": [{"name": "AM25", "alleles": ["abc1-2Δ"]}]}
+        ws = cov.strain_background_warnings(c)
+        self.assertTrue(any("AM25" in w and "no 'background'" in w for w in ws))
+
+    def test_mutant_carrying_a_strain_flagged(self):
+        # the failure the ruling exists to prevent — the isolate label used as a strain
+        c = {"genotypes": [{"name": "AM25", "alleles": ["abc1-2Δ"], "strain": "AM25"}]}
+        ws = cov.strain_background_warnings(c)
+        self.assertTrue(any("AM25" in w and "belongs in 'background'" in w for w in ws))
+
+    def test_both_fields_set_flagged(self):
+        c = {"genotypes": [{"name": "AM25", "alleles": ["abc1-2Δ"],
+                            "strain": "Guy11", "background": "Guy11"}]}
+        ws = cov.strain_background_warnings(c)
+        self.assertTrue(any("AM25" in w and "complementary" in w for w in ws))
+
+    def test_background_alone_marks_a_mutant_without_alleles(self):
+        # AM30: ectopic insertion in wild-type Guy11, no allele recorded — must not read wild type
+        c = {"genotypes": [{"name": "AM30", "alleles": [],
+                            "background": "Guy11; endogenous ABC1 present"}]}
+        self.assertEqual(cov.strain_background_warnings(c), [])
+
+    def test_empty_alleles_entries_do_not_make_a_mutant(self):
+        c = {"genotypes": [{"name": "Guy11", "alleles": ["", "  "], "strain": "Guy11"}]}
+        self.assertEqual(cov.strain_background_warnings(c), [])
+
+    def test_unnamed_genotype_skipped_and_empty_block_no_crash(self):
+        self.assertEqual(cov.strain_background_warnings({}), [])
+        self.assertEqual(cov.strain_background_warnings({"genotypes": [{"alleles": []}]}), [])
+
+
 if __name__ == "__main__":
     unittest.main()

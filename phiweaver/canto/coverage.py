@@ -16,6 +16,12 @@ phenotypes and no metagenotype):
   single-species phenotype) but in no metagenotype. Confirm it is single-species-only, not a
   dropped interaction (this is the class that hid the complementation-control omissions).
 
+`strain_background_warnings` covers the same shape for Canto's two genotype-table columns. The
+curator's 2026-07-25 ruling makes `strain` and `background` complementary — a wild type carries a
+strain, a mutant carries a background, never both — so a genotype missing its field is an omission
+nothing else reveals. It bites at entry, not just on paper: Canto requires a strain per organism
+before any genotype can be created, so an unset strain stalls the curator on the first screen.
+
 Surfaced to stderr by the entry-queue CLI at generation time. Pure stdlib.
 """
 
@@ -74,7 +80,41 @@ def coverage_warnings(canto: dict) -> List[str]:
     return warnings
 
 
+def strain_background_warnings(canto: dict) -> List[str]:
+    """Return warnings for genotypes whose `strain` / `background` fields don't follow the ruling.
+
+    Wild type → `strain`; mutant → `background`; never both. A genotype counts as a mutant if it
+    has alleles *or* a background — the same two-signal test table A2 uses, because an ectopic
+    insertion in a wild-type parent (AM30, PMID:9927411) carries no allele and would otherwise
+    read as a wild type.
+    """
+    warnings: List[str] = []
+    for g in canto.get("genotypes") or []:
+        nm = _s(g.get("name"))
+        if not nm:
+            continue
+        strain, background = _s(g.get("strain")), _s(g.get("background"))
+        is_mutant = bool([x for x in (g.get("alleles") or []) if _s(x)]) or bool(background)
+        if strain and background:
+            warnings.append(f"genotype '{nm}' sets both 'strain' ({strain}) and 'background' "
+                            f"({background}) — they are complementary; a wild type carries a "
+                            f"strain, a mutant a background")
+        elif is_mutant and strain:
+            warnings.append(f"genotype '{nm}' has alleles but sets 'strain' ({strain}) — a mutant "
+                            f"is named by its allele; its parent strain belongs in 'background'")
+        elif is_mutant and not background:
+            warnings.append(f"genotype '{nm}' is a mutant with no 'background' — record its parent "
+                            f"strain plus the endogenous copy's status, or flag it if the paper "
+                            f"does not say")
+        elif not is_mutant and not strain:
+            warnings.append(f"genotype '{nm}' is a wild type with no 'strain' — Canto needs a "
+                            f"strain/cultivar per organism before any genotype can be created, "
+                            f"so table A2 cannot pre-fill it")
+    return warnings
+
+
 def coverage_for_draft(draft_path) -> List[str]:
     """Read a draft and return its coverage warnings ([] if no `canto` block or clean)."""
     rec = extract_record(Path(draft_path).read_text(encoding="utf-8")) or {}
-    return coverage_warnings(rec.get("canto") or {})
+    canto = rec.get("canto") or {}
+    return coverage_warnings(canto) + strain_background_warnings(canto)

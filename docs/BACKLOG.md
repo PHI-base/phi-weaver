@@ -529,12 +529,30 @@ decision and re-creating the term silently reopens it. See the `ontology-term-re
     type. Written up in `07-Standards/PHI-Canto-Curation-Conventions.md` ("Strains and cultivars —
     wild type only") and applied in the renderer: **A2 excludes allele-bearing genotypes entirely**,
     and uses a genotype's optional `strain` verbatim when present.
-  - **② Still open — schema + drafting.** Nothing yet *writes* `strain`, so A2's cells are unset on
-    every existing draft. Needed: `strain` on genotypes in the draft schema, populated during
-    drafting for wild types only; then A2 pre-fills and the genotype tables can carry Canto's
-    `Strain` column honestly. (`Background` is a separate question the ruling did not cover — for a
-    mutant derived from Guy11, Canto's `Background` field may be where `Guy11` belongs. Ask before
-    assuming.)
+  - **② ✅ Schema + drafting done 2026-07-26; backfilling the nine drafts is what remains.**
+    `strain` and `background` are now **in the draft schema** (`_TEMPLATE.md` — the genotypes bullet
+    documents the ruling, the JSON skeleton carries both keys) and the **drafting workflow writes
+    them** (`skills/genotype-creation/SKILL.md`: workflow step 6, a "Strain and background" section,
+    an output and a QC check). The same file's `#157` background vocabulary still said
+    `<gene>delta`, superseded by `<gene>modified` on 2026-07-25 — fixed in passing.
+    **A lint makes the omissions visible:** `coverage.strain_background_warnings` flags a wild type
+    with no `strain`, a mutant with no `background`, a mutant carrying a `strain` (the isolate-label
+    error the ruling exists to prevent) and any genotype setting both; it rides the entry-queue
+    CLI's existing stderr channel, so it fires on every generation. 8 tests (suite 14 in that
+    module); `python3 -m phiweaver.smoke` 8/8.
+    - **Validated against curated data:** PMID:9927411 — the reference draft — lints **clean**,
+      and the other nine flag **50 gaps** between them.
+    - **Not backfilled, deliberately.** Filling those 50 means reading each paper for the parent
+      strain; deriving them from genotype names (`wild type PH-1` → strain `PH-1`) is the guess D19
+      already refused. The lint names each gap so a drafting pass can close it per paper.
+    - **⑧ ✅ RULED 2026-07-26 (Martin Urban): a near-isogenic line's parent cultivar is a
+      `background`.** Found by running the lint — host NILs carrying a *natural* allele
+      (`tomato 76R (Pto/Pto)` / `76S (pto/pto)`, PMID:1537802) trip the mutant test, and the
+      question was whether a natural allele should leave them a `strain` instead. It does not: a
+      NIL is defined by its allele, so it follows the mutant rule and the lint's existing behaviour
+      was already right — **no code change**. Written up in `PHI-Canto-Curation-Conventions.md`.
+      *Corollary:* `wheat Lr42-NIL` (PMC12313645) records **no allele**, so it lints as a wild type
+      — the `AM30` shape again, and its `Lr42` allele is the paper's entire subject.
   - **③ ✅ RULED 2026-07-25: a mutant's parent strain goes in `Background`.** `Guy11` is the
     background of every mutant derived from it, never their strain — the two fields are
     complementary and never both set. **AM30 is an insertion mutant in wild-type Guy11**, not a

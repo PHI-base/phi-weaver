@@ -134,9 +134,25 @@ parent strain *and* the endogenous copy's status (the `#157` rule above). Worked
 | `AM25` | `ABC1` deleted | `Guy11; endogenous ABC1 absent`\* |
 | `TF7-3131` | insertion into `ABC1` | `Guy11; ABC1modified`\* |
 
-\* *AM25 and TF7-3131 are shown for illustration; only AM30 has been written into the draft so far.*
+\* *All three are now written into the PMID:9927411 draft, which is the reference for this shape.*
 Note `<gene>modified` replaced `<gene>delta` in the `#157` vocabulary on the same date, so an
 insertion mutant like `TF7-3131` now has a form that fits it.
+
+**A near-isogenic line's parent cultivar is a `background` — ruled 2026-07-26 (Martin Urban).**
+A NIL carries an allele, so it follows the mutant rule: **no `strain`**, and its parent cultivar
+goes in `background`. That the allele is *natural* rather than engineered makes no difference — the
+question the fields answer is whether the genotype is defined by an allele or by an isolate, and a
+NIL is defined by its allele. So `tomato 76R (Pto/Pto)` and `76S (pto/pto)` (PMID:1537802) carry
+their recurrent parent as a background, not `76R`/`76S` as a strain; a plain cultivar with no
+introgressed allele (`soybean cv. Centennial`) stays a wild type with a `strain`.
+
+This matters most on the host side, where **cultivar identity encodes R-gene presence/absence** —
+the fact a gene-for-gene curation turns on (see the `gene-for-gene` skill). A NIL entered as its own
+cultivar loses the parentage that makes the resistant/susceptible pair comparable.
+
+*Corollary:* a NIL the draft records **without** an allele is the `AM30` shape — a mutant that looks
+wild type. `wheat Lr42-NIL` (PMC12313645) is one: its `Lr42` allele is the entire point of the
+paper and the draft never captured it.
 
 **Why it matters:** PHI-Canto builds a genotype from a strain plus alleles, so putting `AM25` in the
 strain field asserts a strain that does not exist as such, and hides the allele that is the actual

@@ -66,6 +66,15 @@ The `canto` block is the **structured, machine-readable curation** that
   (null / wild-type level / overexpression / …).
 - `genotypes` — `name`, `organism`, `alleles` (list of allele names; empty for wild type),
   optional `role` (`control` | `experimental`). Host wild-type genotypes are listed here too.
+  Plus Canto's two genotype-table columns, which are **complementary and never both set**
+  (curator ruling 2026-07-25, `PHI-Canto-Curation-Conventions.md` "Strains and cultivars"):
+  - `strain` — **wild types only**: the strain, cultivar, pathovar or variety (`Guy11`,
+    `Sariceltic`). This is what the entry queue's table A2 pre-fills, and Canto requires a strain
+    per organism before any genotype can be created.
+  - `background` — **mutants only**: the parent wild-type strain *plus* the endogenous copy's
+    status, in one field (`Guy11; endogenous ABC1 absent`, `Guy11; ABC1modified`). Set it even
+    when the draft records no allele — it is the second signal that a genotype is not wild type
+    (an ectopic insertion in a wild-type parent looks wild type without it).
 - `metagenotypes` — `name`, `pathogen_genotype`, `host_genotype` (genotype names), `role`
   (`experimental` | `control` | `complementation_control`).
 - `annotations` — `feature_type` (`gene` | `genotype` | `metagenotype`), `feature` (its name),
@@ -109,7 +118,7 @@ invented (the entry queue parks it as an item to resolve before entry).
   "canto": {
     "genes": [{"name": "", "uniprot": "", "organism": "", "locus": "", "note": ""}],
     "alleles": [{"name": "", "gene": "", "type": "", "expression": ""}],
-    "genotypes": [{"name": "", "organism": "", "alleles": [], "role": ""}],
+    "genotypes": [{"name": "", "organism": "", "alleles": [], "role": "", "strain": "", "background": ""}],
     "metagenotypes": [{"name": "", "pathogen_genotype": "", "host_genotype": "", "role": ""}],
     "annotations": [{"feature_type": "", "feature": "", "annotation_type": "", "term_id": "", "term_name": "", "evidence": "", "extensions": [{"relation": "", "value": ""}], "conditions": "", "note": "", "hold": false, "hold_reason": "", "figure": ""}]
   }
