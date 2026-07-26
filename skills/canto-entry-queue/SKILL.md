@@ -126,6 +126,8 @@ revisiting if the paper later becomes open access.
   are numbered F1, F2, … over the types the paper actually has — empty ones are omitted — so
   the numbers shift between papers and nothing should cite them. Each row is one Canto entry
   action with a `☐`.
+- An advisory table of evidence strings PHI-Canto will not accept (with near matches) — those
+  rows are marked `⚠` but stay enterable; a vocabulary slip is flagged, never parked.
 - A parked-items table (item / why parked / action needed) as the safety filter.
 - A queue summary with the counts and the list of unresolved blockers (held genes).
 

@@ -75,6 +75,7 @@ Within the F tables the rows are ready to enter, but "ready" still means "ready 
 - **Negative and no-change results.** A phenotype row may be a deliberate negative — for example a phosphomimetic allele annotated as `normal hyphal growth — PHIPO:0001210` with the note "NEGATIVE result — curator policy on recording no-change." Whether and how to record no-change results is a curation-policy call that is yours, not the tool's.
 - **Gene-dosage and control subtleties.** A reintegrant control annotated with "modest haploinsufficiency (gene-dosage effect only)" is flagging a judgement about how to treat the control.
 - **Alternative terms.** A disease row may propose a term and then list alternatives, for example "alt narrower: PHIDO:0000458 invasive candidiasis." You pick the granularity that fits.
+- **A `⚠` on the evidence cell** means the string is not one of PHI-Canto's controlled evidence codes, so it will not be in the dropdown. The annotation is *not* parked — it is sound apart from the wording — so pick the closest real code as you enter it. The advisory table near the end of section F lists each offending string once, with near matches where any exist.
 - **The `Compared with` column** in the interaction-phenotype tables (`pathogen-host interaction phenotype` and `gene-for-gene phenotype`) records the control the phenotype was scored against — check it matches how you would frame the comparison.
 
 ## Section G — the part that most needs you

@@ -286,9 +286,15 @@ it often is not. `Physical interaction` is the exception — its evidence genuin
 so that column *is* `Evidence code`. Canto's `Comment` column and its genotype `Strain` /
 `Background` columns have no counterpart: `note` is kept out of the lean queue by D14, and the draft
 schema has no strain/background fields (the genotype `name` currently carries the strain, e.g.
-`Guy11`). **Left open by this decision:** nothing validates evidence strings against
-`canto_config.evidence_codes` even though `validate_evidence_code` exists and is unused — the same
-shape as the annotation-type gap closed on 2026-07-21.
+`Guy11`). **Evidence validation added 2026-07-26 — flagged, not parked** (curator instruction). Every
+evidence string is checked against the 82 codes; a mismatch marks the row `⚠` and appears in an
+advisory table with near matches, while the annotation stays enterable, because an otherwise sound
+annotation should not be withheld over a vocabulary slip. Unconditional, unlike the ontology check:
+the code list comes from the **committed public** `canto_base.yaml` (verified identical with and
+without the gitignored deploy file), so it is both machine-independent and offline. Near matches
+require a **5-character overlap** — without that floor the short GO-style codes match anything (`IC`
+is inside "macroscop*ic* observation", and was being suggested for a microscopy phrase), and a
+misleading suggestion is worse than "no near match".
 
 **Strains added as table A2, not a new lettered section (2026-07-25).** PHI-Canto requires one or
 more experimental strains per organism *before* a genotype can be created, and the queue had no

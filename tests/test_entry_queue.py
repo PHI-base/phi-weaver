@@ -442,6 +442,103 @@ class StrainsSectionTests(unittest.TestCase):
         self.assertNotIn("### A2.", md)
 
 
+class EvidenceCodeFlaggingTests(unittest.TestCase):
+    """Evidence strings are checked against Canto's controlled list and **flagged, not parked**.
+
+    Curator instruction (2026-07-26): an annotation with a mis-worded evidence string is otherwise
+    sound, so parking it would hide good curation behind a vocabulary slip.
+    """
+
+    VALID = "Cell growth assay"        # a real code in canto_base.yaml
+    INVALID = "Penetration assay"      # measured on PMID:9927411; not a code
+
+    def _render(self, evidence):
+        rec = _rec()
+        rec["canto"]["annotations"] = [
+            {"feature_type": "genotype", "feature": "geneAΔ",
+             "annotation_type": "pathogen_phenotype", "term_id": "PHIPO:0001212",
+             "term_name": "decreased hyphal growth", "evidence": evidence,
+             "extensions": [], "conditions": "", "figure": "Fig 1"}]
+        return eq.render_entry_queue(rec)[0]
+
+    def _advisory(self, md):
+        return md.split("Evidence strings PHI-Canto will not accept")[1].split("\n## ", 1)[0]
+
+    def test_the_code_list_is_machine_independent(self):
+        """It comes from the committed public base config, not the gitignored deploy file.
+
+        That is why this check is unconditional, unlike the annotation display names: every
+        machine flags the same rows.
+        """
+        from phiweaver.lookup.canto_config import load_config
+        with_deploy = load_config().evidence_codes
+        base_only = load_config(deploy_path=Path("/nonexistent/canto_deploy.yaml")).evidence_codes
+        self.assertEqual(with_deploy, base_only)
+        self.assertIn(self.VALID, base_only)
+        self.assertNotIn(self.INVALID, base_only)
+
+    def test_a_valid_code_is_not_flagged(self):
+        md = self._render(self.VALID)
+        self.assertIn(self.VALID, md)
+        self.assertNotIn(f"⚠ {self.VALID}", md)
+        self.assertNotIn("Evidence strings PHI-Canto will not accept", md)
+
+    def test_an_invalid_code_is_flagged_in_the_row(self):
+        self.assertIn(f"⚠ {self.INVALID}", _entry_tables(self._render(self.INVALID)))
+
+    def test_an_invalid_code_is_never_parked(self):
+        md = self._render(self.INVALID)
+        # still enterable: present in a table, absent from the parked section
+        self.assertIn("decreased hyphal growth", _entry_tables(md))
+        self.assertNotIn(self.INVALID, md.split("## G. Parked items")[1])
+
+    def test_the_advisory_lists_distinct_values_with_a_row_count(self):
+        rec = _rec()
+        base = {"feature_type": "genotype", "feature": "geneAΔ",
+                "annotation_type": "pathogen_phenotype", "term_id": "PHIPO:0001212",
+                "term_name": "decreased hyphal growth", "extensions": [], "conditions": "",
+                "figure": "Fig 1"}
+        rec["canto"]["annotations"] = [{**base, "evidence": self.INVALID},
+                                       {**base, "evidence": self.INVALID},
+                                       {**base, "evidence": self.VALID}]
+        md, _ = eq.render_entry_queue(rec)
+        advisory = self._advisory(md)
+        self.assertIn(self.INVALID, advisory)
+        self.assertIn("| 2 |", advisory)          # deduplicated, counted
+        self.assertNotIn(self.VALID, advisory)
+
+    def test_a_near_match_is_offered_when_one_exists(self):
+        self.assertIn("Microscopy", self._advisory(self._render("Microscopy (cellular)")))
+
+    def test_short_acronym_codes_are_not_suggested_as_near_matches(self):
+        """Regression: `IC` is inside "macroscop*ic* observation" and was being suggested.
+
+        A misleading suggestion is worse than none, so the overlap has a minimum length.
+        """
+        self.assertEqual(
+            eq._near_codes("Macroscopic observation (quantitative observation)",
+                           eq._evidence_codes()), [])
+        md = self._render("Macroscopic observation (quantitative observation)")
+        self.assertIn("no near match", self._advisory(md))
+
+    def test_blank_evidence_is_not_flagged(self):
+        md = self._render("")
+        self.assertNotIn("⚠", _entry_tables(md))
+        self.assertNotIn("Evidence strings PHI-Canto will not accept", md)
+
+    def test_rendering_survives_an_unreadable_config(self):
+        # No config → no flags, and certainly no traceback.
+        original = eq._evidence_codes
+        eq._evidence_codes = lambda: None
+        try:
+            md = self._render(self.INVALID)
+        finally:
+            eq._evidence_codes = original
+        self.assertIn(self.INVALID, md)
+        self.assertNotIn(f"⚠ {self.INVALID}", md)
+        self.assertNotIn("Evidence strings PHI-Canto will not accept", md)
+
+
 class CantoDisplayNamesMatchTheLiveConfigTests(unittest.TestCase):
     """Our hardcoded display names must still match PHI-Canto's own.
 

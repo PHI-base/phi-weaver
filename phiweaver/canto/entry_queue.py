@@ -31,9 +31,19 @@ A phiweaver draft carries a prose *summary* of the evidence ("growth assay", "di
 this queue says **`Evidence summary`** — labelling prose as a code would tell the curator the cell
 is ready to paste into a controlled field when it is not. The exception is `Physical interaction`,
 whose evidence genuinely is a code there (Co-purification / PCA / Two-hybrid), so that column *is*
-`Evidence code`. Canto's `Comment` column and its genotype `Strain` / `Background` columns have no
-counterpart here: `note` is deliberately kept out of the lean queue (D14), and the draft schema has
-no strain/background fields — the genotype `name` currently carries the strain (e.g. `Guy11`).
+`Evidence code`.
+
+Every evidence string **is** checked against those 82 codes, and a mismatch is **flagged, not
+parked** (curator instruction, 2026-07-26): the row is marked `⚠` and the distinct offenders are
+listed in an advisory section with any near matches, while the annotation stays enterable. Parking
+would hide sound curation behind a vocabulary slip. The check is unconditional because the code list
+lives in the **committed public** `canto_base.yaml` — identical with or without the gitignored
+deploy file — so every machine flags the same rows, and it needs no network.
+
+Canto's genotype `Strain` and `Background` columns **are** carried, from optional `strain` /
+`background` fields on a genotype: per the 2026-07-25 ruling a wild type has a strain and a mutant
+has a background (its parent strain plus the endogenous copy's status), never both. Canto's
+`Comment` column has no counterpart — `note` is deliberately kept out of the lean queue (D14).
 
 Pure stdlib; emits markdown.
 
@@ -49,6 +59,7 @@ from __future__ import annotations
 import argparse
 import re
 import sys
+from functools import lru_cache
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -88,6 +99,73 @@ def _term_name(a: dict) -> str:
 def _term_id(a: dict) -> str:
     """The term's ID for PHI-Canto's `Term ID` column."""
     return _cell(a.get("term_id")) or "—"
+
+
+@lru_cache(maxsize=1)
+def _evidence_codes() -> Optional[frozenset]:
+    """PHI-Canto's controlled evidence codes, or ``None`` if the config can't be read.
+
+    Safe to check unconditionally, unlike the annotation display names: these come from
+    ``evidence_types`` in the **public, committed** ``canto_base.yaml`` — verified identical (82
+    codes) with and without the gitignored deploy file — so every machine flags the same rows. It
+    is also offline, so it needs no ``--validate`` opt-in the way the ontology check does.
+    """
+    try:
+        from phiweaver.lookup.canto_config import load_config
+        codes = load_config().evidence_codes
+    except Exception:            # a broken/absent config must not break rendering
+        return None
+    return frozenset(codes) or None
+
+
+def _evidence(a: dict) -> str:
+    """The evidence cell, marked ``⚠`` when the string is not one of Canto's codes.
+
+    **Flagged, never parked** (curator instruction): an annotation with a mis-worded evidence
+    string is otherwise sound, and parking it would hide good curation behind a vocabulary slip.
+    The curator sees the flag at the row they are typing, and the advisory table lists the
+    distinct offenders with near matches.
+    """
+    text = _s(a.get("evidence"))
+    codes = _evidence_codes()
+    if not text or codes is None or text in codes:
+        return _cell(text)
+    return _cell(f"⚠ {text}")
+
+
+def _bad_evidence(annotations: List[dict]) -> List[Tuple[str, int, str]]:
+    """Distinct unrecognised evidence strings → ``(value, n_annotations, suggestions)``.
+
+    Deduplicated on purpose: one wrong string typically repeats across several annotations (5
+    distinct values over 11 annotations on PMID:9927411), so a per-row list would be noise.
+    """
+    codes = _evidence_codes()
+    if codes is None:
+        return []
+    counts: Dict[str, int] = {}
+    for a in annotations:
+        text = _s(a.get("evidence"))
+        if text and text not in codes:
+            counts[text] = counts.get(text, 0) + 1
+    out = []
+    for value, n in sorted(counts.items()):
+        out.append((value, n, "; ".join(_near_codes(value, codes)[:3])))
+    return out
+
+
+# Substring overlap must be this long to count as a near match. Without it the short GO-style
+# codes match anything: `IC` is inside "macroscop*ic* observation", which suggested `IC` for a
+# microscopy phrase. A misleading suggestion is worse than "no near match", so the bar is set
+# where it keeps the real hits ("Microscopy" for "Microscopy (cellular)") and drops the noise.
+_NEAR_MIN = 5
+
+
+def _near_codes(value: str, codes) -> List[str]:
+    """Evidence codes plausibly meant by ``value`` — conservative, possibly empty."""
+    low = value.lower()
+    return sorted(c for c in codes
+                  if (len(value) >= _NEAR_MIN and low in c.lower())
+                  or (len(c) >= _NEAR_MIN and c.lower() in low))
 
 
 def _heading(display_name: str) -> str:
@@ -243,30 +321,30 @@ def _interactor(a: dict) -> str:
 # One row builder per shape. Signatures match so the renderer can dispatch on `shape` alone.
 _ANNOTATION_ROWS = {
     "go": lambda a: ["☐", _cell(a.get("feature")), _term_name(a), _term_id(a),
-                     _cell(a.get("evidence")), _cell(a.get("figure"))],
+                     _evidence(a), _cell(a.get("figure"))],
     "host_phenotype": lambda a: ["☐", _cell(a.get("feature")), _term_name(a), _term_id(a),
-                                 _cell(a.get("evidence")), _cell(a.get("conditions")),
+                                 _evidence(a), _cell(a.get("conditions")),
                                  _cell(a.get("figure"))],
     "phenotype": lambda a: ["☐", _cell(a.get("feature")), _term_name(a), _term_id(a),
-                            _cell(a.get("evidence")), _cell(a.get("conditions")),
+                            _evidence(a), _cell(a.get("conditions")),
                             _cell(a.get("figure"))],
     "interaction": lambda a: ["☐", _cell(a.get("feature")), _term_name(a), _term_id(a),
-                              _compared_with(a) or "—", _cell(a.get("evidence")),
+                              _compared_with(a) or "—", _evidence(a),
                               _cell(a.get("figure"))],
     # No "pick the term at entry" fallback here, unlike physical interaction: PI is exempt from
     # the term requirement because it genuinely has no ontology term (the evidence method carries
     # it), whereas a protein-modification annotation *does* take a PSI-MOD term, so a term-less
     # one is correctly parked by _park_reason and never reaches this row builder.
     "modification": lambda a: ["☐", _cell(a.get("feature")), _term_name(a), _term_id(a),
-                               _cell(a.get("evidence")), _cell(a.get("conditions")),
+                               _evidence(a), _cell(a.get("conditions")),
                                _cell(a.get("figure"))],
     # Canto's physical-interaction table is Interactor A / Interactor B, and its evidence field
     # really is a controlled code here (Co-purification / PCA / Two-hybrid), so the label is exact.
     "physical": lambda a: ["☐", _cell(a.get("feature")), _interactor(a) or "—",
                            _term_name(a) if _s(a.get("term_id")) else "pick PSI-MI at entry",
-                           _cell(a.get("evidence")), _cell(a.get("figure")), "enter"],
+                           _evidence(a), _cell(a.get("figure")), "enter"],
     "level": lambda a: ["☐", _cell(a.get("feature")), _cell(a.get("term_name")),
-                        _cell(a.get("evidence")), _cell(a.get("conditions")),
+                        _evidence(a), _cell(a.get("conditions")),
                         _cell(a.get("figure"))],
     "disease": lambda a: ["☐", _cell(a.get("feature")), _term_name(a), _term_id(a),
                           _cell(a.get("conditions") or a.get("figure"))],
@@ -568,6 +646,22 @@ def render_entry_queue(rec: dict, status: Optional[str] = None,
                        _cell(f"no entry-queue section for annotation type '{atype}'"),
                        "enter by hand in Canto; then report this gap"))
 
+    # --- Evidence-code advisory ---
+    # Flagged, not parked (curator instruction, 2026-07-26). Canto's evidence field takes a
+    # controlled code; a draft often carries a near-miss phrase ("Penetration assay" for
+    # "Penetration assay evidence", say). The annotation is otherwise sound, so parking it would
+    # hide good curation behind a vocabulary slip — the row is marked ⚠ and listed here instead.
+    bad_ev = _bad_evidence(enter)
+    if bad_ev:
+        n += 1
+        out += [f"### F{n}. Evidence strings PHI-Canto will not accept", "",
+                "*Canto's evidence field is a controlled list, so these will not be in the "
+                "dropdown. The annotations themselves are fine — they are marked ⚠ in the tables "
+                "above and stay enterable; pick the closest real code as you go.*", ""]
+        out += _table(["Evidence string in the draft", "Rows", "Nearest PHI-Canto code(s)"],
+                      [[_cell(v), str(count), _cell(near) or "— no near match"]
+                       for v, count, near in bad_ev]) + [""]
+
     # --- Figure-evidence advisories ---
     # Deliberately NOT the parked table: parked means "do not enter", and an annotation
     # resting on a caption may still be correct. Only annotations the drafter marked
@@ -575,7 +669,8 @@ def render_entry_queue(rec: dict, status: Optional[str] = None,
     # captions is the normal path, so routine declines must not fill this section.
     uninspected = figure_audit.get("annotations_on_uninspected", [])
     if uninspected:
-        out += [f"### F{n + 1}. Figure evidence — marked needs_figure, but not inspected", "",
+        n += 1
+        out += [f"### F{n}. Figure evidence — marked needs_figure, but not inspected", "",
                 "*These annotations were judged to need their panel read — the claim is "
                 "qualitative, magnitude decides it, or it is the paper's take-home "
                 "message — and the figure was not inspected. Enterable, but weaker than "
