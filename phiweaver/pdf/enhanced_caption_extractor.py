@@ -9,7 +9,7 @@ from typing import List, Dict, Tuple
 
 # Same numbering forms the converter's CAPTION_BLOCK_RE accepts — Arabic, supplementary,
 # Roman. Kept as one capturing group so the existing group indices are unchanged.
-CAPTION_NUMBER = r"(\d+[A-Za-z]*|S\d+[A-Za-z]*|(?-i:[IVXL]+))"
+CAPTION_NUMBER = r"(\d+[A-Za-z]*|S\d+[A-Za-z]*|(?-i:[IVXL]+))\b"
 
 class AdvancedCaptionExtractor:
     """Advanced caption extraction with better pattern matching"""

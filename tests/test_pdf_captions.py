@@ -310,6 +310,15 @@ class RomanAndSupplementaryTableNumbering(unittest.TestCase):
         tables = AdvancedCaptionExtractor().extract_tables_advanced(text)
         self.assertEqual([t["number"] for t in tables], ["1"])
 
+    def test_extractor_does_not_invent_tables_from_prose(self):
+        from phiweaver.pdf.enhanced_caption_extractor import AdvancedCaptionExtractor
+        extractor = AdvancedCaptionExtractor()
+        for prose in ("Table Interpretation of results follows in the discussion.\n\n",
+                      "TABLE VALUES shown below were derived from replicate assays.\n\n",
+                      "Table Legend is described in the supplementary material.\n\n"):
+            with self.subTest(prose=prose):
+                self.assertEqual(extractor.extract_tables_advanced(prose), [])
+
 
 if __name__ == "__main__":
     unittest.main()
