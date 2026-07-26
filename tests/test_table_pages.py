@@ -175,5 +175,38 @@ class FlatTextMarkerTests(unittest.TestCase):
         self.assertEqual("\n".join(out).count("FLATTENED TABLE"), 1)
 
 
+@unittest.skipUnless(HAS_FITZ, "PyMuPDF not installed")
+class ReportHonestyTests(unittest.TestCase):
+    def setUp(self):
+        from phiweaver.pdf import pdf_convert as pc
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.skill = pc.PDFConvertSkill()
+        self.skill.images_dir = Path(self._tmp.name)
+        self.skill.pdf_name = "synthetic"
+        self.skill.pdf_path = Path(self._tmp.name) / "synthetic.pdf"
+
+    def test_frontmatter_separates_captions_from_renders(self):
+        doc = _doc(["intro", "Table I. Growth and pathogenicity of strains on rice"])
+        self.skill._extract_media_with_advanced_captions(doc)
+        md = self.skill._generate_structured_markdown(doc)
+        self.assertIn("table_captions: 1", md)
+        self.assertIn("tables_rendered: 1", md)
+
+    def test_a_caption_with_no_render_is_warned_about(self):
+        self.skill.all_tables = []
+        self.skill.table_warnings = ["Table I: page 5 could not be rendered (boom)"]
+        report = self.skill._build_report()
+        self.assertEqual(report["statistics"]["tables_rendered"], 0)
+        self.assertTrue(report["warnings"])
+
+    def test_a_paper_with_no_tables_reports_zero_without_warning(self):
+        self.skill.all_tables = []
+        self.skill.table_warnings = []
+        report = self.skill._build_report()
+        self.assertEqual(report["statistics"]["tables_rendered"], 0)
+        self.assertEqual(report["warnings"], [])
+
+
 if __name__ == "__main__":
     unittest.main()

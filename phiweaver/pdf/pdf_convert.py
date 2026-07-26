@@ -46,6 +46,7 @@ class PDFConvertSkill:
         self.all_figures = []
         self.all_tables = []
         self.table_warnings = []
+        self.table_caption_count = 0
         self.conversion_stats = {}
 
     def _load_default_config(self):
@@ -248,6 +249,7 @@ class PDFConvertSkill:
         # Get captions using advanced extractor
         figures = extractor.extract_figures_advanced(full_text)
         tables = extractor.extract_tables_advanced(full_text)
+        self.table_caption_count = len(tables)
 
         print(f"   📊 Found {len(figures)} figure captions")
         print(f"   📋 Found {len(tables)} table captions")
@@ -330,6 +332,11 @@ class PDFConvertSkill:
         for entry in rendered:
             print(f"  📊 Table {entry['number']}: page {entry['page']} rendered "
                   f"({entry['filename']})")
+
+        if self.table_caption_count > len(self.all_tables):
+            missing = self.table_caption_count - len(self.all_tables)
+            print(f"   ⚠ {missing} table caption(s) found with no image — see the report's "
+                  f"warnings; do not treat the flattened text as the table")
 
     def _page_caption_blocks(self, page):
         """Caption lines on this page, with their y-positions.
@@ -456,6 +463,8 @@ class PDFConvertSkill:
             f"total_pages: {len(doc)}",
             f"figures: {len(self.all_figures)}",
             f"tables: {len(self.all_tables)}",
+            f"table_captions: {self.table_caption_count}",
+            f"tables_rendered: {sum(1 for t in self.all_tables if t.get('source') == 'page-render')}",
             f"sections: {len(self.document_sections)}",
             "conversion_tool: pdf-convert-skill",
             "conversion_quality: enhanced",
@@ -764,16 +773,19 @@ class PDFConvertSkill:
             })
         return roster
 
-    def _generate_conversion_report(self, output_file):
-        """Generate detailed conversion report"""
-        report = {
+    def _build_report(self, output_file=None):
+        """Assemble the conversion report dict (no file I/O)."""
+        return {
             'source_file': str(self.pdf_path),
-            'output_file': str(output_file),
+            'output_file': str(output_file) if output_file is not None else '',
             'conversion_date': str(date.today()),
             'statistics': {
                 'total_pages': self.conversion_stats.get('pages', 0),
                 'figures_found': len(self.all_figures),
                 'tables_found': len(self.all_tables),
+                'table_captions_found': self.table_caption_count,
+                'tables_rendered': sum(1 for t in self.all_tables
+                                       if t.get('source') == 'page-render'),
                 'sections_detected': len(self.document_sections),
             },
             'figures': self._figure_roster(),
@@ -787,8 +799,13 @@ class PDFConvertSkill:
                     if s.get('end_pos', 0) - s.get('start_pos', 0) > 100
                 ])
             },
-            'config_used': self.config
+            'config_used': self.config,
+            'warnings': list(self.table_warnings),
         }
+
+    def _generate_conversion_report(self, output_file):
+        """Generate detailed conversion report"""
+        report = self._build_report(output_file)
 
         # Save report
         report_file = output_file.parent / f"{output_file.stem}_report.json"
