@@ -7,6 +7,10 @@ Improves figure/table caption detection and text processing
 import re
 from typing import List, Dict, Tuple
 
+# Same numbering forms the converter's CAPTION_BLOCK_RE accepts — Arabic, supplementary,
+# Roman. Kept as one capturing group so the existing group indices are unchanged.
+CAPTION_NUMBER = r"(\d+[A-Za-z]*|S\d+[A-Za-z]*|(?-i:[IVXL]+))"
+
 class AdvancedCaptionExtractor:
     """Advanced caption extraction with better pattern matching"""
 
@@ -24,11 +28,11 @@ class AdvancedCaptionExtractor:
 
         self.table_patterns = [
             # Standard table patterns
-            r'(Table\s+(\d+[A-Z]?)\.?\s*[\:\-\.\s]*)(.*?)(?=\n\s*\n|\n\s*(?:Table|Figure|References|\d+\.|[A-Z]{2,})|$)',
-            r'(TABLE\s+(\d+[A-Z]?)\.?\s*[\:\-\.\s]*)(.*?)(?=\n\s*\n|\n\s*(?:TABLE|FIGURE|REFERENCES)|$)',
+            r'(Table\s+' + CAPTION_NUMBER + r'\.?\s*[\:\-\.\s]*)(.*?)(?=\n\s*\n|\n\s*(?:Table|Figure|References|\d+\.|[A-Z]{2,})|$)',
+            r'(TABLE\s+' + CAPTION_NUMBER + r'\.?\s*[\:\-\.\s]*)(.*?)(?=\n\s*\n|\n\s*(?:TABLE|FIGURE|REFERENCES)|$)',
 
             # Extended patterns
-            r'([Tt]able\s+(\d+[A-Za-z]*)[\.\:\s]*[–\-]?\s*)([\s\S]*?)(?=\n\s*[Tt]able|\n\s*[Ff]igure|\n\s*\d+\.|\n\s*[A-Z][A-Z]|\n\s*References|$)',
+            r'([Tt]able\s+' + CAPTION_NUMBER + r'[\.\:\s]*[–\-]?\s*)([\s\S]*?)(?=\n\s*[Tt]able|\n\s*[Ff]igure|\n\s*\d+\.|\n\s*[A-Z][A-Z]|\n\s*References|$)',
         ]
 
     def extract_figures_advanced(self, text: str) -> List[Dict]:

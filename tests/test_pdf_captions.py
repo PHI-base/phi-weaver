@@ -272,5 +272,44 @@ class FigureRosterTests(unittest.TestCase):
         self.assertEqual(result["total_figures"], 1)
 
 
+@unittest.skipUnless(HAS_FITZ, "PyMuPDF not installed")
+class RomanAndSupplementaryTableNumbering(unittest.TestCase):
+    """PMID:9927411 numbers its tables `Table I` / `Table II`, which `\\d+` cannot see."""
+
+    def test_caption_block_re_accepts_roman(self):
+        m = pc.CAPTION_BLOCK_RE.match("Table I. Growth and pathogenicity of strains")
+        self.assertIsNotNone(m)
+        self.assertEqual(m.group(2), "I")
+
+    def test_caption_block_re_accepts_supplementary(self):
+        m = pc.CAPTION_BLOCK_RE.match("Table S1 Primers used in this study")
+        self.assertIsNotNone(m)
+        self.assertEqual(m.group(2), "S1")
+
+    def test_caption_block_re_still_accepts_arabic(self):
+        m = pc.CAPTION_BLOCK_RE.match("Table 2. Strains and plasmids")
+        self.assertIsNotNone(m)
+        self.assertEqual(m.group(2), "2")
+
+    def test_lowercase_word_is_not_read_as_a_roman_numeral(self):
+        # "Table in the appendix" must not parse as table `i`
+        self.assertIsNone(pc.CAPTION_BLOCK_RE.match("Table in the appendix lists"))
+
+    def test_word_starting_with_a_roman_letter_is_not_a_number(self):
+        self.assertIsNone(pc.CAPTION_BLOCK_RE.match("Table Interpretation of results"))
+
+    def test_extractor_finds_a_roman_numbered_table(self):
+        from phiweaver.pdf.enhanced_caption_extractor import AdvancedCaptionExtractor
+        text = "Table I. Growth and pathogenicity of Magnaporthe grisea strains on rice\n\n"
+        tables = AdvancedCaptionExtractor().extract_tables_advanced(text)
+        self.assertEqual([t["number"] for t in tables], ["I"])
+
+    def test_extractor_still_finds_an_arabic_table(self):
+        from phiweaver.pdf.enhanced_caption_extractor import AdvancedCaptionExtractor
+        text = "Table 1. Growth and pathogenicity of Magnaporthe grisea strains on rice\n\n"
+        tables = AdvancedCaptionExtractor().extract_tables_advanced(text)
+        self.assertEqual([t["number"] for t in tables], ["1"])
+
+
 if __name__ == "__main__":
     unittest.main()

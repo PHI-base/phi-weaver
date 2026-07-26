@@ -16,7 +16,13 @@ from typing import List, Dict, Tuple
 import json
 
 # A caption line begins its own text block: "Figure 3. ..." / "Table 1 ..." / "Fig. 2 ...".
-CAPTION_BLOCK_RE = re.compile(r"^\s*(figure|fig\.?|table)\s*(\d+)", re.IGNORECASE)
+# The number may be Arabic ("1", "1a"), supplementary ("S1") or Roman ("I", "IV") — 1990s
+# journals number tables in Roman, and requiring \d+ made those tables invisible entirely.
+# `(?-i:[IVXL]+)` stays case-sensitive inside the IGNORECASE match so the word "in" is not
+# read as table `i`; C/D/M are excluded because they start too many English words and no
+# paper numbers tables past XXXIX.
+CAPTION_NUMBER = r"(\d+[A-Za-z]*|S\d+[A-Za-z]*|(?-i:[IVXL]+))\b"
+CAPTION_BLOCK_RE = re.compile(r"^\s*(figure|fig\.?|table)\s*" + CAPTION_NUMBER, re.IGNORECASE)
 
 # How far (PDF points, 72/inch) a caption may sit from its image and still be its caption.
 # ~3 inches: generous enough for a full-width figure, tight enough that an image with no
