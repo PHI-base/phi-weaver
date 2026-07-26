@@ -419,6 +419,23 @@ class StrainsSectionTests(unittest.TestCase):
         self.assertIn("| Guy11 | — |", wt)
         self.assertIn("| — | Guy11 |", mut)
 
+    def test_paper_label_is_shown_beside_a_renamed_genotype(self):
+        # a mutant is named by its allele, so the curated name no longer matches the paper's
+        # figures — the queue has to carry the label back or the row cannot be reconciled
+        rec = _rec()
+        for g in rec["canto"]["genotypes"]:
+            if g["name"] == "geneAΔ":
+                g["paper_label"] = "AM25"
+        md, _ = eq.render_entry_queue(rec)
+        c = md.split("## C. Create pathogen genotypes")[1].split("## D.")[0]
+        self.assertIn("geneAΔ *(paper: AM25)*", c)
+
+    def test_genotype_without_a_paper_label_is_unchanged(self):
+        md, _ = eq.render_entry_queue(_rec())
+        c = md.split("## C. Create pathogen genotypes")[1].split("## D.")[0]
+        self.assertIn("| ☐ | geneAΔ |", c)
+        self.assertNotIn("(paper:", c)
+
     def test_an_explicit_strain_field_is_used_verbatim(self):
         rec = _rec()
         for g in rec["canto"]["genotypes"]:

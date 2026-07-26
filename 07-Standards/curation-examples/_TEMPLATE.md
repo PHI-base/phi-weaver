@@ -71,6 +71,9 @@ The `canto` block is the **structured, machine-readable curation** that
   - `strain` — **wild types only**: the strain, cultivar, pathovar or variety (`Guy11`,
     `Sariceltic`). This is what the entry queue's table A2 pre-fills, and Canto requires a strain
     per organism before any genotype can be created.
+  - `paper_label` — optional: the isolate label the paper uses (`AM25`), when the curated name is
+    the allele. The entry queue prints it beside the genotype name, because the paper's figures
+    and tables are labelled the paper's way and the curator has to reconcile the two.
   - `background` — **mutants only**: the parent wild-type strain *plus* the endogenous copy's
     status, in one field (`Guy11; endogenous ABC1 absent`, `Guy11; ABC1modified`). Set it even
     when the draft records no allele — it is the second signal that a genotype is not wild type

@@ -49,6 +49,17 @@ From `07-Standards/PHI-Canto-Curation-Conventions.md` (Hsin-Yun Chang review of 
 - **Deletion genotypes use the Δ-suffix** — `SdhAΔ`, not `ΔFpSdhA` (double mutant `SdhC1&2Δ`;
   complement `SdhC2Δ-C`).
 
+## Name a mutant by its allele, never by the paper's isolate label
+Curator ruling 2026-07-25 (`07-Standards/PHI-Canto-Curation-Conventions.md`). A paper calls its
+mutants `AM25`, `TF7-3131`, `FOA-01-11-2` — collection labels that mean nothing outside it. The
+genotype is named by the **allele**: `AM25` is the `abc1-2Δ` genotype. A strain prefix is fine
+where it disambiguates (`Pta6605 ΔfleQ`), as long as the allele is in the name.
+
+**Get this right when the genotype is created.** The name is a foreign key: metagenotype names
+build on it and every annotation's `feature` points at it, so a later rename is a cascading pass
+over the whole block, not a text edit. `python3 -m phiweaver.canto.entry_queue <draft.md>` reports
+a mutant naming none of its alleles.
+
 ## Controlled genotype labels
 Use standardized labels so genotype names read consistently across curations (from the
 PHI-base curator methodology, `06-Training/Gene-for-Gene-Curation-Methodology.md`). Applies to

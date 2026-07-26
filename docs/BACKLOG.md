@@ -571,10 +571,28 @@ decision and re-creating the term silently reopens it. See the `ontology-term-re
     `Sariceltic`, `CO-39`, `Golden Promise`), so A2 pre-fills for all three organisms. The allele
     `abc1-2delta` was also respelled **`abc1-2Δ`** (12 occurrences) per the Δ-suffix convention.
     Queue + docx regenerated. This is the reference draft for the strain/background shape.
-  - **⑥ Genotype names still use isolate labels.** The ruling says a mutant is named by its allele,
-    so `AM25` should be the `abc1-2Δ` genotype and `TF7-3131` the `abc1-1` genotype. Renaming
-    cascades into metagenotype names and every annotation's `feature`, so it was not done with the
-    field work. Do it as one deliberate pass.
+  - **⑥ ✅ DONE 2026-07-26 — genotypes renamed, and the rule is now enforced.** PMID:9927411's
+    `AM25` → **`abc1-2Δ`** and `TF7-3131` → **`abc1-1`**, cascading through **22 structural
+    references** (genotype `name`, metagenotype `name` + `pathogen_genotype`, annotation `feature`).
+    Queue + docx regenerated; the draft lints clean.
+    - **Free text deliberately keeps the paper's labels.** `conditions` and `hold_reason` quote
+      Table I's own rows ("Guy11 32 ± 10, AM25 70 ± 19"), so renaming them would break the tie to
+      the paper. Only structural fields moved. No `compared_to_control` value referenced either
+      genotype, so no comparator broke.
+    - **The rename would have cost the curator the paper.** Figures and tables say `AM25`; a queue
+      row saying only `abc1-2Δ` cannot be reconciled with Table I. New optional genotype field
+      **`paper_label`** records the isolate label and the queue prints it beside the name
+      (`abc1-2Δ *(paper: AM25)*`). In `_TEMPLATE.md`; 2 tests.
+    - **`genotype_naming_warnings`** flags a mutant naming none of its alleles — the deterministic
+      form of the ruling. Matches on the allele's stem *or* its full form, so strain-prefixed
+      (`Pta6605 ΔfleQ`), complementation (`SdhC1Δ-C` ← `SdhC1(ectopic)`) and multi-allele names all
+      pass; flagged only when **no** allele matches, so an accidental short-stem match yields a
+      miss rather than a false accusation. Across 14 drafts / ~50 mutant genotypes it raises
+      **3 flags**: the two renamed here, plus one below. 9 tests. Drafting rule added to
+      `genotype-creation` — get the name right at creation, since it is a foreign key.
+    - **Found by the lint, left open:** `Pta7375 WT` (PMID:41229162) is named as a wild type but
+      carries alleles `fleQ7375, gcbB7375` — a wild-type strain of a *second* isolate modelled as
+      an allele-bearing genotype. Not a naming slip but a modelling question; needs the curator.
   - **⑦ `AM30` has a background but no allele** — the queue renders `⚠ no allele recorded`. Its
     ectopic vector integration is a real allele that the draft never captured; `#157` points at
     allele type `ectopic expression` for random/plasmid integration.

@@ -112,7 +112,7 @@ named by its **allele**, not by whatever isolate label the paper gives it.
 | Paper's label | What it is | Curated as |
 |---|---|---|
 | `Guy11` | wild-type pathogen | **strain** `Guy11`, genotype wild type |
-| `AM25` | deletion mutant | genotype **`abc1Δ`** — *no strain name* |
+| `AM25` | deletion mutant | genotype **`abc1-2Δ`** — *no strain name* |
 | `TF7-3131` | insertion mutant | genotype **`abc1-1`** — *no strain name* |
 | rice `Sariceltic` | wild-type host | **cultivar** `Sariceltic`, genotype wild type |
 | `AM30` | insertion mutant in wild-type Guy11 | genotype with **background** `Guy11` — *no strain name* |
@@ -157,6 +157,13 @@ paper and the draft never captured it.
 **Why it matters:** PHI-Canto builds a genotype from a strain plus alleles, so putting `AM25` in the
 strain field asserts a strain that does not exist as such, and hides the allele that is the actual
 curatable fact. `Background` keeps the parentage without making the mutant look like its own strain.
+
+**Keep the paper's label — in `paper_label`, not in the name (2026-07-26).** Renaming `AM25` to
+`abc1-2Δ` is right for Canto and wrong for the reader: the paper's figures and tables are labelled
+`AM25`, so a curator handed only the allele name cannot reconcile the row with Table I. The draft
+records the isolate label in the genotype's `paper_label`, and the entry queue prints it beside the
+name (`abc1-2Δ *(paper: AM25)*`). Nothing is lost by the rename, and free-text fields
+(`conditions`, `hold_reason`) keep the paper's labels for the same reason.
 
 **Consequence for drafts:** a genotype carries `strain` when wild type and `background` when a
 mutant. The entry queue's table A2 offers strains from wild-type genotypes only — excluding anything

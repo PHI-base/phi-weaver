@@ -573,11 +573,16 @@ def render_entry_queue(rec: dict, status: Optional[str] = None,
         # 2026-07-25 ruling a wild type has a strain and no background; a mutant has a background
         # (its parent wild-type strain, e.g. Guy11) and no strain of its own.
         strain, background = _s(g.get("strain")) or "—", _s(g.get("background")) or "—"
+        # A mutant is named by its allele, so the curated name no longer matches the label the
+        # paper's figures and tables use. Carry `paper_label` beside it or the curator cannot
+        # reconcile the row with Table I.
+        label = _s(g.get("paper_label"))
+        shown = f"{name} *(paper: {label})*" if label else name
         if name in cl["host_names"] and name not in cl["path_names"]:
-            host_rows.append(["☐", _cell(name), _cell(_s(g.get("organism"))), _cell(strain),
+            host_rows.append(["☐", _cell(shown), _cell(_s(g.get("organism"))), _cell(strain),
                               _cell(background), _cell(al), use])
         else:
-            path_rows.append(["☐", _cell(name), _cell(strain), _cell(background), _cell(al), use])
+            path_rows.append(["☐", _cell(shown), _cell(strain), _cell(background), _cell(al), use])
     out += ["## C. Create pathogen genotypes", ""]
     out += _table(["Tick", "Genotype name", "Strain", "Background", "Alleles", "Use"],
                   path_rows) + [""]

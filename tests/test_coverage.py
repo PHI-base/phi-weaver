@@ -114,5 +114,46 @@ class StrainBackgroundTests(unittest.TestCase):
         self.assertEqual(cov.strain_background_warnings({"genotypes": [{"alleles": []}]}), [])
 
 
+class GenotypeNamingTests(unittest.TestCase):
+    """The 2026-07-25 ruling: a mutant is named by its allele, not the paper's isolate label."""
+
+    def _warn(self, name, alleles):
+        return cov.genotype_naming_warnings({"genotypes": [{"name": name, "alleles": alleles}]})
+
+    def test_isolate_label_flagged(self):
+        ws = self._warn("AM25", ["abc1-2Δ"])
+        self.assertTrue(any("AM25" in w and "names none of its alleles" in w for w in ws))
+
+    def test_allele_named_genotype_is_clean(self):
+        self.assertEqual(self._warn("SdhAΔ", ["SdhAΔ"]), [])
+
+    def test_strain_prefixed_name_is_clean(self):
+        # `Pta6605 ΔfleQ` still names its allele — the prefix is not the violation
+        self.assertEqual(self._warn("Pta6605 ΔfleQ", ["ΔfleQ"]), [])
+
+    def test_complementation_matches_on_the_stem(self):
+        # the name has no reason to repeat the allele's `(ectopic)` / `(reintroduced)` qualifier
+        self.assertEqual(self._warn("SdhC1Δ-C", ["SdhC1(ectopic)"]), [])
+        self.assertEqual(self._warn("∆FpTox2-C", ["FpTox2(reintroduced)"]), [])
+
+    def test_qualifier_repeated_verbatim_matches_on_the_whole_allele(self):
+        # regression: stripping the bracket from the allele alone broke this real draft's name
+        self.assertEqual(self._warn("Pt-Agro Pt31812(FL)-OE", ["Pt31812(FL)-OE"]), [])
+
+    def test_delta_spelling_differences_do_not_matter(self):
+        self.assertEqual(self._warn("sec2D", ["sec2delta"]), [])
+
+    def test_multi_allele_needs_only_one_match(self):
+        self.assertEqual(self._warn("Fgtrs85Δ trappc11Δ", ["Fgtrs85Δ", "trappc11Δ"]), [])
+
+    def test_allele_inside_a_parenthesised_genotype_name_is_clean(self):
+        # genotype names use brackets for content, so the name side keeps them
+        self.assertEqual(self._warn("tomato 76R (Pto/Pto)", ["Pto"]), [])
+
+    def test_wild_type_without_alleles_never_flagged(self):
+        self.assertEqual(self._warn("Guy11", []), [])
+        self.assertEqual(cov.genotype_naming_warnings({}), [])
+
+
 if __name__ == "__main__":
     unittest.main()
