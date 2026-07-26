@@ -85,11 +85,18 @@ and it is easier to test standing alone.
    `region: "full-page"` and `source: "page-render"` so the record states how the image was
    obtained. `_generate_tables_section()` consumes it unchanged.
 
-4. **Flat-text marker** — wrap the flattened run in the body with a blockquote warning that the
+4. **Flat-text marker — BUILT THEN WITHDRAWN 2026-07-26 (curator decision).** Shipped, found never
+   to fire in production, fixed, and then removed: with the pointer working, 2 of 3 markers on the
+   trigger paper named the *wrong page*, because the per-table page reference resolves through an
+   over-detected caption list. A confident pointer to the wrong page is worse than none. The
+   original design below is kept for the record; if revived, make it a **generic** warning with no
+   filename or page, which needs no entry resolution and so cannot be wrong. See `docs/BACKLOG.md`.
+
+   ~~Wrap the flattened run in the body with a blockquote warning that the
    column structure is lost, naming the image to read instead. Nothing is deleted. Applied in
    **both** body-generation paths — `_generate_sectioned_content` and
    `_generate_page_based_content` — since which one runs depends on whether section detection
-   succeeded, and the marker must not depend on that.
+   succeeded, and the marker must not depend on that.~~
 
 5. **Honest reporting (`_generate_structured_markdown`, the report JSON)** — count table
    *captions* found and images *rendered* separately, and warn when they disagree. A paper with

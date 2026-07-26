@@ -15,9 +15,10 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
 ## Tooling / bugs
 - [x] **PDF converter flattens tables and loses their columns** — *fixed 2026-07-26* (added
   2026-07-24, surfaced on PMID:9927411). Tables now arrive as **page renders**: the whole page a
-  table sits on is rendered to PNG at 170 dpi beside the figures, the flattened text is kept but
-  marked unreliable, and the report counts captions and renders separately so a miss can never
-  again look like "this paper has no tables". Spec: `docs/superpowers/specs/2026-07-26-pdf-table-extraction-design.md`;
+  table sits on is rendered to PNG at 170 dpi beside the figures, and the report counts captions
+  and renders separately so a miss can never again look like "this paper has no tables". The
+  flattened text is left untouched — see the withdrawn in-body marker below.
+  Spec: `docs/superpowers/specs/2026-07-26-pdf-table-extraction-design.md`;
   plan: `docs/superpowers/plans/2026-07-26-pdf-table-page-renders.md`. 8 commits, `9c7fd06..783a218`.
   - **The root cause was not the one this item named.** It was the **caption regex**:
     `^\s*(figure|fig\.?|table)\s*(\d+)` accepts Arabic numerals only, and the paper numbers its
@@ -43,8 +44,27 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
     phantom tables from prose (`Table Legend is described…` → table `L`); and `__init__` did
     `config or defaults`, so a caller-supplied config *replaced* the defaults and the new
     `table_render_dpi` key broke the CLI and pipeline outright. Both fixed and re-reviewed.
+- [ ] **Nothing marks a table's flattened text as unreliable** (built then **withdrawn**
+  2026-07-26, curator decision). PDF text extraction loses a table's column grid, so its numbers
+  arrive in the body as a flat run that reads like ordinary prose — which is how Table I's
+  "Appressorium formation >95%" row went missing unnoticed. An in-body warning was built
+  (`_mark_flattened_tables`) and then removed. **Two lessons are worth more than the code was:**
+  - **It never fired in production, and three separate checks said it did.** The body generators
+    append a whole page or section as *one* list element, and `CAPTION_BLOCK_RE.match()` only
+    matches at position 0 — so a caption mid-page was never seen. The unit tests hand-fed a
+    pre-split list with the caption as its own element; the wiring tests used synthetic pages
+    containing *only* a caption; the end-to-end check did the same. All three put the caption at
+    position 0 by construction, so each passed for the wrong reason. **A test that builds its input
+    to match the implementation's assumption cannot falsify that assumption** — the whole-branch
+    review found it by reading the call sites instead.
+  - **Fixing it exposed why it was the wrong design.** Once firing, 2 of 3 markers on PMID:9927411
+    pointed at the **wrong page** (`Table II` → `Table-p9.png`; it is on page 7), because the
+    per-table page pointer resolves through the over-detected caption list below. A confident
+    pointer to the wrong page is worse than no pointer. **The pointer was the overengineering:** it
+    needed entry resolution, which needed correct detection, for something a generic sentence would
+    have done. If revived, make it a generic warning with no filename or page.
 - [ ] **Table captions are over-detected from in-text references** (added 2026-07-26; deferred by
-  the curator the same day as cosmetic). `AdvancedCaptionExtractor`'s patterns match `Table N`
+  the curator the same day). `AdvancedCaptionExtractor`'s patterns match `Table N`
   **anywhere** in the text, so a sentence like *"Table I and Figure 6 show the results…"* is read as
   a caption. On PMID:9927411: 11 mentions → **10 "captions" → 5 rendered pages, where 3 real tables
   exist**. Two spurious PNGs per paper and inflated `table_captions_found` / `tables_rendered`

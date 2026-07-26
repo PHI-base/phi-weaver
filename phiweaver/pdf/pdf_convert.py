@@ -549,7 +549,7 @@ class PDFConvertSkill:
 
             content.append("")
 
-        return self._mark_flattened_tables(content)
+        return content
 
     def _clean_section_text(self, text, section_name):
         """Clean and format section text"""
@@ -599,46 +599,7 @@ class PDFConvertSkill:
                 content.append(text.strip())
                 content.append("")
 
-        return self._mark_flattened_tables(content)
-
-    def _mark_flattened_tables(self, lines):
-        """Warn before each table's flattened run; never delete it.
-
-        PDF text extraction loses a table's column grid, so the numbers arrive as a flat
-        run that reads like ordinary prose — which is how a row goes missing unnoticed.
-        The text is kept (it is searchable, and deleting risks eating real prose) and the
-        page render is named as the authority.
-        """
-        if not self.all_tables:
-            return lines
-
-        pending = {}
-        for entry in self.all_tables:
-            pending.setdefault(str(entry.get('number')), entry)
-
-        out = []
-        for block in lines:
-            if not pending:
-                out.append(block)
-                continue
-            marked = []
-            for text_line in block.split("\n"):
-                match = CAPTION_BLOCK_RE.match(text_line)
-                if match and match.group(1).lower().startswith('table'):
-                    entry = pending.pop(match.group(2), None)
-                    if entry:
-                        marked.extend([
-                            f"> ⚠ **FLATTENED TABLE — column structure lost.** Read "
-                            f"`{entry['filename']}` (page {entry['page']}) instead; rows may be "
-                            f"missing from the text below.",
-                            "",
-                        ])
-                marked.append(text_line)
-            # Individual lines, not a rejoined block: callers (and
-            # test_nothing_is_deleted) check for the original line as its own list
-            # element, and the eventual '\n'.join(content) makes the split harmless.
-            out.extend(marked)
-        return out
+        return content
 
     def _generate_figures_section(self):
         """Generate figures section with captions"""
