@@ -45,6 +45,7 @@ class PDFConvertSkill:
         self.document_sections = {}
         self.all_figures = []
         self.all_tables = []
+        self.table_warnings = []
         self.conversion_stats = {}
 
     def _load_default_config(self):
@@ -54,6 +55,7 @@ class PDFConvertSkill:
             'images_directory': '03-Media',
             'figure_prefix': 'Fig',
             'table_prefix': 'Table',
+            'table_render_dpi': 170,
             'image_formats': ['png', 'jpeg', 'jpg'],
             'min_caption_length': 10,
             'confidence_threshold': 0.5,
@@ -310,6 +312,24 @@ class PDFConvertSkill:
                     print(f"  {icon} {image_info['caption']['label']}: {caption_preview}")
 
                 pix = None
+
+        # A typeset table is not an embedded image, so the loop above cannot have found it.
+        # Render the page for every table caption the image path did not already cover —
+        # `find_tables()` is no help here (zero hits on the 1999 trigger paper), and a crop
+        # could clip a row, which is the defect being closed.
+        from phiweaver.pdf.table_pages import render_table_pages
+
+        already = {str(t.get('number')) for t in self.all_tables}
+        missing = [t for t in tables if str(t.get('number')) not in already]
+        rendered, warnings = render_table_pages(
+            doc, missing, self.images_dir,
+            prefix=self.config['table_prefix'],
+            dpi=self.config['table_render_dpi'])
+        self.all_tables.extend(rendered)
+        self.table_warnings.extend(warnings)
+        for entry in rendered:
+            print(f"  📊 Table {entry['number']}: page {entry['page']} rendered "
+                  f"({entry['filename']})")
 
     def _page_caption_blocks(self, page):
         """Caption lines on this page, with their y-positions.

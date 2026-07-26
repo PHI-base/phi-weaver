@@ -111,5 +111,33 @@ class RenderTests(unittest.TestCase):
         self.assertTrue(any("Table I" in w for w in warnings))
 
 
+@unittest.skipUnless(HAS_FITZ, "PyMuPDF not installed")
+class ConverterWiringTests(unittest.TestCase):
+    def setUp(self):
+        from phiweaver.pdf import pdf_convert as pc
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.skill = pc.PDFConvertSkill()
+        self.skill.images_dir = Path(self._tmp.name)
+        self.skill.pdf_name = "synthetic"
+
+    def test_dpi_is_a_config_key(self):
+        self.assertEqual(self.skill.config["table_render_dpi"], 170)
+
+    def test_a_typeset_table_lands_in_all_tables(self):
+        doc = _doc(["intro prose", "Table I. Growth and pathogenicity of strains on rice"])
+        self.skill._extract_media_with_advanced_captions(doc)
+        self.assertEqual(len(self.skill.all_tables), 1)
+        entry = self.skill.all_tables[0]
+        self.assertEqual(entry["source"], "page-render")
+        self.assertTrue((self.skill.images_dir / entry["filename"]).exists())
+
+    def test_a_paper_with_no_tables_stays_empty_and_silent(self):
+        doc = _doc(["just prose with no tabular content at all"])
+        self.skill._extract_media_with_advanced_captions(doc)
+        self.assertEqual(self.skill.all_tables, [])
+        self.assertEqual(self.skill.table_warnings, [])
+
+
 if __name__ == "__main__":
     unittest.main()
