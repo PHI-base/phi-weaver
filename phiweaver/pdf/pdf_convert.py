@@ -542,7 +542,7 @@ class PDFConvertSkill:
 
             content.append("")
 
-        return content
+        return self._mark_flattened_tables(content)
 
     def _clean_section_text(self, text, section_name):
         """Clean and format section text"""
@@ -592,7 +592,37 @@ class PDFConvertSkill:
                 content.append(text.strip())
                 content.append("")
 
-        return content
+        return self._mark_flattened_tables(content)
+
+    def _mark_flattened_tables(self, lines):
+        """Warn before each table's flattened run; never delete it.
+
+        PDF text extraction loses a table's column grid, so the numbers arrive as a flat
+        run that reads like ordinary prose — which is how a row goes missing unnoticed.
+        The text is kept (it is searchable, and deleting risks eating real prose) and the
+        page render is named as the authority.
+        """
+        if not self.all_tables:
+            return lines
+
+        pending = {}
+        for entry in self.all_tables:
+            pending.setdefault(str(entry.get('number')), entry)
+
+        out = []
+        for line in lines:
+            match = CAPTION_BLOCK_RE.match(line)
+            if match and match.group(1).lower().startswith('table'):
+                entry = pending.pop(match.group(2), None)
+                if entry:
+                    out.extend([
+                        f"> ⚠ **FLATTENED TABLE — column structure lost.** Read "
+                        f"`{entry['filename']}` (page {entry['page']}) instead; rows may be "
+                        f"missing from the text below.",
+                        "",
+                    ])
+            out.append(line)
+        return out
 
     def _generate_figures_section(self):
         """Generate figures section with captions"""

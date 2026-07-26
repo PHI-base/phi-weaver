@@ -139,5 +139,41 @@ class ConverterWiringTests(unittest.TestCase):
         self.assertEqual(self.skill.table_warnings, [])
 
 
+@unittest.skipUnless(HAS_FITZ, "PyMuPDF not installed")
+class FlatTextMarkerTests(unittest.TestCase):
+    def setUp(self):
+        from phiweaver.pdf import pdf_convert as pc
+        self.skill = pc.PDFConvertSkill()
+        self.skill.all_tables = [{
+            "filename": "Table-p5.png", "type": "table", "page": 5, "number": "I",
+            "caption": {"number": "I", "caption": "Growth"}, "region": "full-page",
+            "source": "page-render", "shared_page": False,
+        }]
+
+    def test_marker_precedes_the_flattened_run(self):
+        out = self.skill._mark_flattened_tables(
+            ["Some prose.", "Table I. Growth and pathogenicity", "Guy11 0.28 AM25 0.27"])
+        joined = "\n".join(out)
+        self.assertIn("FLATTENED TABLE", joined)
+        self.assertIn("Table-p5.png", joined)
+        self.assertLess(joined.index("FLATTENED TABLE"), joined.index("Table I. Growth"))
+
+    def test_nothing_is_deleted(self):
+        original = ["Some prose.", "Table I. Growth and pathogenicity", "Guy11 0.28"]
+        out = self.skill._mark_flattened_tables(list(original))
+        for line in original:
+            self.assertIn(line, out)
+
+    def test_no_marker_when_the_paper_has_no_tables(self):
+        self.skill.all_tables = []
+        lines = ["Some prose.", "Table I. Growth"]
+        self.assertEqual(self.skill._mark_flattened_tables(lines), lines)
+
+    def test_only_the_first_occurrence_is_marked(self):
+        out = self.skill._mark_flattened_tables(
+            ["Table I. Growth", "prose referring to Table I again", "Table I. Growth"])
+        self.assertEqual("\n".join(out).count("FLATTENED TABLE"), 1)
+
+
 if __name__ == "__main__":
     unittest.main()
