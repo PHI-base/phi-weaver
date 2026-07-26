@@ -30,6 +30,8 @@ The root cause. On PMID:9927411 the extractor finds 22 figure captions and **0**
 
 **Verified before writing this plan** — the proposed pattern accepts `Table I` → `I`, `Table S1` → `S1`, `Table 2` → `2`, `Table IV` → `IV`, `Table XII` → `XII`, and rejects `Table in the appendix` and `Table Interpretation of results`. It also rejects **lowercase** Roman (`table iii`), which is intended: captions capitalise their numbering, and accepting lowercase is exactly what would let "in" and "is" through. Do not "fix" this.
 
+**Corrected 2026-07-26, after Task 1's review.** The plan originally specified the fragment **without** the trailing `\b` in `enhanced_caption_extractor.py` while including it in `pdf_convert.py` — so the rejection this section promises was only enforced in one of the two copies, and the extractor (the one wired into the live pipeline) manufactured phantom tables from prose: `Table Legend is described…` → number `L`, caption `egend is described…`. **Both copies must carry the trailing `\b` and be byte-identical.** The verification above only exercised `CAPTION_BLOCK_RE`, which is how the gap survived; Step 1's test list now also exercises `extract_tables_advanced` directly.
+
 **Files:**
 - Modify: `phiweaver/pdf/pdf_convert.py:19` (`CAPTION_BLOCK_RE`)
 - Modify: `phiweaver/pdf/enhanced_caption_extractor.py:25-32` (`table_patterns`)
@@ -108,7 +110,10 @@ In `phiweaver/pdf/enhanced_caption_extractor.py`, add the shared fragment above 
 ```python
 # Same numbering forms the converter's CAPTION_BLOCK_RE accepts — Arabic, supplementary,
 # Roman. Kept as one capturing group so the existing group indices are unchanged.
-CAPTION_NUMBER = r"(\d+[A-Za-z]*|S\d+[A-Za-z]*|(?-i:[IVXL]+))"
+# The trailing \b is load-bearing and must match pdf_convert.py's copy exactly: without
+# it the Roman branch eats the first letter of the next word, so "Table Legend is..."
+# parses as table `L` with caption "egend is...". Corrected 2026-07-26 after review.
+CAPTION_NUMBER = r"(\d+[A-Za-z]*|S\d+[A-Za-z]*|(?-i:[IVXL]+))\b"
 ```
 
 and replace the three entries of `self.table_patterns` with:
