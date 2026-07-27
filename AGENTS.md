@@ -82,6 +82,13 @@ PHI-Canto-ready annotation **drafts** and tracks curation progress.
   `__file__`), never hardcode machine-specific paths (e.g. `/mnt/z/...`).
 - Make storage/config overridable via environment variables where it crosses machines.
 - Keep changes small and reviewable; explain non-obvious choices in a brief comment.
+- **Keep system changes as simple as possible.** Overengineering here has produced runs that
+  loop or otherwise fail to finish in reasonable time — the complexity is itself the failure
+  mode, not just a style concern.
+  - Before building a multi-part or heavily abstracted change, **warn** that it risks runaway
+    complexity or non-termination, name the simplest thing that would work, and let the
+    curator choose. If they reaffirm the complex route, build it in full and flag the risk once.
+  - Prefer fewer moving parts, bounded loops, and single-pass logic over generalised machinery.
 - Verify before claiming done: `python3 -m py_compile` for scripts, and run the smoke path —
   **`python3 -m phiweaver.smoke` alone is the whole gate**, since it runs the unit suite as its
   last check. Don't pair it with `unittest discover`; that runs every test twice. While

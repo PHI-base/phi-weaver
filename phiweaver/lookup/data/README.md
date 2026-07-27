@@ -1,5 +1,32 @@
 # Bundled ontology data
 
+## Refreshing all of them: one command
+
+Nothing here self-updates — that is the price of resolving offline. Instead of the per-file
+`curl` recipes below (still accurate, and the fallback if the tool is unavailable):
+
+```bash
+python3 -m phiweaver.lookup.refresh_ontologies            # fetch all 5, then run the tests
+python3 -m phiweaver.lookup.refresh_ontologies --dry-run  # report what would change only
+python3 -m phiweaver.lookup.refresh_ontologies --list     # sources, incl. what it can't fetch
+```
+
+It prints each file's `data-version` / term count / digest before → after, refuses content
+that is not OBO or has lost >50% of its terms (a 404 page or a truncated download must never
+overwrite a good bundle), and says **"nothing moved"** when upstream has not released — which
+is the normal outcome and means there is no new term a curator could annotate to yet. It runs
+`tests.test_map_phenotype tests.test_validate_ontology_ids` only when a file actually changed.
+
+Run it **when you think it is needed** (before a curation batch, after a PHIPO release
+notice): a no-op costs nothing, so there is no schedule to keep and nothing polls upstream.
+Two things it deliberately does not do — fetch anything automatically, and touch the six
+files it cannot source (`pomgeneex.obo`, hand-written; the four private `PHI-base/config`
+copies). Those are named in its output rather than silently absent.
+
+**Never inside a scored benchmark run.** Under the sandbox's default-deny allowlist the fetch
+fails, which is correct. After a refresh, update the "Downloaded" line in the relevant section
+below and commit — the tool changes files, not this provenance record.
+
 ## `phipo-base.obo` — PHIPO (the main phenotype ontology)
 
 Both `map_phenotype` (phrase → candidate terms) and `validate_ontology_ids` (`PHIPO:` IDs)
