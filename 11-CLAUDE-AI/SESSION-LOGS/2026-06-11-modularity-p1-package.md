@@ -10,6 +10,11 @@ participants: [Claude Fable 5, martin2urban]
 
 # Session Log: Modularity P1 — `phiweaver/` package
 
+## Recap
+
+Stood up importable `phiweaver/` package (lookup/tracking/pipeline + smoke) with `pyproject.toml`; moved tools/db/pipeline/tests in, rewrote imports, added `repo_root()`, removed all engine/test sys.path glue; thin shims keep old commands working. Run-from-root (install optional, PEP 668). Also completes P3. 31 tests + smoke green.
+
+
 **Date**: 2026-06-11
 **Project**: PHI-Weaver — modularity refactor (see `docs/MODULARITY-PLAN.md`)
 **Session Type**: Foundational refactor (behaviour-preserving)

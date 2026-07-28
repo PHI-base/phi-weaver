@@ -8,6 +8,11 @@ summary: Started as "design a Playwright-assisted PHI-Canto entry plan" and ende
 
 # Session: the plan that argued itself out of existence
 
+## Recap
+
+Asked for a **Playwright-assisted PHI-Canto entry plan**; ended by **rejecting browser automation** — the premises didn't survive checking. **The routes doc named the wrong script:** `canto_load.pl` loads **reference data only and cannot create a session**; the real route is **`canto_add.pl --sessions-from-json`** — and it carries session/genes/alleles/genotypes but **NOT metagenotypes or annotations**, so Route 2 is a *scaffold on top of* Route 1 and **the entry queue is permanent, not an interim MVP**. (Also: `canto_export.pl` is one-way out, `pombase-import.pl` targets **Chado**, `canto_merge.pl` merges *people*.) Error corrected in **3 files** (`4167dab`). The proposed "Stage 1" was **already shipped**. The curator proposed the strongest Route 3 — **supervised one-step prefill** (curator drives, bot fills one screen, never commits); it survives the brittleness objection *and* preserves "entry **is** validation", and still lost on arithmetic: ~30–40 min/paper of entry vs **60–100 h to build → break-even ≈ 150–250 papers**, and **typing isn't the bottleneck** (accession resolution, hand-scoring, PHIPO gaps, evidence rulings are). Recorded as **D18** + FAQ + backlog (`f5ce6f5`), *including the rejected design* so a revival doesn't rebuild the worse autonomous version, the two hazards (**bind the term ID not the label**; **automation complacency launders machine error as curator approval**) and a **falsifiable reversal test**. **Built `phibase_index.py`** (`ff0b27c`, 20 tests, network-free): triage step 1 now asks whether PHI-base already holds the paper — the 2026-07-24 trigger paper **is PHI:132**, and its record gives pathogen **taxid 318829** *M. oryzae*, the taxon the draft got wrong. Pinned to **`phi-base_v4-19_2026-03-25.csv`** (24,122 records / **5,994 PMIDs**) from PHI-base/data; reports accession + gene + taxon + host + phenotype as a **cross-check, not a bare flag**. Four live-data quirks handled: the CSV **repeats its header as row 1**, the PMID column was **renamed** (`PMID`→`Literature_ID`), case-variant `Literature_source`, and **one PMID with 709 records** (truncate + summarise). Record link **probed not guessed** (http-only; test pins the scheme); a miss **never claims "uncurated"** (releases exclude live PHI-Canto sessions; 61 records cite no PMID). **Triaged all 31 open backlog items:** closed **3** already-shipped (both token items + PMC/JATS, `a411880`/`a8553b4`), **undid a duplicate entry I created the day before** — a **stale *title* on a closed item manufactures duplicate work**, worse than a stale checkbox — and **promoted open work hidden inside an `[x]` entry** (PPR preprints + author-manuscript check). Verified-and-left-open: `CITATION.cff` omissions are *deliberate*, YAML parses, `gh api` now reports **MIT/public**. Finding: **five entries are ~two emails** (James ×3, Hsin-Yu ×2) and unblock a sixth. **30 open / 16 done.** Finally **profiled the slow gate** (`cf3e375`): the backlog blamed ontology re-parsing, but **no test spawns a subprocess** so `lru_cache` already parses each `.obo` once (**~0.2 s for all of it**) — `cProfile` found **7.49 s of 8.17 s** in `test_entry_queue` going to **`git_commit()` → `subprocess.run`, 20× at ~330 ms** on the 9p mount. `@lru_cache` on `common.git_commit` → **suite 22.1 s → 12.1 s, gate 57.5 s → 34.0 s (~41%)**, 8/8 green, suite **490 → 517**, `tests/test_common.py` pins the call count. **Lesson: profile before optimising a guess — the item was wrong by 30× and in the wrong place.** Open: the **server-access ask to James was never sent**; it now decides only *how much* the curator clicks. All pushed through `cf3e375`.
+
+
 The ask was a work plan for Playwright-assisted biocuration entry into PHI-Canto. Answering it
 honestly meant checking the premises first, and the premises did not survive: one document named the
 wrong script, one proposed stage was already built, and the arithmetic said the automation wasn't
@@ -103,7 +108,7 @@ initially hit the network and was caught in the verbose output.
 - **Verified and correctly left open:** `CITATION.cff`'s omissions are *deliberate and documented*,
   the YAML parses, and `gh api` reports `license: MIT, visibility: public` — so that item's alarming
   premise (public, no license, all rights reserved) is resolved and only external parts remain.
-- **Triage finding:** five entries — the three Canto-config follow-ups for James, Hsin-Yun's D1–D4
+- **Triage finding:** five entries — the three Canto-config follow-ups for James, Hsin-Yu's D1–D4
   clarifications, and the term-design line — are **~two emails, not five projects**, and they unblock
   a sixth item that is explicitly sequenced after the ruling.
 
@@ -148,7 +153,7 @@ now paid once instead of per render; `cache_clear()` covers a long-lived process
   Needs James; the ask was never sent.
 - **The ~two emails** identified in triage: James (private repos going public → a fresh clone falls
   back to pombase defaults that are wrong in both directions; the review-note feedback; whether
-  `qc_do_not_manually_annotate` is missing from the config) and Hsin-Yun (D1–D4 clarifications; where
+  `qc_do_not_manually_annotate` is missing from the config) and Hsin-Yu (D1–D4 clarifications; where
   the term-*design* line should sit). Cheapest movement on the board.
 - **Deferred by choice** in `phibase_index`: auto-diffing a draft's `canto` block against the matched
   PHI-base record. The fields are surfaced for a curator to reconcile; nothing compares them.

@@ -217,7 +217,7 @@ the inoculation / effector-delivery method). Term prefix **`PECO:`**.
 
 > **Curation rule:** condition entries must be **PECO terms**. Free-text conditions (e.g.
 > "PDA, 25 °C, 5 d") do **not** pass final approval — map each to a PECO term, or request a new one.
-> (Source: Hsin-Yun Chang review, 2026-07-15; see `docs/CURATION-LESSONS.md` L6.)
+> (Source: Hsin-Yu Chang review, 2026-07-15; see `docs/CURATION-LESSONS.md` L6.)
 >
 > **Tooling:** map a condition phrase to a PECO term with
 > `python3 -m phiweaver.lookup.map_condition "<phrase>"` (offline over the bundled ontology; never
@@ -239,7 +239,7 @@ New terms are drafted in a Google-Sheet **"PHI-ECO term creator"**, then loaded 
 with **ROBOT** (needs Java); the ontology maintainer (James Seager) does the load. The curator fills
 **one row per new term** with these columns:
 - **Condition name · Definition · Subclass of** (the parent term) **· Created by · Creation date**
-- **Contributor id:** use `changh` for Hsin-Yun Chang — kept consistent across PHIPO / PHI-ECO so
+- **Contributor id:** use `changh` for Hsin-Yu Chang — kept consistent across PHIPO / PHI-ECO so
   contributions track across ontologies.
 - **Naming rule:** put a **space after `+`** in chemical-medium term names — e.g. `+ wortmannin`,
   not `+wortmannin`.

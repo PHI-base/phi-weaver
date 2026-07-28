@@ -8,6 +8,11 @@ summary: Three backlog items closed by the same method — a ruling existed, not
 
 # Session: the ruling exists, but nothing checks it
 
+## Recap
+
+MIC`, **no per-strain columns**, despite naming three strains. **Fact correction: the paper has THREE tables, not two.** **(4) The flat-text marker was built, then WITHDRAWN** (`f10ca71`). It **never fired in production** — body generators append a whole page as one list element and `.match()` only checks position 0 — and **three separate checks said it worked, all wrong the same way**: unit tests hand-fed a pre-split list, wiring tests used pages containing only a caption, and the end-to-end check did the same, each putting the caption at position 0 **by construction**. *A test that builds its input to match the implementation's assumption cannot falsify it.* Fixing it showed the design was wrong: **2 of 3 markers then named the WRONG PAGE** (`Table II` → page 9; it is on 7), because the per-table pointer resolves through the over-detected caption list. Withdrawn on the curator's "are we overengineering?" — **yes, at the pointer**, which needed entry resolution, which needed correct detection, for a caution a generic sentence would carry. Regex de-dup kept. Open: caption over-detection (11 mentions → 10 captions → 5 renders for 3 tables; **why the obvious fix is wrong is recorded** — requiring punctuation breaks `Table S1 Primers used…`, and a missed table is invisible where a spurious one is obvious); the 50 strain/background gaps; `AM30`/`Lr42-NIL` missing alleles; `Pta7375 WT` carrying alleles. **15 commits `08acebf`→`f10ca71`, suite 537 → 591, smoke 8/8.**
+
+
 Three items in a row turned out to have the same shape. A curator ruling was on record, the
 documentation was correct, and **nothing in the code or the drafting workflow enforced it** — so
 drafts quietly disagreed with the standard they were written against. The fix each time was the
@@ -157,7 +162,7 @@ generic sentence would have carried. The regex de-duplication from the same fix 
 - **50 strain/background gaps** across the nine other drafts — needs the papers, not code.
 - **`AM30` has a background but no allele**; `wheat Lr42-NIL` records no allele either.
 - **`Pta7375 WT`** carries alleles while named a wild type — modelling question for the curator.
-- Unchanged: the ~two emails to James and Hsin-Yun, still the cheapest movement on the board.
+- Unchanged: the ~two emails to James and Hsin-Yu, still the cheapest movement on the board.
 
 ## Lessons
 - **A ruling that nothing enforces is a ruling that drafts will disagree with.** Three items this

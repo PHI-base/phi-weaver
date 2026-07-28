@@ -1,14 +1,26 @@
 ---
 created: 2026-07-09
-session_id: 2026-07-09-llm-as-judge-discussion
-project: LLM-as-judge / independent-reviewer idea for benchmarking (discussion only — parked)
-type: discussion / design note
-tags: [benchmarking, llm-as-judge, reviewer, qc, ground-truth, calibration, parked, fable5]
-duration: short discussion, no code
+type: documentation
+project: LLM-as-judge / independent-reviewer design (parked)
+tags: [docs, benchmarking, llm-as-judge, reviewer, qc, ground-truth, calibration, parked]
 participants: [Claude Fable 5, martin2urban]
 ---
 
-# Session Log: LLM-as-judge as a benchmarking / reviewer stage — discussion (parked)
+# LLM-as-judge as a benchmarking / reviewer stage
+
+**Canonical for:** why PHI-Weaver does not self-validate, and what an independent LLM judge would
+have to prove before any of its scores could be trusted. **Status:** parked by curator decision
+(2026-07-09) — the reasoning is durable, the work is not scheduled.
+See [`README.md`](README.md).
+
+> Promoted from a session log (`2026-07-09-llm-as-judge-discussion`) on 2026-07-28. It was cited
+> by five other documents while living in `SESSION-LOGS/`, which made it load-bearing rather than
+> historical. Content is unchanged; only its home, title and frontmatter differ.
+
+## Summary
+
+Discussion only, no code. Trigger: curator gave **GPT-5.5** the paper + phiweaver draft + entry queue + scorecard; it suggested improvements and **scored lower than the curator**, raising LLM-as-judge for benchmarking. Already covered: **D12** independent scorer + human validation gate (**D13**). Key distinction: this was **reference-free** judging (judge invents its own ground truth) = weaker than the gold-standard benchmark; a low score is ambiguous (real miss vs convention gap vs hallucination vs ambiguity). **Stressed: the judge must itself be ground-truthed** — validated against human score-vs-gold before any score is trusted; cross-model good for decorrelation, record judge model id (D7). Two bars: pre-review **critic** (low) vs **benchmark scorer** (high). Backlog item added. **Parked by curator decision; next step when resumed: adjudicate GPT-vs-curator disagreements on the one paper.**
+
 
 **Date**: 2026-07-09
 **Project**: Should PHI-Weaver add a separate QC / reviewer stage (an independent LLM judge) so it

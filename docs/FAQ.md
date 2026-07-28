@@ -16,7 +16,7 @@ curator or collaborator, and to let us look up "what did we decide about X" late
 
 **This FAQ is a lookup layer, not a source of truth.** Each entry gives a short answer and a
 **See:** pointer to the canonical doc that owns the detail (a skill, a standard, a design
-decision, or a session log). When those change, the pointer still holds; keep answers short so
+decision, or a session log) — [`README.md`](README.md) lists who owns what. When those change, the pointer still holds; keep answers short so
 they don't drift. When a recurring question gets resolved, add a Q/A + pointer here.
 
 ---
@@ -150,7 +150,7 @@ its scores are trusted; without a per-paper gold standard it is a **reference-fr
 (strong as a pre-review critic, weak as a headline benchmark number); and the human gold
 standard is a **strong reference, not ground truth** — judge–human disagreements are
 investigated both ways.
-**See:** `11-CLAUDE-AI/SESSION-LOGS/2026-07-09-llm-as-judge-discussion.md`.
+**See:** `docs/LLM-AS-JUDGE-DESIGN.md`.
 
 ### How do I give an external model (e.g. GPT-5.5) the conventions to judge a draft?
 Use the generated convention primer. Give the model the **core primer** (authoritative) always,

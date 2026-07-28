@@ -10,6 +10,11 @@ participants: [Claude Fable 5, martin2urban]
 
 # Session Log: post-modularity improvements + plug-in architecture design
 
+## Recap
+
+Prioritised outstanding work; wrote `docs/PLUGIN-ARCHITECTURE.md` (plug-in host + local AI on ROGER; strawman). Shipped 8 commits: Group A cleanups, caption→phenotype→PHIPO tool (`map_phenotype` + 12 tests, wired into phipo-mapping), tracking-DB canonical-path fix, reorganiser config fix, two new skills (genotype-creation, phenotype-annotation → 6 total), interaction counts derived from notes, and split the 11-CLAUDE-AI grab-bag into `vault-ops/` + engine decoupling. Smoke 7/7, 62 tests.
+
+
 **Date**: 2026-07-02
 **Project**: PHI-Weaver — outstanding-work cleanup, a new curation capability, and the
 long-term direction.

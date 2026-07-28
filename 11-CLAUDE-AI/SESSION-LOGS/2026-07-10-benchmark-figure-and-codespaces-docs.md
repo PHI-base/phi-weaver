@@ -10,6 +10,11 @@ participants: [Claude Fable 5, martin2urban]
 
 # Session Log: Benchmark result figure + Codespaces hardening/docs
 
+## Recap
+
+echo`; now exits 1 loudly) `e27dc15`; documented **Codespace storage paths** + the three phiweaver output files `bb19f7d`; added **sequential-curation** note (stage batch, curate one-per-subagent sequentially; parallel discouraged) `4bd86a0`. Smoke 7/7 (plain + codespace mode). **NEXT: optional Sonnet 5 comparison run; real gold-standard completeness counts; move report out of external `active/` before cleanup.**
+
+
 **Date**: 2026-07-10
 **Project**: Turn the 10 hand-scored benchmark scorecards into the shareable result figure; then
 answer/harden the GitHub Codespaces story and document it.

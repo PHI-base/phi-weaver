@@ -15,7 +15,7 @@ Output is a GENERATED artifact -- edit the source files, then rerun:
 Writes docs/phiweaver-judge-handover.md. On each run it also validates that every
 curation-example `annotation_types` value is in the controlled vocabulary (TAGS.md)
 and prints a warning for any that are not. See the parked design note
-11-CLAUDE-AI/SESSION-LOGS/2026-07-09-llm-as-judge-discussion.md for the rationale.
+docs/LLM-AS-JUDGE-DESIGN.md for the rationale.
 """
 import re
 import sys
@@ -146,7 +146,7 @@ PHI-Weaver curation drafts.*
   examples can bias the judge toward their shapes.
 - The human gold standard is a **strong reference, not ground truth** — a judge–human
   disagreement is investigated both ways (see the design note,
-  `11-CLAUDE-AI/SESSION-LOGS/2026-07-09-llm-as-judge-discussion.md`).
+  `docs/LLM-AS-JUDGE-DESIGN.md`).
 
 ## Contents
 | # | Tier | Role | Vault path |

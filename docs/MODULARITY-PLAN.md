@@ -9,6 +9,11 @@ project: PHI-Weaver
 
 **Status:** ✅ complete — all phases P1–P7 landed 2026-06-11 · **Created:** 2026-06-11
 
+**Historical record.** Kept for the rationale and the before/after picture; it describes the
+repo as it was in June 2026, not as it is now. Current layout: [`OVERVIEW.md`](OVERVIEW.md).
+Decisions that came out of it: [`DESIGN-DECISIONS.md`](DESIGN-DECISIONS.md).
+See [`README.md`](README.md).
+
 A plan to make PHI-Weaver's parts independently **updatable and testable**, and to let
 **specialised curation modules** be plugged in later by following one contract. This is a
 **behaviour-preserving** restructure: nothing about curation output changes — only where

@@ -10,6 +10,11 @@ participants: [Claude Fable 5, martin2urban]
 
 # Session Log: benchmarking stack, integrity controls, and the HTML report
 
+## Recap
+
+9 commits completing the benchmark-vs-gold-standards pipeline: blind-benchmark integrity policy + PHI-base WebFetch deny + sandbox network-allowlist profile (UniProt/OLS only; needs bubblewrap, now installed); the **benchmark** skill (8 skills); `benchmark_report` HTML generator (bars, item×paper heatmap, curated-vs-control) with provenance (date/model/source/tokens — tokens supplied); `scorecards_to_csv` bridge; quickstart + OVERVIEW discoverability. Side: scaffolded the new **phikestrel** repo (plug-in/pipe/ROGER). Smoke 7/7, 81 tests. **NEXT: run a real benchmark; PHIDO fix; auto token logging; more examples.**
+
+
 **Date**: 2026-07-04
 **Project**: PHI-Weaver — finish the benchmark-against-gold-standards pipeline end to end.
 **Session Type**: Feature. 9 commits, all merged to `main` and pushed; green throughout.

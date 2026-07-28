@@ -7,6 +7,11 @@ project: Backlog triage + UniProt strain fallback + RNA qualifiers
 
 # Session: Backlog triage, UniProt strain fallback, RNA-level qualifiers
 
+## Recap
+
+Worked down `docs/BACKLOG.md`. **Fixed `query_uniprot` locus-tag lookups** (false `not_found` when a locus tag lives under a strain reference-proteome taxon, e.g. PMID:42089373's Sdh subunits under strain 1028729 not species 101028): retry without the organism filter, flag `organism_filter_relaxed` + strain-mismatch warning; +4 tests, 13 pass `f71fa2a`. **Surfaced the 7 PomGeneEx RNA-level qualifier phrases** (terms-only per curator — no IDs/ontology) to methodology §9 + `phenotype-annotation` + `curation-qc` skills `082ab3c`. **Filed PHIPO#452** (free-living "absent DON" term) + added a **"Waiting for response"** backlog section `0db0841`. Memory: added collaborator James Seager (`jseager7`), user GitHub identity (`martin2urban`, don't default to `changh`), "number outstanding issues" pref; fixed Hsin-Yu's handle. Verified `bubblewrap` 0.9.0 (sandbox item 15 — only the end-to-end test remains). Left a GitHub Discussion draft + a Gmail backlog draft for the user (not sent). All 3 commits pushed.
+
+
 ## Objectives
 - Housekeeping on collaborators/memory, then work down `docs/BACKLOG.md` open items.
 

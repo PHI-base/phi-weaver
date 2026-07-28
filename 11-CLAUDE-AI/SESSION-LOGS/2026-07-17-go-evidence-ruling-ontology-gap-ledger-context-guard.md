@@ -7,6 +7,11 @@ project: GO evidence ruling + ontology gap ledger + wrong-context guard
 
 # Session: GO evidence ruling, ontology gap ledger, PHIPO wrong-context guard
 
+## Recap
+
+**Hsin-Yu's ruling on `phi-weaver#8`:** TAS is allowed when the **authors explicitly state** the function and it matters to the experimental design — **not** because UniProt carries the term (UniProt GO is largely IEA pipeline prediction), so bulk transfer is excluded. And no biochemistry ≠ no MF term: annotate MF by TAS **and** the processes the deletions demonstrate by IMP (`GO:0000104` + growth/conidiation/DON for PMID:42089373). The ruling **reversed L3's proposal**; L3 closed, conventions updated `816e592`. **New: ontology gap ledger** `gap_log.py` → `docs/ontology-gaps.jsonl`, ranked by **distinct papers**; enforces the gap/**synonym** split (a retry that finds a term is a wording gap, per L2); `filed` field stops re-filing; seeded with #452 only. **New: wrong-context guard** `term_context.py` + `map_phenotype --assay-context` — a search returns terms that are lexically right and **contextually impossible** ("absent DON" in culture → `PHIPO:0000234` *within host*), which `no_match` cannot see. Rule verified live ("host-free"/"axenic"/"free-living" all `no_match`, so no PHIPO label negates "host"). **Two of my design claims were falsified while building and the code reflects the corrections:** `no_match` is not the gap signal (#452 isn't one), and "all candidates context-wrong" doesn't detect it either (`PHIPO:0000939` noise masks it) — that auto-logging was **removed**. New `ontology-term-request` skill (evidence, not design); wired into `phipo-mapping`. **L7** added then **corrected** to mark the binary free-living/in-host split as weaver's **proposal pending curator confirmation** (`54c387f`, `696012f`). **Filed [phipo#453](https://github.com/PHI-base/phipo/issues/453)** asking in plain English whether the split is even two-way (detached leaf / host extract / cell culture?) — **blocks L7**. Backlog: #453 + ISO → Waiting for response; host-rule silent staleness → Tooling. 251 tests + 7/7 smoke green; 4 commits pushed.
+
+
 ## Objectives
 - Assess Hsin-Yu's answer on `phi-weaver#8` (GO evidence code when a paper has no biochemistry)
   and fold the ruling in.

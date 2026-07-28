@@ -10,6 +10,11 @@ participants: [Claude Fable 5, martin2urban]
 
 # Session Log: Ontology-ID Validation Tool
 
+## Recap
+
+Closed out the 2026-06-10 list: ontology-ID validator (PHIPO/GO/PHIDO/UniProtKB format + OLS obsolete check), fresh-checkout smoke test (also run on Codespace build), and real completion metrics in the tracking DB (article-linked sessions, status→curated, counts auto-derived from notes). 31 network-free tests; carried memories to the phi-weaver path.
+
+
 **Date**: 2026-06-11
 **Project**: PHI-Weaver — biocuration tooling
 **Session Type**: Automation / quality tooling

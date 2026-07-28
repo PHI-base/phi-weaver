@@ -7,6 +7,10 @@ project: PHI-Weaver
 
 # PHI-Weaver — Roadmap
 
+**Canonical for:** where PHI-Weaver is going. What it does *today* belongs in
+[`OVERVIEW.md`](OVERVIEW.md); task-level detail in [`BACKLOG.md`](BACKLOG.md).
+See [`README.md`](README.md).
+
 A short, shareable view of where PHI-Weaver is and where it is going — for team discussion and
 for informing collaborators. This is the **readable summary**; the working detail (every task,
 gap and rationale) lives in [`BACKLOG.md`](BACKLOG.md), [`DESIGN-DECISIONS.md`](DESIGN-DECISIONS.md)

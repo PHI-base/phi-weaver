@@ -7,6 +7,11 @@ project: PHIPO PR workflow + offline PHIPO lookup + species-neutrality
 
 # Session: PHIPO term-request PRs, offline PHIPO lookup, species-neutrality
 
+## Recap
+
+**Acted on James's emails: PHIPO term requests now go as PRs, not issues.** Cloned PHI-base/phipo (`/mnt/z/Computer/GITHUBrepositories/phipo`; clone on native fs then copy — chmod fails on `/mnt/z`; PRs target `master`; CI runs ODK QC so no local `robot`). Opened **[phipo#454](https://github.com/PHI-base/phipo/pull/454)** (`PHIPO:0001456` deoxynivalenol absent from cell) — CI green, awaiting James. **Finding:** #452's term already existed as `PHIPO:0000503`, obsoleted in 2019 and never re-created — OLS *search* hides deprecated terms so #452 was blind to it; the **parallel-terms test** (pyocyanin/gliotoxin kept theirs) shows it's an oversight → `obsolete-terms-are-fossils` memory + skill step 5. **Resolved PHIPO lookup offline** (`f9b7890`): vendored `phipo-base.obo` (release 2026-03-12); `map_phenotype` + `validate_ontology_ids` drop OLS for PHIPO (kept for GO); `--include-obsolete` surfaces deprecated terms; two files never conflated (release vs edit — `PHIPO:0001456` correctly validates not_found). Removes the benchmark sandbox's need for a PHIPO exception (**tool, not answer**). **Real bug fixed:** the borrowed scorer could never return `no_match` (one generic token carried a match; "phenotype" matched everything) — silently broke gap detection; fixed with **IDF weighting** in shared `text_score.py`, `map_condition` fixed too (`d08946e`). **L8 + false gap corrected:** PHIPO is **species-neutral by design** (verified: conidiation/appressorium/mycelium have zero label hits; species words live in EXACT synonyms) — retries species-specific→neutral and process→entity find `PHIPO:0000061`, closing the phantom "complete loss of conidiation" gap; curator ruling "entity absent covers process failed". **Meta (user noticed fixes taking longer):** cost is **doc duplication, not tangled code** — tightened L8 + FAQ back to pointers, canonical detail in the skill (`196dbea`). Curator rulings: **#4 strain 2035 + K3V6Z9** resolved & closed; **#6 CaCl₂→PHIPO:0001303** clean but **DON→PHIPO:0000219 tripped the L7 context guard** (measured in vitro) — user dropped the topic, #6 draft edits reverted. 283 tests green; 13 commits on `main`, unpushed.
+
+
 Second session of 2026-07-17 (follows the GO-ruling / gap-ledger / context-guard log).
 
 ## Objectives
@@ -38,7 +43,7 @@ Second session of 2026-07-17 (follows the GO-ruling / gap-ledger / context-guard
 
 ### Backlog groundwork for the PR workflow (commits ba937d4, 7709ce7, 3b58834)
 - Skill extended with **two routes**: pattern extension → PR; everything else → evidence-only issue.
-- **Open question for Hsin-Yun (backlog):** PHIPO's own `CONTRIBUTING.md` asks requesters for
+- **Open question for Hsin-Yu (backlog):** PHIPO's own `CONTRIBUTING.md` asks requesters for
   "label, definition, references, position in hierarchy" — so the skill's "evidence, not design"
   guardrail is *stricter than the ontology team's own rule*. Not resolved; for her.
 - **New backlog item:** curator-triggered term-**design** proposals → GitHub issue (the case the
@@ -123,7 +128,7 @@ Second session of 2026-07-17 (follows the GO-ruling / gap-ledger / context-guard
 
 ## State / open threads
 - **phipo#454** — CI green, mergeable, awaiting James (ID + `replaced_by` decisions).
-- **Design-scope question** — for Hsin-Yun (backlog): how much term design may a request carry.
+- **Design-scope question** — for Hsin-Yu (backlog): how much term design may a request carry.
 - **phi-weaver#6 ruling (1)** — DON context question posted then being withdrawn by the user; draft
   edits reverted; paper's DON flag back to `needs_term_choice`.
 - **phi-weaver#4** — closed; draft strain flag resolved.

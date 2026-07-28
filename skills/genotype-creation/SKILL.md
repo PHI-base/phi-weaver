@@ -44,7 +44,7 @@ conventions live in `06-Training/Quick-Reference-Genotype-Creation.md`.
    or flag the ambiguity — never invent an allele or level.
 
 ## Naming & data standardisation (curator convention, 2026-07-15)
-From `07-Standards/PHI-Canto-Curation-Conventions.md` (Hsin-Yun Chang review of PMID:42089373):
+From `07-Standards/PHI-Canto-Curation-Conventions.md` (Hsin-Yu Chang review of PMID:42089373):
 - **Gene symbol without species prefix** — `SdhA`, not `FpSdhA`.
 - **Deletion genotypes use the Δ-suffix** — `SdhAΔ`, not `ΔFpSdhA` (double mutant `SdhC1&2Δ`;
   complement `SdhC2Δ-C`).

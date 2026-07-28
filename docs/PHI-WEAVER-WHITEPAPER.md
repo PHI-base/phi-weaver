@@ -9,6 +9,13 @@ project: PHI-Weaver
 
 *A descriptive overview: what the system is, why it exists, how it was built, and what it consumes and produces.*
 
+**Manuscript artefact, not system documentation.** A narrative snapshot written for
+publication; it restates material owned elsewhere and is frozen to what was true when drafted.
+Do not update it to track code changes, and do not treat it as the authority on current
+behaviour — that is [OVERVIEW.md](OVERVIEW.md) (what it does),
+[DESIGN-DECISIONS.md](DESIGN-DECISIONS.md) (why), and [Roadmap.md](Roadmap.md) (what's next).
+See [README.md](README.md).
+
 ---
 
 ## 1. What PHI-Weaver is

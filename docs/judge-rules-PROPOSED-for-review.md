@@ -9,7 +9,7 @@ project: PHI-Weaver
 
 These rules were suggested for the LLM-judge core primer (from a ChatGPT review of the
 handover bundle). They encode **biological-judgement / scope conventions**, so — per the
-LLM-judge design note (`11-CLAUDE-AI/SESSION-LOGS/2026-07-09-llm-as-judge-discussion.md`) — a
+LLM-judge design note (`docs/LLM-AS-JUDGE-DESIGN.md`) — a
 wrong rule baked into the primer would make the judge *systematically* wrong (the
 convention-gap failure mode we are trying to reduce). They are therefore **held here for
 Martin's confirmation** and are **NOT included** in the generated judge bundle

@@ -17,6 +17,10 @@ debugInConsole: false # Print debug info in Obsidian console
 ```
 # PHI-Weaver Learning System — dynamic learning & relearning
 
+**Canonical for:** how PHI-Weaver improves over time — the mechanism. The running log of
+individual lessons is [`CURATION-LESSONS.md`](CURATION-LESSONS.md); the rules a lesson
+eventually becomes live in `07-Standards/` and `skills/`. See [`README.md`](README.md).
+
 **Purpose of this doc:** an explicit, diagram-ready description of how PHI-Weaver improves over
 time — the components (nodes), the flows between them (edges), and the two feedback loops
 (*dynamic learning* and *relearning / reversal*). It is written so it can be handed to a diagramming
@@ -36,7 +40,7 @@ time*, **not** by fine-tuning a model. Consequences that shape the whole design:
 ## Layers & nodes
 
 **A. Feedback sources** (where lessons originate)
-- `A1` **Curator paper review** — Hsin-Yun Chang reviews a specific draft (e.g. PMID:42089373).
+- `A1` **Curator paper review** — Hsin-Yu Chang reviews a specific draft (e.g. PMID:42089373).
 - `A2` **GitHub issue discussions** — our own issues to the curator + the `PHI-base/curation`
   tracker mined for team decisions (see DESIGN-DECISIONS D17).
 - `A3` **Freeform notes** — meetings / email; weakest provenance (paraphrase, no permalink).
@@ -109,7 +113,7 @@ time*, **not** by fine-tuning a model. Consequences that shape the whole design:
 ```mermaid
 flowchart TB
   subgraph A[A · Feedback sources]
-    A1[A1 Curator paper review\nHsin-Yun on a PMID]
+    A1[A1 Curator paper review\nHsin-Yu on a PMID]
     A2[A2 GitHub issue discussions\nour issues + PHI-base/curation tracker]
     A3[A3 Freeform notes\nmeetings / email]
   end

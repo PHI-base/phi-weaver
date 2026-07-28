@@ -10,6 +10,11 @@ participants: [Claude Fable 5, martin2urban]
 
 # Session Log: benchmark drafting — 10 papers via isolated sub-agents
 
+## Recap
+
+Drafted **10 phiweaver curation drafts** for a benchmark, one **isolated Fable 5 sub-agent per paper** (no cross-paper entity bleed); all in external `active/` (uncommitted), `status: draft` with `auto_check`+flags, every ID validated / none invented. Recurring phiweaver gaps: **UniProtKB accession resolution** (~every paper) + **PHIPO coverage for non-infection phenotypes** (motility/biofilm/c-di-GMP, autophagy, DON, phytoalexin). Catches: wrong PMID (4101314→41051314), obsolete PHIDO, paper-cited wrong accession, paper-internal contradictions; effector-trap + negative-result discipline. Also 4 doc commits on `main` (recuration-comparison backlog; benchmark runbook + model + isolation notes) — **NOT pushed** (main 4 ahead). **NEXT: push; prefill scorecards; hand-score; report.**
+
+
 **Date**: 2026-07-05
 **Project**: PHI-Weaver — produce phiweaver curation drafts for a benchmark run, plus design/doc
 work (recuration-comparison, benchmark runbook). Drafting done one isolated sub-agent per paper

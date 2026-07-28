@@ -10,6 +10,11 @@ participants: [Claude Fable 5, martin2urban]
 
 # Session Log: gold-standard library → 12/12 annotation-type coverage
 
+## Recap
+
+6 commits + GitHub issue #1. Grew the validated gold-standard example library from 1→**5 examples covering all 12 PHI-Canto annotation types (12/12)**: PMID:35468894 (physical_interaction/wt_rna/host_phenotype), 23498959 (PTM), 37177781 (wt_protein_expression), plus re-tagged 26177154 & 39787257. Made `annotation_types` = PHI-Canto's own 12 types + an auto-generated **coverage tracker** in `INDEX.md` (+ typo-guard in `--check`). Extended `validate_ontology_ids`: **PHIDO offline** (bundled `phido.obo`, OLS4 doesn't host it), **MOD/PSI-MOD** via OLS, defining-ontology term selection. Offline PHIDO caught 2 obsolete disease terms in PMID:39787257 (updated to replacements; **issue #1** tracks fixing the source Canto session). Installed+authed `gh`. Resolved physical-interaction scope (in scope). Smoke 7/7, 94 tests. **NEXT: depth not breadth; format convergence; action issue #1.**
+
+
 **Date**: 2026-07-04
 **Project**: PHI-Weaver — grow the validated gold-standard curation-example library to cover every
 PHI-Canto annotation type, extending the ontology validator as the real curations demanded.

@@ -10,6 +10,11 @@ participants: [Claude Fable 5, martin2urban]
 
 # Session Log: curation-example library, benchmarking scorecard, batch drafting
 
+## Recap
+
+8 commits: validated curation-example library (`curation_examples.py`, flat + tags, draft→validated, retrieval-not-training); `docs/DESIGN-DECISIONS.md` (D1–D12) + refreshed OVERVIEW; benchmarking Excel scorecard (rubric + scoring + completeness; phiweaver pre-checks objective column, human scores, must not self-score) + `make_scorecard.py`; `fill_scorecard.py` prefill from a draft's `auto_check` block; structured `triage`+`flags` in drafts + `batch_summary.py` review dashboard. Drafted Zhang-2024 (Pi05910/StGOX4, full-Results read) + triaged Miltenburg (scope). Later: imported the **first validated gold-standard example** (PMID:26177154 Fol/I-7 gene-for-gene) from a PHI-Canto PDF; found the **PHIDO validation gap**; added `docs/BACKLOG.md`; built the **gold-standard-import skill** (7 skills). Smoke 7/7, 76 tests. **NEXT: fix PHIDO gap; generate ~8–12 gold-standard examples; format convergence.**
+
+
 **Date**: 2026-07-03
 **Project**: PHI-Weaver — the human-in-the-loop drafting → review → example loop.
 **Session Type**: Feature. 8 commits, all merged to `main` and pushed; green throughout.

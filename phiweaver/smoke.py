@@ -149,6 +149,14 @@ def check_note_names():
         raise AssertionError("; ".join(problems))
 
 
+def check_session_index():
+    """Session-log index rows stay short enough to be read at every session start."""
+    from phiweaver import session_index
+    problems = session_index.check(REPO_ROOT)
+    if problems:
+        raise AssertionError("; ".join(problems))
+
+
 def check_unit_tests():
     """The bundled unit-test suite passes (run from the repo root)."""
     proc = subprocess.run(
@@ -170,6 +178,7 @@ CHECKS = [
     ("offline tools", check_offline_tooling),
     ("skill contract + registry", check_skill_contract),
     ("unique note names", check_note_names),
+    ("session-index row length", check_session_index),
     (_UNIT_TEST_CHECK, check_unit_tests),
 ]
 

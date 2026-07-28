@@ -10,6 +10,12 @@ project: PHI-Weaver
 *Manuscript-ready description of how many agents PHI-Weaver uses and which stages are
 language-model-driven versus deterministic. Rendered version: [PHI-WEAVER-MODULE-TABLE.html](PHI-WEAVER-MODULE-TABLE.html).*
 
+**Manuscript artefact, not system documentation.** Written for publication and frozen to what
+was true when drafted (module counts and examples included). Revise it when the manuscript is
+revised — not on every code change — and check it against
+[skills/REGISTRY.md](../skills/REGISTRY.md) before submitting. For the current system see
+[OVERVIEW.md](OVERVIEW.md); for the doc map, [README.md](README.md).
+
 ---
 
 ## Agent count — the short answer

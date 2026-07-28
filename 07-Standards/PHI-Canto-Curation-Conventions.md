@@ -90,7 +90,7 @@ any single rule as current — some were reversed at least once before settling.
   is still looking at the (processed) WT protein. (`#77`)
 
 ## Naming & data standardisation
-> **Provenance:** curator review (Hsin-Yun Chang, 2026-07-15) on PMID:42089373; logged as **L4**
+> **Provenance:** curator review (Hsin-Yu Chang, 2026-07-15) on PMID:42089373; logged as **L4**
 > in `docs/CURATION-LESSONS.md`. Canonical gene-symbol source (UniProtKB gene name vs. strip the
 > species prefix) pending clarification.
 
@@ -172,7 +172,7 @@ columns. **A genotype with a background but no allele is flagged `⚠ no allele 
 mutant whose allele the draft failed to capture, which is exactly what `AM30` was.
 
 ## Interaction phenotype — primary term is a measurement; interpretation goes in the extension
-> **Provenance:** curator review (Hsin-Yun Chang, 2026-07-15); logged as **L5**.
+> **Provenance:** curator review (Hsin-Yu Chang, 2026-07-15); logged as **L5**.
 
 - The **primary term** of a pathogen–host interaction phenotype must be a **measured / observed**
   phenotype — e.g. `PHIPO:0000365` *decreased pathogen growth within host* (from lesion length /
@@ -208,7 +208,7 @@ mutant whose allele the draft failed to capture, which is exactly what `AM30` wa
 
 > **Provenance:** phiweaver **working convention**, adopted **2026-07-15** while curating
 > PMID:42089373 (FpSdh subunits). **Not yet a PHI-base/curation team decision** — pending
-> confirmation with biocurator Hsin-Yun Chang (discussion drafted). Treat as the current
+> confirmation with biocurator Hsin-Yu Chang (discussion drafted). Treat as the current
 > drafting rule; update the provenance to an issue number once the team settles it.
 
 When a mutant shows a phenotype (e.g. reduced/abolished mycotoxin, altered pigment, lost

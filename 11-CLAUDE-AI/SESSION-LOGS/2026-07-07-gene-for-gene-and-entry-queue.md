@@ -10,6 +10,11 @@ participants: [Claude Opus 4.8, martin2urban]
 
 # Session Log: gene-for-gene skill + PHI-Canto entry-queue + Phase 4 completion
 
+## Recap
+
+4 commits on `main`, pushed. (1) **gene-for-gene** skill from a curator methodology doc (H-Y Chang) — guard/decoy vs direct, effector-GO boundary, R-gene/delivery extensions, NETS; genotype-label vocabulary → `genotype-creation`; reference in `06-Training/`. (2) **D13** design decision. (3) **canto-entry-queue**: deterministic click-list renderer (`phiweaver/canto/entry_queue.py`, new skill → 11) with held-gene cascade + referential-integrity + `--validate`; optional `hold`/`note` annotation schema (explicit park over prose-sniffing). (4) this log + **D14**. Smoke 7/7, 128 tests. External `active/`: **Phase 4 completed 10/10** (canto blocks + worksheets); **avrPto/Pto revised** vs methodology (skill caught a real disease-name error); **entry queues for all 10** + entry-readiness column; **CgHat1 accession RESOLVED → A0A8H4CVH4** (⛔→⚠). **NEXT: resolve URA5 / FleQ-GcbB accessions; hand-score benchmark.**
+
+
 **Date**: 2026-07-07 → 2026-07-08
 **Project**: PHI-Weaver — finish Phase 4 (canto blocks + worksheets for all 10 benchmark drafts),
 add a curator-authored **gene-for-gene** skill, build a concise **entry-queue** output for

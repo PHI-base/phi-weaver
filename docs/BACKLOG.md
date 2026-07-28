@@ -7,6 +7,9 @@ project: PHI-Weaver
 
 # PHI-Weaver Backlog
 
+**Canonical for:** open tasks and known gaps. [`Roadmap.md`](Roadmap.md) is the readable
+summary of the same ground — this file is the record. See [`README.md`](README.md).
+
 Durable to-do / known-gaps list. (The harness's in-session task tools don't persist across
 sessions, so **this file is the record** — add items as they come up; tick `[x]` or delete when
 done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
@@ -288,7 +291,7 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
   attested-relations table in `Ontology-Terms-Reference.md`, and fixed the `infective_ability` rule in
   `PHI-Canto-Curation-Conventions.md`. Tracks `CURATION-LESSONS.md` L5 (→ applied).
   - *Remaining (curator-facing, low priority):* the gold-standard example curations still display
-    `infective_ability reduced virulence` as text — decide with Hsin-Yun whether examples/drafts should
+    `infective_ability reduced virulence` as text — decide with Hsin-Yu whether examples/drafts should
     carry the term ID `PHIPO:0000015` in the value. Also **not** validated offline yet: term-value
     *subtree* membership and the per-primary-term `domain ID` subset constraints (deeper checks).
   - *Also vendored 2026-07-15:* the sibling configs `phibase_go_extensions.tsv` (GO annotations) and
@@ -696,7 +699,7 @@ decision and re-creating the term silently reopens it. See the `ontology-term-re
   the SQLite DB off Drive; sync latency before a file is readable; `media/` quota on big batches; use
   a **private** Drive folder. **Deferred harder option:** a native Drive-API storage adapter
   (headless, no mounted FS) — only needed for the future ROGER orchestrator; not worth it now.
-- [ ] **Confirm open clarifications from Hsin-Yun's 2026-07-15 review** (applied with sensible
+- [ ] **Confirm open clarifications from Hsin-Yu's 2026-07-15 review** (applied with sensible
   defaults; fold her answers into `07-Standards/PHI-Canto-Curation-Conventions.md`): (D1) canonical
   **gene-symbol source** — UniProtKB gene name vs. "strip the species prefix" (drafted as
   strip-prefix, e.g. `SdhA`); (D2) is there a **full allele/genotype naming standard** beyond the
@@ -704,7 +707,7 @@ decision and re-creating the term silently reopens it. See the `ontology-term-re
   (D4) **filenames** keep the PMID/`FpSdh` basename (kept — cosmetic, renaming would orphan the
   queue/docx). Also the GO-no-biochem-evidence question (`CURATION-LESSONS.md` L3) is still open
   with her.
-- [ ] **How much term *design* should a request carry?** (raised 2026-07-17; for Hsin-Yun) — the
+- [ ] **How much term *design* should a request carry?** (raised 2026-07-17; for Hsin-Yu) — the
   `ontology-term-request` skill's line is **"evidence, not design"**: never propose a term's parent,
   definition or hierarchy placement, on the principle that this project does not assert in-silico
   conclusions as fact (the same reasoning behind the ISS rejection). **But PHIPO's own
@@ -713,7 +716,7 @@ decision and re-creating the term silently reopens it. See the `ontology-term-re
   against a constraint they do not actually impose. James has since asked for AI-drafted **PRs**
   (not issues) for the narrow pattern-extension case, and PR #454 duly proposed a label, definition
   and parent — all three of the things the skill forbids. The skill now scopes the prohibition to
-  non-pattern-extension requests and records this as open. **Ask Hsin-Yun where the line should sit**,
+  non-pattern-extension requests and records this as open. **Ask Hsin-Yu where the line should sit**,
   framed as a discussion, not a ruling: is "evidence only" the right default for a request that needs
   a *new* branch, given CONTRIBUTING.md invites more? Does the pattern-extension carve-out match how
   she would want it bounded? **Blocks:** nothing — the skill has a working default. Supersede the
@@ -790,7 +793,7 @@ decision and re-creating the term silently reopens it. See the `ontology-term-re
     gold-standard set, score phiweaver against it (Correct/Incorrect); otherwise stay a neutral diff.
 
 - [ ] **LLM-as-judge / independent reviewer for benchmarking** (parked 2026-07-09; discussion only,
-  see `11-CLAUDE-AI/SESSION-LOGS/2026-07-09-llm-as-judge-discussion.md`). Idea: use a *different* model
+  see `docs/LLM-AS-JUDGE-DESIGN.md`). Idea: use a *different* model
   (e.g. GPT-5.5) as an independent scorer/critic so phiweaver never self-validates (extends D12's
   "independent scorer" slot; does **not** replace the human validation gate, D13). Trigger: GPT-5.5,
   given the paper + phiweaver draft + entry queue + scorecard, suggested improvements and scored lower

@@ -7,6 +7,9 @@ project: PHI-Weaver
 
 # Benchmark runbook — test run, 10 already-curated articles (2026-07-05)
 
+**Historical — one dated run.** Kept as the record of the 2026-07-05 test; the reusable
+procedure lives in `skills/benchmark/SKILL.md`. See [`README.md`](README.md).
+
 A short, concrete runbook for a **first benchmark**: curate 10 papers with phiweaver,
 score them by hand on the Excel scorecard, and produce a shareable report.
 

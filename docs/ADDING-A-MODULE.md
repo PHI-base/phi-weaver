@@ -7,6 +7,11 @@ project: PHI-Weaver
 
 # Adding a specialised curation module
 
+**Canonical for:** the module contract and how to extend PHI-Weaver *today*. This is the
+procedure to follow — [`PLUGIN-ARCHITECTURE.md`](PLUGIN-ARCHITECTURE.md) describes a future
+host that does not exist yet, and nothing there is needed to add a module.
+See [`README.md`](README.md).
+
 PHI-Weaver is built so a new curation capability plugs in by following one **module
 contract**. A module is a **skill** (the workflow) optionally backed by a **deterministic
 tool** (the reproducible part), with **tests** and a registry entry. Independently

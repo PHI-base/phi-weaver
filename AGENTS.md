@@ -22,13 +22,21 @@ PHI-Canto-ready annotation **drafts** and tracks curation progress.
 - Tracking database: SQLite at `11-CLAUDE-AI/db/phi_canto_tracking.db` (gitignored).
 - At session start, read `11-CLAUDE-AI/SESSION-LOGS/Session-Logs-INDEX.md` for prior context.
 - Session-log frontmatter (`11-CLAUDE-AI/SESSION-LOGS/YYYY-MM-DD-slug.md`): `created`,
-  `type: session-log`, `tags`, `project`, and **`summary:`** — a one-line prose recap, the same
-  text that becomes the log's row in `Session-Logs-INDEX.md`. Write `summary:` when you create the
-  log, so the "what happened" recap lives in structured data, not only in authored prose.
+  `type: session-log`, `tags`, `project`, and **`summary:`** — a prose recap of the session.
+  Write `summary:` when you create the log, so the "what happened" recap lives in structured
+  data, not only in authored prose.
+- **The index row is a pointer, not the recap.** Every session appends a row to
+  `Session-Logs-INDEX.md`, and that file is read at the start of *every* session — so an
+  over-long row is a cost paid forever, by every future session. Cap: **40 words**, enforced by
+  `python3 -m phiweaver.session_index --check` (a smoke-test check). Put the detail in the log
+  (a `## Recap` section) and let the row say only enough to choose which log to open. This rule
+  existed for months as prose and drifted to 645 words per row before it was given a check —
+  the general lesson is in `docs/README.md`.
 - Key ontologies: PHIPO (phenotype), PHIDO (disease), GO, BRENDA tissue, UniProtKB, PHI-ECO
   (experimental conditions, prefix `PECO:`). Map of all ontology material (reference, tools,
   bundled data, gap ledger, term requests): [07-Standards/Ontology-INDEX.md](07-Standards/Ontology-INDEX.md).
 - **Indexes** (this section is the map of maps; each index below is the map for its area):
+  - [docs/README.md](docs/README.md) — which doc is canonical for which topic; read before writing docs
   - [skills/REGISTRY.md](skills/REGISTRY.md) — reusable curation modules (skill → backing tool → tests); *generated*
   - [07-Standards/Ontology-INDEX.md](07-Standards/Ontology-INDEX.md) — where all ontology material lives (reference, tools, data, gaps)
   - [07-Standards/curation-examples/Curation-Examples-INDEX.md](07-Standards/curation-examples/Curation-Examples-INDEX.md) — the gold-standard curation-example library
@@ -51,6 +59,11 @@ PHI-Canto-ready annotation **drafts** and tracks curation progress.
   filter instead (e.g. `-path:skills -file:README`). Enforced by
   `python3 -m phiweaver.vault_names --check` (also a smoke-test check); add a justified
   exemption to `EXEMPT_BASENAMES` only when a name is dictated by a tool or platform.
+- **One doc owns each topic.** Before writing documentation, check
+  [docs/README.md](docs/README.md) and edit the doc that owns the topic; everywhere else,
+  summarise and link. Parallel explanations drift silently — nothing fails, an agent just reads
+  the stale copy. Don't write a count into prose when a generated file or a command already
+  prints it.
 - When a recurring question gets resolved, add a short Q/A + a `See:` pointer to
   `docs/FAQ.md` (a lookup layer over the canonical docs — keep answers short, don't duplicate).
 

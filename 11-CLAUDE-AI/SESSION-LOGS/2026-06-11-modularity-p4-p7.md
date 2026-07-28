@@ -10,6 +10,11 @@ participants: [Claude Fable 5, martin2urban]
 
 # Session Log: Modularity P4 (split 11-CLAUDE-AI/) + P7 (folder taxonomy)
 
+## Recap
+
+P4: moved the PDF converter into `phiweaver/pdf/` (shim at old path), dropped the stray JSON, added `11-CLAUDE-AI/README.md` (operational role); obsidian_reorganise + timeline generators kept as vault-operational. P7: renamed `07-Wiki`→`08-Wiki` (broke the duplicate `07-` prefix) + updated refs. All modularity phases P1–P7 now done.
+
+
 **Date**: 2026-06-11
 **Project**: PHI-Weaver — modularity refactor (see `docs/MODULARITY-PLAN.md`)
 **Session Type**: Refactor (behaviour-preserving) — the final two phases.

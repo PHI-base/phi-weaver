@@ -7,6 +7,10 @@ project: PHI-Weaver
 
 # PHI-Weaver — One-Page Overview
 
+**Canonical for:** what PHI-Weaver is and what it can do today. Direction lives in
+[`Roadmap.md`](Roadmap.md), rationale in [`DESIGN-DECISIONS.md`](DESIGN-DECISIONS.md), the
+module inventory in [`../skills/REGISTRY.md`](../skills/REGISTRY.md). See [`README.md`](README.md).
+
 **What it is:** an AI-assisted biocuration toolkit for the **PHI-base / PHI-Canto**
 pathogen–host interaction databases. It turns published papers into structured,
 PHI-Canto-ready annotation **drafts** and tracks curation progress — always as *draft
@@ -53,8 +57,8 @@ Two clean layers:
     (`python3 -m phiweaver.…`), stdlib-only; install optional. `scripts/` keeps thin
     compatibility shims for the old command paths.
   - `skills/` — one folder per reusable workflow (`SKILL.md`), **tool-agnostic** (Claude
-    Code via `CLAUDE.md`, OpenCode natively); the **6 skills** are enumerated in
-    `skills/REGISTRY.md`.
+    Code via `CLAUDE.md`, OpenCode natively); enumerated in `skills/REGISTRY.md` (generated —
+    read the count there rather than restating it here).
   - `07-Standards/curation-examples/` — the validated **curation-example library** (worked
     examples, tag-classified, with a generated `INDEX.md`) that phiweaver retrieves
     references from when drafting a similar case.
@@ -68,24 +72,16 @@ Two clean layers:
 phenotype mapping (PHIPO) + validation → phenotype annotation → QC → tracking DB
 (completion metrics) → curator review → PHI-Canto`.
 
-**Safety net:** `phiweaver.smoke` (7 checks) + the unit suite (69 tests) gate every change
-and run on Codespace build, so parts can be updated with confidence.
+**Safety net:** `phiweaver.smoke` — 7 checks plus the bundled unit suite — gates every change
+and runs on Codespace build, so parts can be updated with confidence. Run it for the current
+check and test counts rather than trusting a number written here.
 
-## Future improvement possibilities
+## Where it goes next
 
-- **Structural (modularity):** ✅ **complete** — the importable `phiweaver/` package (P1),
-  the module contract + registry (P2), co-located tests (P3), the `11-CLAUDE-AI/` split (P4,
-  extended 2026-07 into `vault-ops/` + engine decoupling), the DB migration layer (P5),
-  skill→tool links (P6), and the folder-prefix tidy (P7) all landed. See
-  `docs/MODULARITY-PLAN.md` and `docs/DESIGN-DECISIONS.md`.
-- **Curation examples:** the validated-example library is scaffolded; the next step is
-  producing the first worked examples by curating real papers (phiweaver drafts →
-  human-validated).
-- **Plug-in host + local AI (a direction, not built):** PHI-Weaver as a host for
-  independently-developed modules (figure→phenotype, phenotype→PHIPO), run out-of-process
-  with a local AI on the ROGER GPU cluster and a light portable core. See
-  `docs/PLUGIN-ARCHITECTURE.md`.
-- **Capability (genuinely future):** automate entity recognition / ontology suggestion ·
-  direct PHI-Canto submission · richer completion analytics.
+The structural modularity work is ✅ **complete** (phases P1–P7, landed 2026-06-11 — see
+[`MODULARITY-PLAN.md`](MODULARITY-PLAN.md) for what changed and
+[`DESIGN-DECISIONS.md`](DESIGN-DECISIONS.md) for why).
 
-None of these are blockers — the toolkit is functional now.
+Everything still ahead — near-term work, deferred directions, and open questions for
+collaborators — lives in [`Roadmap.md`](Roadmap.md), with the task-level record in
+[`BACKLOG.md`](BACKLOG.md). None of it blocks anything: the toolkit is functional now.

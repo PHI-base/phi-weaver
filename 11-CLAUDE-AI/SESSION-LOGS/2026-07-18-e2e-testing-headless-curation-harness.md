@@ -8,6 +8,11 @@ summary: Clarified E2E vs smoke/unit, built + verified scripts/e2e/ (headless bl
 
 # Session: E2E testing — from a terminology question to a working headless curation harness
 
+## Recap
+
+Question-driven, started from "what is N-to-N testing?" (= **"end to end"** misheard). Drew the ladder **unit → smoke → E2E**, and the **run vs test** / **gold-standard-is-only-half** distinctions. Diagnosed that `curation_pipeline.py` is a mechanical **file-mover with no model call** — the draft step is the manual hole. **Built `scripts/e2e/`** (`54de438`): `e2e-curate.sh` (headless blind-sandboxed `claude -p` → draft → scorecard → score) + `score_against_gold.py` (stdlib P/R/F1 over PHIPO/GO/PHIDO/FYPO/PECO/UniProtKB ids, **ID-overlap only, not curation nuance**). **Verified live on PMID39787257 (FgKnr4): 16/16 ids, F1 1.00** from an ~850-word converted PDF. Two fixes it surfaced: **blind sandbox needs `socat`** as well as `bubblewrap` (bites the `benchmark` skill too; `sudo apt install socat`), and the scorer was **format-sensitive** to markdown bold (`UniProtKB:**id**` → false 0.93; hardened `extract_ids`). Decided **real curation = use the Claude CLI un-sandboxed**, drafts stay human-reviewed/entered; **batch via drop-folder** (inbox→outbox, done=draft-in-outbox, few/day, no scheduler). FAQ: appended 3 E2E entries to `docs/FAQ.md` (`0b92dcd`) after user corrected a standalone doc → **"make a FAQ" = append to FAQ.md** (memory). TOC blocks committed (`0e596f5`). Memories: `e2e-curation-test-harness`, `faq-append-existing`. **All pushed to `origin/main`** through `0e596f5`.
+
+
 A question-driven, mostly conceptual session that ended in a small, verified build. Started from
 "what is N-to-N testing?", which turned out to be **"end to end"** misheard — and cascaded into:
 what E2E means for weaver, whether the pipeline actually runs E2E, building the missing piece,

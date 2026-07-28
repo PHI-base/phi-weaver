@@ -10,6 +10,11 @@ participants: [Claude Fable 5, martin2urban]
 
 # Session Log: model-field provenance + PHI-Canto entry worksheet (Route 1)
 
+## Recap
+
+6 commits, all pushed. (1) Threaded the drafting **model** through the whole benchmark stack — draft `meta.model`, a **Model** row in the scorecard template, `fill_scorecard`/`scorecards_to_csv`/`benchmark_report` (auto-derives footer model from CSV; `--model` overrides); +3 tests; added `model: Fable 5` to all 10 drafts, regenerated 9/10 scorecards. (2) Assessed getting drafts into **PHI-Canto** (no write API; `canto_load.pl` server-side): `docs/CANTO-SUBMISSION-ROUTES.md` (3 routes, recommend worksheet now). (3) Built **Route 1** through Phase 3: spec `docs/CANTO-ROUTE1-BUILD-SPEC.md`; structured `canto` block in the draft schema (TOX2 as reference instance); `phiweaver/canto/worksheet.py` renderer (11 tests); `canto-worksheet` skill (9 skills). **Validation model: biocurator entry into PHI-Canto IS the validation.** Smoke 7/7, 108 tests. **NEXT: Phase 4 back-fill 9 drafts + generate worksheets; hand-score benchmark; Canto route decision (server access?).**
+
+
 **Date**: 2026-07-06
 **Project**: PHI-Weaver — (1) thread the drafting **model** through the benchmark stack so
 provenance travels with the data; (2) scope how to get phiweaver drafts into **PHI-Canto**

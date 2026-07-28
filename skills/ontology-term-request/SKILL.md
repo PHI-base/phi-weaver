@@ -49,7 +49,7 @@ principle behind the team's ISS rejection).
 > **Open question — tracked in `docs/BACKLOG.md` ("How much term *design* should a request
 > carry?", Curation workflow).** PHIPO's own `CONTRIBUTING.md` asks requesters to suggest
 > "label (name), definition, references, position in hierarchy" — so this skill's evidence-only
-> line is *stricter than PHIPO's house rule*. For Hsin-Yun; supersede the routes above when she
+> line is *stricter than PHIPO's house rule*. For Hsin-Yu; supersede the routes above when she
 > answers. The default below works meanwhile.
 
 ## When to use

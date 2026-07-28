@@ -9,6 +9,10 @@ project: PHI-Weaver
 
 **Status:** design / strawman — not yet implemented · **Created:** 2026-07-02
 
+**Not a description of the current system.** Nothing below is built. For how PHI-Weaver works
+today see [`OVERVIEW.md`](OVERVIEW.md); to add a module now follow
+[`ADDING-A-MODULE.md`](ADDING-A-MODULE.md). See [`README.md`](README.md).
+
 A design for turning PHI-Weaver into a **plug-in host**: a small, dependency-light core that
 independently-developed curation modules can be **plugged into, tested against a contract, and
 incorporated** — without contaminating the core or each other. Captures the direction agreed in

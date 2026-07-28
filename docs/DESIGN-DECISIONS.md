@@ -7,11 +7,13 @@ project: PHI-Weaver
 
 # PHI-Weaver — Design Decisions & System Record
 
-**Purpose:** the *why* behind PHI-Weaver — the key design decisions and their rationale, plus a
-snapshot of the system as built. Companion docs: `OVERVIEW.md` (what it can do),
-`MODULARITY-PLAN.md` (the refactor), `PLUGIN-ARCHITECTURE.md` (long-term direction),
-`ADDING-A-MODULE.md` (how to extend). Session-by-session history lives in
-`11-CLAUDE-AI/SESSION-LOGS/`.
+**Canonical for:** the *why* behind PHI-Weaver — the key design decisions and their rationale.
+When a doc explains a choice, it should point here rather than re-argue it.
+See [`README.md`](README.md) for who owns what; the rest of the map:
+[`OVERVIEW.md`](OVERVIEW.md) (what it can do), [`ADDING-A-MODULE.md`](ADDING-A-MODULE.md) (how to
+extend), [`PLUGIN-ARCHITECTURE.md`](PLUGIN-ARCHITECTURE.md) (a future direction, not built),
+[`MODULARITY-PLAN.md`](MODULARITY-PLAN.md) (the completed 2026-06 refactor).
+Session-by-session history lives in `11-CLAUDE-AI/SESSION-LOGS/`.
 
 Keep this current: when a real design choice is made or reversed, add/adjust an entry.
 
