@@ -387,6 +387,11 @@ def _strains_section(canto: dict, cl: dict) -> List[str]:
         role = ("host" if name in cl["host_names"]
                 else "pathogen" if name in cl["path_names"] else "")
         e = _entry(org, role)
+        # Metagenotype evidence outranks the "pathogen" seeded above from a declared gene. A host
+        # R gene (Pto on PMID:1537802) makes its organism look like a pathogen otherwise, and the
+        # gene-for-gene papers where that happens are exactly the ones with host genes declared.
+        if role:
+            e["role"] = role
         # A mutant contributes no strain (2026-07-25 ruling). Two independent signals, because
         # neither alone is sufficient: alleles catch the ordinary case, and an explicit
         # `background` catches a mutant the draft lists without alleles — AM30 on PMID:9927411 is

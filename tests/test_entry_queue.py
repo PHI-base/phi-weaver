@@ -363,6 +363,23 @@ class StrainsSectionTests(unittest.TestCase):
             if "Triticum aestivum" in line:
                 self.assertIn("host", line)
 
+    def test_a_declared_host_gene_does_not_make_its_organism_a_pathogen(self):
+        """Gene-for-gene regression: a host R gene seeds 'pathogen' unless evidence overrides it.
+
+        On PMID:1537802 the host resistance gene Pto is declared in `genes`, which made A2 label
+        Solanum lycopersicum a pathogen even though its genotypes are only ever used as the host
+        side of a metagenotype. Metagenotype use must win.
+        """
+        rec = _rec()
+        rec["canto"]["genes"].append(
+            {"name": "HostR", "uniprot": "P93215", "organism": "Triticum aestivum", "locus": "L3"})
+        md, _ = eq.render_entry_queue(rec)
+        a2 = md.split("### A2.")[1].split("\n## ", 1)[0]
+        host_row = [l for l in a2.splitlines() if "Triticum aestivum" in l and l.startswith("| ☐ |")]
+        self.assertEqual(len(host_row), 1)
+        self.assertIn("host", host_row[0])
+        self.assertNotIn("pathogen", host_row[0])
+
     def test_strain_is_never_guessed_from_the_genotype_name(self):
         # The fixture carries no `strain` field, so every cell must stay unset.
         for line in self.a2.splitlines():
