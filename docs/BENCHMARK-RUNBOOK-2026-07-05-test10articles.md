@@ -20,6 +20,28 @@ score them by hand on the Excel scorecard, and produce a shareable report.
   the example library is bigger (see `docs/BACKLOG.md` and the `benchmark` skill).
 - Full reference: the **`benchmark`** skill and `07-Standards/curation-benchmarking/README.md`.
 
+## The 10 articles
+
+Citations resolved against Europe PMC (2026-07-29). Canonical copy, with the pathogen × host
+systems and the notes on the set:
+[[Benchmark-10-articles-July-2026]] (`07-Standards/curation-benchmarking/`) — correct it there.
+
+| PMID | Europe PMC | First author – Year | Journal | Short title |
+|---|---|---|---|---|
+| 1537802 | PMC206556 | Ronald PC – 1992 | J Bacteriol | avrPto induces Pto-dependent resistance in tomato |
+| 1541525 | PMC257600 | Varma A – 1992 | Infect Immun | URA5 transformants of *Cryptococcus neoformans* |
+| 41020836 | PMC12468165 | Han S – 2025 | Curr Issues Mol Biol | TOX2 in conidiation and full virulence of *F. pseudograminearum* |
+| 41051314 | PMC12520088 | Wang J – 2025 | Virulence | Rad53 overexpression in *Candida albicans* |
+| 41134853 | PMC12578332 | Chen L – 2025 | PLoS Pathog | TRAPPIII complex in *Fusarium graminearum* |
+| 41156765 | PMC12566070 | Li C – 2025 | Microorganisms | SNARE CfSec22 in *Ceratocystis fimbriata* |
+| 41170998 | PMC12691644 | Kramara J – 2025 | mBio | Efg1 governs hyphal morphogenesis independently of cAMP–PKA |
+| 41205159 | — | Wang J – 2025 | Phytopathology | GATA TF NsdD in *C. siamense* and *C. graminicola* |
+| 41229162 | PMC12612558 | Hidayat MT – 2025 | Mol Plant Pathol | FleQ and GcbB as virulence factors in *P. syringae* pv. *tabaci* |
+| 41295150 | PMC12653700 | Jia B – 2025 | J Fungi | CgHat1 histone acetyltransferase in *C. gloeosporioides* |
+
+An 11th paper, PMID:1799694 (van Kan 1991), was dropped by the curator — scanned PDF, no text
+layer. The Rad53 paper's file carried a wrong PMID (`4101314`), corrected to `41051314`.
+
 ## Model choice (record it; keep it constant)
 The model is **part of what you are measuring** — an accuracy number is only meaningful attached
 to a specific model. For this task (precision extraction + ontology reasoning under a strict

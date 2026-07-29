@@ -258,9 +258,40 @@ add content, they don't rewrite it — fine. `smoke_test.py` catches any contrac
 *(This FAQ is the canonical note for this decision.)*
 **See:** `phiweaver/registry.py` (`parse_frontmatter`); `scripts/smoke_test.py`.
 
+### How do we keep PHI-Weaver lean and maintainable?
+**Where a fact is *derived*, put a check on it or expect it to drift.** Reviewed 2026-07-28:
+every derived surface with a mechanical check was still true, and every one relying on someone
+remembering had drifted — the judge bundle had been stale for three weeks, `OVERVIEW.md`
+understated the test count tenfold, and session-index rows had reached 645 words against a stated
+"one-line" rule. Size was not the predictor; enforcement was. Four working rules:
+- **One doc owns each topic** — everywhere else, summarise and link. Parallel explanations drift
+  silently: nothing fails, someone just reads the stale copy and acts on it.
+- **Don't write a count into prose** when a generated file or a command already prints it.
+- **A generated file needs a `--check` in `phiweaver.smoke`**, or its generator stops being run
+  and no one notices.
+- **Prefer removing an artefact to automating its upkeep** — count what actually reads a thing
+  before building tooling for it. This is how the session-log prune was dropped in favour of
+  promoting the one log that five docs cited.
+**When a check is the wrong tool.** The rules above target *silent, cumulative* drift — a copied
+number, a generator nobody runs, a file that grows a row per session. They do **not** apply to a
+curation convention the drafting agent applies as it writes: put that in the conventions doc and
+the relevant `skills/` file, and it takes effect on the next draft with no code at all. Evidence:
+the Δ-suffix ruling (L4, 2026-07-15) was never coded, and **every** draft dated on or after it
+uses `SdhAΔ` / `FgKnr4Δ` / `abc1-2Δ` correctly, while the pre-L4 drafts still read `ΔfleQ`. That
+is the declarative-learning loop in `LEARNING-SYSTEM.md` working as designed — adding a lint there
+would buy nothing and cost a moving part. Reach for a check when nothing would surface the
+problem; rely on the rule when compliance is visible in the output. If a post-rule draft ever
+breaks such a convention, *that* is the trigger to add the check.
+
+And keep changes small: overengineering here has produced runs that fail to terminate.
+**See:** `docs/README.md` (which doc owns what, and which docs are deliberately not canonical);
+`AGENTS.md` §1 (index-row cap) and §4 (simplicity, verification); `phiweaver/registry.py` and
+`phiweaver/session_index.py` (the check pattern to copy).
+
 ### Should the smoke test run at the start of every weaver session?
 **No — run it when the code or environment could have changed, not as a ritual.** Smoke re-runs
-all ~287 tests (~30–45 s) and, on an unchanged checkout, tells you nothing new. Run it **after
+the whole unit suite (~30–45 s; `python3 -m phiweaver.smoke` reports the count) and, on an
+unchanged checkout, tells you nothing new. Run it **after
 `git pull`** (collaborator code), after an environment change, and **before a scored benchmark
 run**; code-editing sessions are already covered by the "verify before committing" rule
 (`AGENTS.md` §4). A pure curation session doesn't need it — and the things that actually bite
