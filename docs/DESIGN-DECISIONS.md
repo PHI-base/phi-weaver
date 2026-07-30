@@ -353,6 +353,41 @@ highlighted. **Reversal test:** recurring throughput in the hundreds of papers, 
 baseline showing mechanical entry dominates curator time. **See:** `docs/CANTO-SUBMISSION-ROUTES.md`;
 `docs/BACKLOG.md` → "Submit drafts into PHI-Canto"; `docs/FAQ.md`.
 
+### D20 — Exporting weaver knowledge to an outside LLM: a profile of the existing builder, never a second tool
+Someone will eventually want to hand another model what weaver knows about the ontologies — where
+each one comes from, how to refresh it, and the caveats that make the difference between a correct
+lookup and a plausible wrong one. **Decision:** any such export is a **named file-list profile in
+`scripts/build_judge_handover.py`** (the `FILES` list, currently a single unnamed profile), sourced
+from documents that already exist. Not a second builder, not a hand-written companion doc, and not
+a copy of the provenance table. Four constraints bind whoever implements it:
+1. **No new source of truth.** `phiweaver/lookup/data/README.md` is already the ontology-access
+   document — per-file upstream URL, download date, release, term counts, refresh command, and the
+   traps (`phipo-base.obo` vs the unreleased `phipo-edit.owl`; PHI-base `PECO:` vs Planteome's
+   unrelated `peco`; the `FYPO_EXT:100000x` gate roots that correctly read `not_found`; `pomgeneex.obo`
+   having no upstream at all). It stays current as a side effect of `refresh_ontologies`. An export
+   that *points at* it cannot drift; one that paraphrases it drifts from day one.
+2. **Profile, not script.** Adding a list entry is a data change; a second builder sharing ~90% of
+   its logic is a permanent maintenance obligation — the failure mode **D16** already corrected once.
+3. **Generated, regenerated on demand.** Inherits the existing builder's rule (output is a generated
+   artifact; edit the sources and rerun), so a stale bundle is never authoritative.
+4. **No gitignored path in any profile** — today `canto_deploy.yaml` (private PHI-base/config,
+   cleared for local reading, **not** for republication; this repo is public). Enforce with a test
+   asserting every profile path is git-tracked, not with someone remembering. Licensing is mixed
+   even among tracked files: `phipo_ext.obo` is CC-BY 4.0 and redistributable, while the four
+   `*_extensions.tsv` / `phipo_extension_relations.obo` configs were hand-copied from the private
+   repo and have no public source yet.
+**Why:** the clutter risk is real and specific — a parallel export doc, a second builder, and a
+third copy of the provenance table, each half-maintained. Pinning the shape now costs nothing and
+removes the decision from whoever is in a hurry later. **Alternatives:** a dedicated export script
+(rejected — duplicates the builder); a hand-written "ontology access" note (rejected — a fourth
+copy of facts that already live in `data/README.md`); shipping `data/` as a tarball (rejected —
+~1.1 MB, `phipo-base.obo` alone is 618K ≈ 150K+ tokens, and a naive sweep republishes the private
+config). **Scope note:** this covers exporting *knowledge*. A consumer that must actually *resolve*
+terms needs the repo and a shell, not a bundle — give it `git clone` + `AGENTS.md` + `data/README.md`
+and let it run the nine `phiweaver/lookup/` CLIs, each of which self-documents via `--help`.
+**Status:** **not built — constraint only.** No consumer exists yet; building the profile before one
+does would be the clutter this entry prevents. **See:** `docs/BACKLOG.md` → "Tooling"; `docs/FAQ.md`.
+
 ### D11 — Deliberately deferred / not done
 - **Full vault renumbering** — low value; numbering gaps left cosmetic.
 - **JSON curation-record schema** — a machine consumer now exists (the benchmarking-scorecard

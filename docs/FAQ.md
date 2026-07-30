@@ -159,6 +159,17 @@ paper's own gold-standard example is in the bundle, remove it for that run. Rege
 after editing any source file.
 **See:** `docs/phiweaver-judge-handover.md`; `scripts/build_judge_handover.py`.
 
+### Can I export weaver's ontology access — sources, refresh commands, caveats — to another LLM?
+Not built, and deliberately so: no consumer exists yet. The **shape is already decided** so it can
+be done cheaply and consistently when one does — a **named profile** in the existing
+`scripts/build_judge_handover.py`, sourced from `phiweaver/lookup/data/README.md` (which is already
+the ontology-access record and stays current via `refresh_ontologies`), never a second builder or a
+hand-written companion doc. Two things to know before exporting anything: **no profile may contain a
+gitignored path** — `canto_deploy.yaml` is private and this repo is public — and the bundled `data/`
+is ~1.1 MB, so shipping the ontology *files* to a chat-window model is not an option (`phipo-base.obo`
+alone is ≈150K+ tokens). A model that must actually *resolve* terms wants the repo and a shell, not
+a bundle. **See:** `docs/DESIGN-DECISIONS.md` **D20**; `docs/BACKLOG.md` → "Tooling".
+
 ### Should we adopt OKF (Open Knowledge Format) to make PHI-Weaver knowledge shareable?
 Not worth formally adopting now. PHI-Weaver already follows the OKF pattern — markdown + YAML
 frontmatter + directory hierarchy + cross-links + generated indexes + git. OKF's payoff is

@@ -16,6 +16,13 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
 `PLUGIN-ARCHITECTURE.md`.
 
 ## Tooling / bugs
+- [ ] **Ontology-access export for an outside LLM — shape decided, deliberately not built**
+  (added 2026-07-30). If a consumer ever appears, add a **named profile** to the `FILES` list in
+  `scripts/build_judge_handover.py` sourced from `phiweaver/lookup/data/README.md` (+
+  `07-Standards/Ontology-Terms-Reference.md`, already bundled), plus a test asserting no profile
+  contains a gitignored path — `canto_deploy.yaml` must never be republished. Do **not** write a
+  second builder or a parallel export doc. **Trigger:** a real consumer, not a hunch. Full rationale
+  and the four constraints: `DESIGN-DECISIONS.md` **D20**.
 - [x] **PDF converter flattens tables and loses their columns** — *fixed 2026-07-26* (added
   2026-07-24, surfaced on PMID:9927411). Tables now arrive as **page renders**: the whole page a
   table sits on is rendered to PNG at 170 dpi beside the figures, and the report counts captions
