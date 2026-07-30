@@ -316,6 +316,36 @@ blocks). The hook + script live in the gitignored `.claude/`, so they're per-mac
 *(This FAQ is the canonical note for this decision.)*
 **See:** `.claude/session-start-smoke.sh` (local, gitignored); `scripts/smoke_test.py`; `AGENTS.md` §4.
 
+### Can weaver become a self-evolving AI system?
+**It already is one — declaratively — and the useful question is not whether to become
+self-evolving but which human gates to raise.** Weaver closes a full loop (feedback → lessons
+ledger → durable rules/examples → drafting → validation → feedback), plus a relearning loop for
+reversals. It works without code: the Δ-suffix ruling (L4) was never implemented as a lint, yet
+every draft dated on or after it complies while pre-L4 drafts don't.
+What it deliberately is **not** is weight-updating, and that is load-bearing rather than a gap.
+Learning by editing the rules read at drafting time buys reversibility (an edit the next draft
+follows immediately), cited provenance, and git history — for a tool feeding a public database,
+"why did it decide that, and can we undo it" is not optional. Fine-tuning would trade all three for
+speed that isn't the bottleneck.
+Four human gates exist today: `inbox-triage` proposes but never auto-applies; curator entry into
+PHI-Canto is the validation gate (**D13**); a human rules on every ontology-term request; a human
+scores the subjective benchmark columns (**D12**). The best-understood one to raise is the third —
+**ratify patterns, not terms** (see the recurrence entry below): real autonomy that relocates the
+human rather than deleting them.
+Two things to hold on to. **The binding constraint is ground truth, not architecture** — the only
+true fitness signal is a curator actually entering a draft into PHI-Canto, everything upstream is
+reference-free critique, and submission is manual by design (**D18**). So evolution rate is capped
+by curator throughput, and raising validated-curation volume does more for self-evolution than
+anything labelled self-evolving. And **the failure mode is manufactured consensus**: a loop that
+mines its own output can produce recurrence reflecting weaver's phrasing rather than the biology,
+where a *systematic* bias yields a *consistent* false positive that looks more legitimate, not less.
+Any autonomous path needs an independent signal, not a tally of itself. Note also that a
+self-improving loop is the canonical non-terminating construct, and overengineering here has
+already produced runs that fail to terminate — the pattern-ratification route is preferred partly
+because a human ruling is a natural stopping condition.
+**See:** `docs/LEARNING-SYSTEM.md` (canonical for the mechanism — nodes, flows, both loops);
+the recurrence entry below; `docs/CURATION-LESSONS.md`; **D13** / **D18** in `DESIGN-DECISIONS.md`.
+
 ### Can PHI-Weaver help with PHIPO ontology development?
 **Yes, within limits.** Curation is the best gap detector — it meets gaps on real papers with the
 evidence in hand — so weaver **records** them (`docs/ontology-gaps.jsonl`, ranked by how many papers
