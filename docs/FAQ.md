@@ -215,6 +215,34 @@ section (per-model roll-up + per-paper rows) once at least one batch has been re
 **See:** `phiweaver/article_tokens.py` (`record_to_db`, `token_history`, `PRICES`);
 `phiweaver/tracking/generate_article_registry.py`.
 
+### What do we call weaver — is it a "semantic agentic system"?
+**No — that overclaims on one word and misattributes the other. Use the settled term:
+*AI-assisted biocuration toolkit*** (the whitepaper title, `OVERVIEW.md` and the README already
+agree on it).
+- **Not "semantic".** In CS that signals semantic-web machinery — RDF triples, OWL reasoning,
+  inference over description logic. Weaver parses OBO for lexical matching and ID validation; it
+  does not reason over the ontology, and does not consume the OWL serialisation at all. The
+  accurate word is **ontology-grounded** / **ontology-based** — a real claim, since terms resolve
+  against vendored release artifacts and are never invented (`no_match` when nothing fits).
+- **Not "agentic" — weaver isn't the agent.** It is the skills, conventions, examples and
+  deterministic tools that an agent reads and runs (usually Claude Code; deliberately
+  tool-agnostic). The agency is the host LLM's; weaver is what makes a general agent competent at
+  this job. The precise term for the artefact is **agent scaffolding** / a **domain-specific agent
+  harness**. "Agentic" describes how it is *operated*, not what it *is*.
+- **And it carries a positioning risk.** "Agentic" now implies autonomy, which is exactly what
+  weaver promises it isn't — the curator validation gate (**D13**), manual submission by design
+  (**D18**), "deliberately not an autonomous curator" in the whitepaper.
+**By audience:** for PHI-base / curators / biocuration venues keep **AI-assisted** (or
+**semi-automated**) **biocuration** — the term of art that community already recognises. For an
+AI/CS audience the defensible compound is *a human-in-the-loop, ontology-grounded LLM agent
+framework with deterministic tool augmentation and declarative learning* — every modifier backed by
+something real (D13; vendored ontologies + `no_match`; the offline stdlib-only lookup CLIs; the
+learning system). If you need **one** distinctive phrase, lead with **declarative** (or
+**non-parametric**) **learning**: no trained weight to unlearn, so a convention reverses with an
+edit the next draft follows, auditable in git. Most systems calling themselves agentic can't say that.
+**See:** `docs/OVERVIEW.md` (canonical for what it is); `docs/PHI-WEAVER-WHITEPAPER.md`;
+`docs/LEARNING-SYSTEM.md`; the self-evolving entry above.
+
 ### What's the difference between a "package" and a "module"?
 A **module** is a single `.py` file you can import; a **package** is a *directory* of modules
 with an `__init__.py` that makes the folder importable as a namespace (so it groups related
