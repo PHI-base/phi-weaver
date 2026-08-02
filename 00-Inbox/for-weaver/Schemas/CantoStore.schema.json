@@ -1,0 +1,1376 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema#",
+    "title": "PHI-base 5 schema",
+    "description": "Schema for the CantoStore collection in the MongoDB database of PHI-base 5.",
+    "type": "object",
+    "$defs": {
+        "pmid": {
+            "title": "PubMed identifier",
+            "description": "The PubMed identifier (PMID) for the publication, prefixed with 'PMID:'.",
+            "type": "string",
+            "examples": [
+                "PMID:22028654"
+            ]
+        },
+        "annotationExtension": {
+            "type": "object",
+            "properties": {
+                "rangeType": {
+                    "title": "Annotation extension range type",
+                    "description": "The data type of the range of the annotation extension relation.",
+                    "type": "string",
+                    "enum": [
+                        "Gene",
+                        "Ontology",
+                        "%",
+                        "Text",
+                        "HostTaxonID",
+                        "PathogenTaxonID",
+                        "Metagenotype",
+						""
+                    ]
+                },
+                "rangeDisplayName": {
+                    "title": "Annotation extension range display name",
+                    "description": "A display name for the range of the annotation extension relation.",
+                    "type": "string",
+                    "examples": [
+                        "leaf",
+                        "stb6"
+                    ]
+                },
+                "rangeValue": {
+                    "title": "Annotation extension range value",
+                    "description": "The value of the range of an annotation extension relation. For ontology terms, the value is the OBO ID of the term; for annotated features, the value is the unique identifier of the feature; for literals, the value is the value of the literal.",
+                    "type": "string",
+                    "examples": [
+                        "GO:0052170",
+                        "A0A1D5VHV3",
+                        "50"
+                    ]
+                },
+                "relation": {
+                    "title": "Annotation extension relation name",
+                    "description": "The name of the annotation extension relation.",
+                    "type": "string",
+                    "examples": [
+                        "has_penetrance",
+                        "part_of",
+                        "assayed_using"
+                    ]
+                }
+            },
+            "required": [
+                "rangeDisplayName",
+                "rangeType",
+                "rangeValue",
+                "relation"
+            ]
+        },
+        "hostGenotypeProperties": {
+            "type": "object",
+            "properties": {
+                "strain": {
+                    "title": "Host strain",
+                    "description": "The name of the host strain, cell line, cultivar, etc.",
+                    "type": "string",
+                    "examples": [
+                        "90E341F line"
+                    ]
+                },
+                "species": {
+                    "title": "Host species",
+                    "description": "The scientific name of the species of the host genotype.",
+                    "type": "string",
+                    "examples": [
+                        "Oryza sativa"
+                    ]
+                },
+                "background": {
+                    "title": "Host background",
+                    "description": "Background mutations of the host genotype.",
+                    "type": "string",
+                    "examples": [
+                        "HSP90-silenced tobacco"
+                    ]
+                },
+                "alleletype": {
+                    "title": "Host alelle type",
+                    "description": "The type of mutation of the host allele.",
+                    "type": "string",
+                    "examples": [
+                        "deletion"
+                    ]
+                },
+                "expression": {
+                    "title": "Expression level",
+                    "description": "Expression level of the alleles in the host genotype.",
+                    "type": "string",
+                    "examples": [
+                        "Knockdown"
+                    ]
+                },
+                "gene": {
+                    "title": "Host gene",
+                    "description": "The gene identifier of the host gene.",
+                    "type": "string",
+                    "examples": [
+                        "Oryza sativa Q6I5Q6"
+                    ]
+                },
+                "allelename": {
+                    "title": "Host allele name",
+                    "description": "The name of the host allele.",
+                    "type": "string",
+                    "examples": [
+                        "Rpp1"
+                    ]
+                }
+            }
+        },
+        "phi_id": {
+            "title": "PHI-base 4 ID",
+            "description": "PHI-base 4 identifiers for this annotation. Multiple values are delimited with the pipe character.",
+            "type": "string",
+            "examples": [
+                "PHI:10445",
+                "PHI:7391|PHI:7392"
+            ]
+        },
+        "conditions": {
+            "title": "Experimental condition term IDs",
+            "description": "OBO IDs for experimental condition terms from the PHI-base Experimental Conditions Ontology (PHI-ECO). Multiple values are delimited with the pipe character.",
+            "type": "string",
+            "examples": [
+                "PECO:0000102",
+                "PECO:0000102|PECO:0005224"
+            ]
+        },
+        "pathogenAlleles": {
+            "title": "Pathogen alleles",
+            "description": "Allele details for the pathogen genotype.",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "description": {
+                        "title": "Allele description",
+                        "description": "The description of the alelle.",
+                        "type": "string",
+                        "examples": [
+                            "S645P"
+                        ]
+                    },
+                    "gene": {
+                        "title": "Allele gene",
+                        "description": "The gene identifier of the allele.",
+                        "type": "string",
+                        "examples": [
+                            "Erwinia amylovora D4I208"
+                        ]
+                    },
+                    "allelename": {
+                        "title": "Allele name",
+                        "description": "The name of the allele.",
+                        "type": "string",
+                        "examples": [
+                            "EAMY_3201Δ"
+                        ]
+                    },
+                    "alleletype": {
+                        "title": "Allele type",
+                        "description": "The type of mutation of the allele.",
+                        "type": "string",
+                        "examples": [
+                            "deletion"
+                        ]
+                    }
+                }
+            }
+        },
+        "pathogenGenotypeProperties": {
+            "type": "object",
+            "properties": {
+                "strain": {
+                    "title": "Pathogen strain",
+                    "description": "The strain name of the pathogen genotype.",
+                    "type": "string",
+                    "examples": [
+                        "CFBP 1430"
+                    ]
+                },
+                "species": {
+                    "title": "Pathogen species",
+                    "description": "The scientific name of the species of the pathogen genotype.",
+                    "type": "string",
+                    "examples": [
+                        "Magnaporthe oryzae"
+                    ]
+                },
+                "background": {
+                    "title": "Pathogen background",
+                    "description": "Background mutations of the pathogen genotype.",
+                    "type": "string",
+                    "examples": [
+                        "Ku70delta"
+                    ]
+                }
+            }
+        },
+        "pathogenExpression": {
+            "title": "Expression level",
+            "description": "Expression level of the alleles in the pathogen genotype.",
+            "type": "string",
+            "examples": ["Ectopic"]
+        },
+        "phipoId": {
+            "title": "PHIPO ID",
+            "description": "The OBO term ID for a PHIPO ontology term.",
+            "type": "string",
+            "examples": [
+                "PHIPO:0001210"
+            ]
+        },
+        "goID": {
+            "title": "Gene Ontology term ID",
+            "description": "The OBO ID for the Gene Ontology term.",
+            "type": "string",
+            "examples": [
+                "GO:0005730"
+            ]
+        },
+        "goEvidenceCode": {
+            "title": "GO Evidence code",
+            "description": "The Gene Ontology Evidence code for the annotation.",
+            "type": "string",
+            "enum": [
+                "IDA",
+                "IGI",
+                "IMP",
+                "IPI",
+                "EXP",
+                "TAS",
+				""
+            ]
+        },
+        "wtOrMutantHostGenotype": {
+            "anyOf": [
+                {
+                    "title": "Wild-type host genotype identifier",
+                    "description": "Identifier for a wild-type host genotype with no genes of interest.",
+                    "type": "string",
+                    "examples": [
+                        "Mus-musculus-wild-type-genotype-BALB/c"
+                    ]
+                },
+                {
+                    "title": "Mutant host genotype",
+                    "description": "Mutant host genotype details.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/hostGenotypeProperties",
+                        "required": [
+                            "allelename",
+                            "alleletype",
+                            "background",
+                            "gene",
+                            "species",
+                            "strain"
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    "properties": {
+        "type": {
+            "title": "Pathogen/host role",
+            "description": "Whether the gene is a pathogen or host gene.",
+            "type": "string",
+            "enum": [
+                "host",
+                "pathogen"
+            ]
+        },
+        "_id": {
+            "title": "MongoDB ID field",
+            "description": "The _id field for the MongoDB document.",
+            "type": "object",
+            "properties": {
+                "$oid": {
+                    "title": "MongoDB ObjectId",
+                    "description": "The encoded ObjectId for the document.",
+                    "type": "string",
+                    "examples": [
+                        "507f1f77bcf86cd799439011"
+                    ]
+                }
+            },
+            "required": [
+                "$oid"
+            ]
+        },
+        "publicationBlock": {
+            "title": "Publication",
+            "description": "Details of the publication that this information was curated from. Retrieved from PubMed.",
+            "type": "object",
+            "properties": {
+                "volume": {
+                    "title": "Volume",
+                    "description": "The volume number of the journal.",
+                    "type": "string",
+                    "examples": [
+                        "128"
+                    ]
+                },
+                "pages": {
+                    "title": "Pages",
+                    "description": "The page number or page range of the publication.",
+                    "type": "string",
+                    "examples": [
+                        "391-400",
+                        "e1007964"
+                    ]
+                },
+                "issue": {
+                    "title": "Issue",
+                    "description": "The issue number of the journal.",
+                    "type": "string",
+                    "examples": [
+                        "6461",
+                        "1 Pt B"
+                    ]
+                },
+                "year": {
+                    "title": "Year",
+                    "description": "The year of publication.",
+                    "type": "string",
+                    "examples": [
+                        "2014"
+                    ]
+                },
+                "n_authors": {
+                    "title": "Number of authors",
+                    "description": "The number of authors of the publication. Not populated.",
+                    "type": "string"
+                },
+                "journal_abbr": {
+                    "title": "Journal abbreviation",
+                    "description": "The abbreviated journal name.",
+                    "type": "string",
+                    "examples": [
+                        "PLoS Pathog",
+                        "Front Microbiol",
+                        "mBio"
+                    ]
+                },
+                "pmid": {
+                    "$ref": "#/$defs/pmid"
+                },
+                "authors": {
+                    "title": "First author last name",
+                    "description": "The last name of the first author of the publication.",
+                    "type": "string",
+                    "examples": [
+                        "Smith",
+                        "Chen"
+                    ]
+                }
+            },
+            "required": [
+                "authors",
+                "issue",
+                "journal_abbr",
+                "n_authors",
+                "pages",
+                "pmid",
+                "volume",
+                "year"
+            ]
+        },
+        "cellularComponent": {
+            "title": "Cellular component annotations",
+            "description": "Gene Ontology cellular component annotations applied to this gene.",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "GoID": {
+                        "$ref": "#/$defs/goID"
+                    },
+                    "phi4_id": {
+                        "$ref": "#/$defs/phi_id"
+                    },
+                    "publication": {
+                        "$ref": "#/$defs/pmid"
+                    },
+                    "cellComponentAdditionalInfo": {
+                        "title": "Cellular component additional information",
+                        "description": "Annotation extensions used to populate the Additional Information subsection of the 'GO Cellular Component' section.",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/$defs/annotationExtension"
+                        }
+                    },
+                    "Evidence": {
+                        "$ref": "#/$defs/goEvidenceCode"
+                    }
+                },
+                "required": [
+                    "Evidence",
+                    "GoID",
+                    "cellComponentAdditionalInfo",
+                    "phi4_id",
+                    "publication"
+                ]
+            }
+        },
+        "insert_dt": {
+            "title": "Insertion date",
+            "description": "The date this document was loaded into the database.",
+            "type": "string",
+            "examples": [
+                "02-07-2026 16:53:37"
+            ]
+        },
+        "gene": {
+            "title": "Gene",
+            "description": "Details about the gene. Loaded from UniProtKB.",
+            "type": "object",
+            "properties": {
+                "strain": {
+                    "title": "Reference proteome strain",
+                    "description": "The strain of the reference proteome linked to the UniProtKB accession.",
+                    "type": "string",
+                    "examples": [
+                        "AB5075-UW"
+                    ]
+                },
+                "product": {
+                    "title": "Gene product",
+                    "description": "The gene product of the gene.",
+                    "type": "string",
+                    "examples": [
+                        "Chaperone protein ClpB"
+                    ]
+                },
+                "uniqueName": {
+                    "title": "UniProtKB accession number",
+                    "description": "The UniProtKB accession number of the protein of the gene.",
+                    "type": "string",
+                    "examples": [
+                        "Q00909"
+                    ]
+                },
+                "organism": {
+                    "title": "Organism name",
+                    "description": "The scientific name of the organism of the gene.",
+                    "type": "string",
+                    "examples": [
+                        "Homo sapiens"
+                    ]
+                },
+                "dbref_gene_id": {
+                    "title": "NCBI Gene ID",
+                    "description": "The identifier of the gene from the NCBI Gene database.",
+                    "type": "string",
+                    "examples": [
+                        "34236746"
+                    ]
+                },
+                "ensembl_gene_id": {
+                    "title": "Ensembl gene ID",
+                    "description": "The identifier of the gene from an Ensembl database.",
+                    "type": "string",
+                    "examples": [
+                        "APL_1961"
+                    ]
+                },
+                "name": {
+                    "title": "Gene name",
+                    "description": "The name of the gene as provided by UniProtKB.",
+                    "type": "string",
+                    "examples": [
+                        "htrA"
+                    ]
+                },
+                "uniprot_id": {
+                    "title": "UniProtKB accession number",
+                    "description": "The UniProtKB accession number of the protein of the gene.",
+                    "type": "string",
+                    "examples": [
+                        "Q00909"
+                    ]
+                },
+                "ensembl_sequence_id": {
+                    "title": "Ensembl protein sequence ID",
+                    "description": "The identifier for the protein sequence from an Ensembl database.",
+                    "type": "string",
+                    "examples": [
+                        "ABN75035"
+                    ]
+                }
+            },
+            "required": [
+                "dbref_gene_id",
+                "ensembl_gene_id",
+                "ensembl_sequence_id",
+                "name",
+                "organism",
+                "product",
+                "strain",
+                "uniprot_id",
+                "uniqueName"
+            ]
+        },
+        "curation_session": {
+            "title": "Curation session ID",
+            "description": "The identifier for the curation session that provided this information.",
+            "type": "string",
+            "examples": [
+                "af59cea41c258dba"
+            ]
+        },
+        "hostsBlock": {
+            "title": "Host",
+            "description": "Details to populate the Host section of the gene page.",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "hostGene": {
+                        "title": "Host gene",
+                        "description": "UniProtKB accession number for the host gene.",
+                        "type": "string",
+                        "examples": [
+                            "K9GH36"
+                        ]
+                    },
+                    "role": {
+                        "title": "Pathogen/host role",
+                        "description": "Whether the organism is a pathogen or host.",
+                        "type": "string",
+                        "enum": [
+                            "host",
+                            "pathogen"
+                        ]
+                    },
+                    "hostBackground": {
+                        "title": "Host background",
+                        "description": "Background mutations applied to the host genotype.",
+                        "type": "string",
+                        "examples": [
+                            "SGT1-silenced tobacco"
+                        ]
+                    },
+                    "phigId": {
+                        "title": "PHIG ID",
+                        "description": "The PHI-base 5 gene identifier for the host gene, without the 'PHIG:' prefix.",
+                        "type": "string",
+                        "examples": [
+                            "10464"
+                        ]
+                    },
+                    "hostId": {
+                        "title": "Host ID",
+                        "description": "The NCBI Taxonomy identifier of the host.",
+                        "type": "string",
+                        "examples": [
+                            "36651"
+                        ]
+                    },
+                    "hostStrain": {
+                        "title": "Host strain",
+                        "description": "The name of the host strain, cell line, cultivar, etc.",
+                        "type": "string",
+                        "examples": [
+                            "cv. Jingxin 3"
+                        ]
+                    },
+                    "hostSpecies": {
+                        "title": "Host species",
+                        "description": "The scientific name of the host species.",
+                        "type": "string",
+                        "examples": [
+                            "Oryza sativa"
+                        ]
+                    }
+                },
+                "required": [
+                    "hostId",
+                    "hostSpecies"
+                ]
+            }
+        },
+        "pathogenPhenotypeBlock": {
+            "title": "Pathogen phenotype",
+            "description": "Details to populate the 'Pathogen Phenotype' section of the gene page.",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "evidence": {
+                        "title": "Evidence code",
+                        "description": "Evidence code for the pathogen phenotype annotation.",
+                        "type": "string",
+                        "examples": [
+                            "Cell growth assay"
+                        ]
+                    },
+                    "phi4_id": {
+                        "$ref": "#/$defs/phi_id"
+                    },
+                    "phipoid": {
+                        "$ref": "#/$defs/phipoId"
+                    },
+                    "publication": {
+                        "$ref": "#/$defs/pmid"
+                    },
+                    "additionalInfo": {
+                        "title": "Additional information",
+                        "description": "Annotation extensions for the pathogen phenotype annotation, used to populate the Additional Information section on the gene page.",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/$defs/annotationExtension"
+                        }
+                    },
+                    "path_phenotypeallelePathoBlock": {
+                        "title": "Pathogen genotype",
+                        "description": "Pathogen genotype details for the pathogen phenotype annotation.",
+                        "type": "array",
+                        "items": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/$defs/pathogenGenotypeProperties"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "allelePatho": {
+                                            "$ref": "#/$defs/pathogenAlleles"
+                                        },
+                                        "expression": {
+                                            "$ref": "#/$defs/pathogenExpression"
+                                        }
+                                    }
+                                }
+                            ],
+                            "required": [
+                                "allelePatho",
+                                "background",
+                                "species",
+                                "strain"
+                            ]
+                        }
+                    },
+                    "conditions": {
+                        "$ref": "#/$defs/conditions"
+                    }
+                },
+                "required": [
+                    "additionalInfo",
+                    "conditions",
+                    "evidence",
+                    "path_phenotypeallelePathoBlock",
+                    "phi4_id",
+                    "phipoid",
+                    "publication"
+                ]
+            }
+        },
+        "diseaseBlock": {
+            "title": "Disease",
+            "description": "Details to populate the Disease section of the gene page.",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "alleleHostBlock": {
+                        "title": "Disease host genotype",
+                        "description": "The host genotype for the disease annotation.",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/$defs/hostGenotypeProperties",
+                            "required": [
+                                "alleletype",
+                                "background",
+                                "species",
+                                "strain"
+                            ]
+                        }
+                    },
+                    "diseaseAdditional": {
+                        "title": "Disease additional information",
+                        "description": "Annotation extensions used to populate the Additional Information subsection of the Disease section.",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/$defs/annotationExtension"
+                        }
+                    },
+                    "evidence": {
+                        "title": "Disease evidence code",
+                        "description": "Evidence code for the disease annotation. Not populated.",
+                        "type": "string"
+                    },
+                    "hostForPhipo": {
+                        "$ref": "#/$defs/wtOrMutantHostGenotype"
+                    },
+                    "phi4_id": {
+                        "$ref": "#/$defs/phi_id"
+                    },
+                    "allelePathoBlock": {
+                        "title": "Disease pathogen genotype",
+                        "description": "The pathogen genotype for the disease annotation.",
+                        "type": "array",
+                        "items": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/$defs/pathogenGenotypeProperties"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "allelePatho": {
+                                            "$ref": "#/$defs/pathogenAlleles"
+                                        },
+                                        "lociPathoExpression": {
+                                            "$ref": "#/$defs/pathogenExpression"
+                                        }
+                                    }
+                                }
+                            ],
+                            "required": [
+                                "allelePatho",
+                                "background",
+                                "lociPathoExpression",
+                                "species",
+                                "strain"
+                            ]
+                        }
+                    },
+                    "publication": {
+                        "$ref": "#/$defs/pmid"
+                    },
+                    "conditions": {
+                        "$ref": "#/$defs/conditions"
+                    },
+                    "phidoid": {
+                        "title": "Disease term ID",
+                        "description": "OBO IDs for disease terms from the PHI-base Disease List (PHIDO).",
+                        "type": "string",
+                        "examples": [
+                            "PHIDO:0000162"
+                        ]
+                    }
+                },
+                "required": [
+                    "alleleHostBlock",
+                    "allelePathoBlock",
+                    "conditions",
+                    "diseaseAdditional",
+                    "evidence",
+                    "hostForPhipo",
+                    "phi4_id",
+                    "phidoid",
+                    "publication"
+                ]
+            }
+        },
+        "wtrnaDetails": {
+            "title": "Wild-type RNA level",
+            "description": "Details to populate the 'Wild type RNA level' section of the gene page.",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "wtrnaId": {
+                        "title": "WT RNA level term ID",
+                        "description": "OBO IDs for terms from the Pombe Gene Expression Ontology  (PomGeneEx).",
+                        "type": "string",
+                        "examples": [
+                            "PomGeneEx:0000011"
+                        ]
+                    },
+                    "phi4_id": {
+                        "$ref": "#/$defs/phi_id"
+                    },
+                    "publication": {
+                        "$ref": "#/$defs/pmid"
+                    },
+                    "Evidence": {
+                        "title": "WT RNA level evidence code",
+                        "description": "Evidence code for the WT RNA level assay.",
+                        "type": "string",
+                        "examples": [
+                            "Northern blot"
+                        ]
+                    },
+                    "wtrnaAdditionalInfo": {
+                        "title": "Wild type RNA Level additional information",
+                        "description": "Annotation extensions used to populate the Additional Information subsection of the 'Wild type RNA Level' section.",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/$defs/annotationExtension"
+                        }
+                    }
+                },
+                "required": [
+                    "Evidence",
+                    "phi4_id",
+                    "publication",
+                    "wtrnaAdditionalInfo",
+                    "wtrnaId"
+                ]
+            }
+        },
+        "reference": {
+            "$ref": "#/$defs/pmid"
+        },
+        "genePhenotypeBlock": {
+            "title": "Gene-for-gene phenotype",
+            "description": "Details to populate the 'Gene for Gene Phenotype' section of the gene page.",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "evidence": {
+                        "title": "Evidence code",
+                        "description": "Evidence code for the gene-for-gene phenotype annotation.",
+                        "type": "string",
+                        "examples": ["Substance quantification evidence"]
+                    },
+                    "phi4_id": {
+                        "$ref": "#/$defs/phi_id"
+                    },
+                    "phipoid": {
+                        "$ref": "#/$defs/phipoId"
+                    },
+                    "publication": {
+                        "$ref": "#/$defs/pmid"
+                    },
+                    "conditions": {
+                        "$ref": "#/$defs/conditions"
+                    },
+                    "ggalleleHostBlock": {
+                        "title": "Gene-for-gene host genotype",
+                        "description": "Host genotype of the gene-for-gene interaction.",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/$defs/hostGenotypeProperties",
+                            "required": [
+                                "allelename",
+                                "alleletype",
+                                "background",
+                                "gene",
+                                "species",
+                                "strain"
+                            ]
+                        }
+                    },
+                    "genePhenotypeAdditional": {
+                        "title": "Gene-for-gene phenotype additional information",
+                        "description": "Annotation extensions used to populate the Additional Information subsection of the 'Gene for gene Phenotype' section.",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/$defs/annotationExtension"
+                        }
+                    },
+                    "ggallelePathoBlock": {
+                        "title": "Gene-for-gene phenotype pathogen genotype",
+                        "description": "Pathogen genotype for the gene-for-gene interaction.",
+                        "type": "array",
+                        "items": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/$defs/pathogenGenotypeProperties"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "ggallelePatho": {
+                                            "$ref": "#/$defs/pathogenAlleles"
+                                        },
+                                        "gglociPathoExpression": {
+                                            "$ref": "#/$defs/pathogenExpression"
+                                        }
+                                    }
+                                }
+                            ],
+                            "required": [
+                                "background",
+                                "ggallelePatho",
+                                "gglociPathoExpression",
+                                "species",
+                                "strain"
+                            ]
+                        }
+                    }
+                },
+                "required": [
+                    "conditions",
+                    "evidence",
+                    "genePhenotypeAdditional",
+                    "ggalleleHostBlock",
+                    "ggallelePathoBlock",
+                    "phi4_id",
+                    "phipoid",
+                    "publication"
+                ]
+            }
+        },
+        "PHIG_ID": {
+            "title": "PHIG ID",
+            "description": "The PHI-base 5 gene identifier for the gene.",
+            "type": "string",
+            "examples": [
+                "PHIG:166"
+            ]
+        },
+        "biologicalProcess": {
+            "title": "Biological process annotations",
+            "description": "Gene Ontology biological process annotations applied to this gene.",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "GoID": {
+                        "$ref": "#/$defs/goID"
+                    },
+                    "phi4_id": {
+                        "$ref": "#/$defs/phi_id"
+                    },
+                    "publication": {
+                        "$ref": "#/$defs/pmid"
+                    },
+                    "Evidence": {
+                        "$ref": "#/$defs/goEvidenceCode"
+                    },
+                    "bioAdditionalInfo": {
+                        "title": "Biological process additional information",
+                        "description": "Annotation extensions used to populate the Additional Information subsection of the 'GO Biological Process' section.",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/$defs/annotationExtension"
+                        }
+                    }
+                },
+                "required": [
+                    "Evidence",
+                    "GoID",
+                    "bioAdditionalInfo",
+                    "phi4_id",
+                    "publication"
+                ]
+            }
+        },
+        "phiPhenotypeBlock": {
+            "title": "Pathogen-host interaction phenotype",
+            "description": "Details to populate the 'PHI Phenotype' section of the gene page.",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "phiPhipoAdditional": {
+                        "title": "PHI Phenotype additional information",
+                        "description": "Annotation extensions used to populate the Additional Information subsection of the 'PHI Phenotype' section.",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/$defs/annotationExtension"
+                        }
+                    },
+                    "alleleHostBlock": {
+                        "title": "PHI phenotype host genotype",
+                        "description": "Host genotype for the pathogen-host interaction.",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/$defs/hostGenotypeProperties",
+                            "required": [
+                                "alleletype",
+                                "background",
+                                "species",
+                                "strain"
+                            ]
+                        }
+                    },
+                    "evidence": {
+                        "title": "Evidence code",
+                        "description": "Evidence code for the pathogen-host interaction phenotype annotation.",
+                        "type": "string",
+                        "examples": [
+                            "Macroscopic observation (qualitative observation)"
+                        ]
+                    },
+                    "hostForPhipo": {
+                        "$ref": "#/$defs/wtOrMutantHostGenotype"
+                    },
+                    "phi4_id": {
+                        "$ref": "#/$defs/phi_id"
+                    },
+                    "phipoid": {
+                        "$ref": "#/$defs/phipoId"
+                    },
+                    "allelePathoBlock": {
+                        "title": "PHI phenotype pathogen genotype",
+                        "description": "Pathogen genotype for the pathogen-host interaction.",
+                        "type": "array",
+                        "items": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/$defs/pathogenGenotypeProperties"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "allelePatho": {
+                                            "$ref": "#/$defs/pathogenAlleles"
+                                        },
+                                        "lociPathoExpression": {
+                                            "$ref": "#/$defs/pathogenExpression"
+                                        }
+                                    }
+                                }
+                            ],
+                            "required": [
+                                "allelePatho",
+                                "background",
+                                "lociPathoExpression",
+                                "species",
+                                "strain"
+                            ]
+                        }
+                    },
+                    "publication": {
+                        "$ref": "#/$defs/pmid"
+                    },
+                    "conditions": {
+                        "$ref": "#/$defs/conditions"
+                    }
+                },
+                "required": [
+                    "alleleHostBlock",
+                    "allelePathoBlock",
+                    "conditions",
+                    "evidence",
+                    "hostForPhipo",
+                    "phi4_id",
+                    "phiPhipoAdditional",
+                    "phipoid",
+                    "publication"
+                ]
+            }
+        },
+        "postTranslationalModification": {
+            "title": "Protein modification",
+            "description": "Details to populate the 'Protein Modification' section of the gene page.",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "GoID": {
+                        "$ref": "#/$defs/goID"
+                    },
+                    "phi4_id": {
+                        "$ref": "#/$defs/phi_id"
+                    },
+                    "postTransAdditionalInfo": {
+                        "title": "Protein modification additional information",
+                        "description": "Annotation extensions used to populate the Additional Information subsection of the 'Protein Modification' section.",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/$defs/annotationExtension"
+                        }
+                    },
+                    "publication": {
+                        "$ref": "#/$defs/pmid"
+                    },
+                    "Evidence": {
+                        "title": "Evidence code",
+                        "description": "Evidence code for the protein modification annotation.",
+                        "type": "string",
+                        "examples": [
+                            "IDA"
+                        ]
+                    }
+                },
+                "required": [
+                    "Evidence",
+                    "GoID",
+                    "phi4_id",
+                    "postTransAdditionalInfo",
+                    "publication"
+                ]
+            }
+        },
+        "pathogenName": {
+            "title": "Pathogen",
+            "description": "Details to populate the 'Pathogen' section of the gene page.",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "reference": {
+                        "$ref": "#/$defs/pmid"
+                    },
+                    "role": {
+                        "title": "Pathogen/host role",
+                        "description": "Whether the organism is a pathogen or host.",
+                        "type": "string",
+                        "enum": [
+                            "host",
+                            "pathogen"
+                        ]
+                    },
+                    "pathogenId": {
+                        "title": "Pathogen ID",
+                        "description": "The NCBI Taxonomy identifier of the pathogen.",
+                        "type": "string",
+                        "examples": [
+                            "5518"
+                        ]
+                    },
+                    "pathogen": {
+                        "title": "Pathogen species",
+                        "description": "The scientific name of the pathogen species.",
+                        "type": "string",
+                        "examples": ["Fusarium graminearum"]
+                    },
+                    "pathogenStrain": {
+                        "title": "Pathogen strain",
+                        "description": "The name of the pathogen strain.",
+                        "type": "string",
+                        "examples": ["GZ3639"]
+                    },
+                    "phigId": {
+                        "title": "PHIG ID",
+                        "description": "The PHI-base 5 gene identifier for the pathogen gene, without the 'PHIG:' prefix.",
+                        "type": "string",
+                        "examples": [
+                            "253"
+                        ]
+                    },
+                    "pathogenGene": {
+                        "title": "Pathogen gene",
+                        "description": "UniProtKB accession number for the pathogen gene.",
+                        "type": "string",
+                        "examples": [
+                            "Q00909"
+                        ]
+                    }
+                },
+                "required": [
+                    "pathogen",
+                    "pathogenId",
+                    "reference"
+                ]
+            }
+        },
+        "physicalInteraction": {
+            "title": "Physical interaction",
+            "description": "Details to populate the 'Physical Interaction' section of the gene page.",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "GoID": {
+                        "$ref": "#/$defs/goID"
+                    },
+                    "publication": {
+                        "$ref": "#/$defs/pmid"
+                    },
+                    "interacting_genes": {
+                        "title": "Interacting gene",
+                        "description": "The gene identifier for the gene on the other side of the interaction.",
+                        "type": "string",
+                        "examples": [
+                            "Zea mays A0A1D6E0S8"
+                        ]
+                    },
+                    "Evidence": {
+                        "title": "Physical interaction evidence code",
+                        "description": "The evidence code for the physical interaction assay.",
+                        "type": "string",
+                        "examples": [
+                            "Co-purification"
+                        ]
+                    }
+                },
+                "required": [
+                    "Evidence",
+                    "GoID",
+                    "interacting_genes",
+                    "publication"
+                ]
+            }
+        },
+        "wtPrtDetails": {
+            "title": "Wild-type protein level",
+            "description": "Details to populate the 'Wild type protein Level' section of the gene page.",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "phi4_id": {
+                        "$ref": "#/$defs/phi_id"
+                    },
+                    "wtprtId": {
+                        "title": "WT protein level term ID",
+                        "description": "OBO IDs for terms from the Pombe Gene Expression Ontology  (PomGeneEx).",
+                        "type": "string",
+                        "examples": [
+                            "PomGeneEx:0000021"
+                        ]
+                    },
+                    "publication": {
+                        "$ref": "#/$defs/pmid"
+                    },
+                    "Evidence": {
+                        "title": "WT protein level evidence code",
+                        "description": "Evidence code for the WT protein level assay.",
+                        "type": "string",
+                        "examples": [
+                            "Western blot"
+                        ]
+                    },
+                    "wtprtAdditionalInfo": {
+                        "title": "Wild type protein Level additional information",
+                        "description": "Annotation extensions used to populate the Additional Information subsection of the 'Wild type protein level' section.",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/$defs/annotationExtension"
+                        }
+                    }
+                },
+                "required": [
+                    "Evidence",
+                    "phi4_id",
+                    "publication",
+                    "wtprtAdditionalInfo",
+                    "wtprtId"
+                ]
+            }
+        },
+        "molecularFunction": {
+            "title": "Molecular function annotations",
+            "description": "Gene Ontology molecular function annotations applied to this gene.",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "GoID": {
+                        "$ref": "#/$defs/goID"
+                    },
+                    "phi4_id": {
+                        "$ref": "#/$defs/phi_id"
+                    },
+                    "publication": {
+                        "$ref": "#/$defs/pmid"
+                    },
+                    "Evidence": {
+                        "$ref": "#/$defs/goEvidenceCode"
+                    },
+                    "molfunctionAdditionalInfo": {
+                        "title": "Molecular function additional information",
+                        "description": "Annotation extensions used to populate the Additional Information subsection of the 'GO Molecular Function' section.",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/$defs/annotationExtension"
+                        }
+                    }
+                },
+                "required": [
+                    "Evidence",
+                    "GoID",
+                    "molfunctionAdditionalInfo",
+                    "phi4_id",
+                    "publication"
+                ]
+            }
+        },
+        "hostPhenotypeBlock": {
+            "title": "Host phenotype",
+            "description": "Details to populate the 'Host Phenotype' section of the gene page.",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "evidence": {
+                        "title": "Evidence code",
+                        "description": "Evidence code for the host phenotype annotation.",
+                        "type": "string",
+                        "examples": [
+                            "Western blot assay"
+                        ]
+                    },
+                    "phi4_id": {
+                        "$ref": "#/$defs/phi_id"
+                    },
+                    "phipoId": {
+                        "$ref": "#/$defs/phipoId"
+                    },
+                    "publication": {
+                        "$ref": "#/$defs/pmid"
+                    },
+                    "conditions": {
+                        "$ref": "#/$defs/conditions"
+                    },
+                    "hostPhenotypeAdditional": {
+                        "title": "Host phenotype additional information",
+                        "description": "Annotation extensions used to populate the Additional Information subsection of the 'Host Phenotype' section.",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/$defs/annotationExtension"
+                        }
+                    },
+                    "hostPhenotype": {
+                        "title": "Host genotype",
+                        "description": "Host genotype details for the host phenotype annotation.",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/$defs/hostGenotypeProperties",
+                            "required": [
+                                "allelename",
+                                "alleletype",
+                                "background",
+                                "expression",
+                                "gene",
+                                "species",
+                                "strain"
+                            ]
+                        }
+                    }
+                },
+                "required": [
+                    "conditions",
+                    "evidence",
+                    "hostPhenotype",
+                    "hostPhenotypeAdditional",
+                    "phi4_id",
+                    "phipoId",
+                    "publication"
+                ]
+            }
+        }
+    },
+    "required": [
+        "PHIG_ID",
+        "_id",
+        "biologicalProcess",
+        "cellularComponent",
+        "curation_session",
+        "diseaseBlock",
+        "gene",
+        "genePhenotypeBlock",
+        "hostsBlock",
+        "insert_dt",
+        "molecularFunction",
+        "pathogenName",
+        "phiPhenotypeBlock",
+        "physicalInteraction",
+        "postTranslationalModification",
+        "publicationBlock",
+        "reference",
+        "type",
+        "wtPrtDetails",
+        "wtrnaDetails"
+    ]
+}

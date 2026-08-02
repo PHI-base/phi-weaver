@@ -574,6 +574,27 @@ decision and re-creating the term silently reopens it. See the `ontology-term-re
   species-neutral" above and lesson L2.
 
 ## Curation workflow
+- [ ] **`status: validated` may overstate curator sign-off on the example library** (added
+  2026-08-02). `PMID39787257-FgKnr4-cell-wall-stress.md` carries `status: validated`,
+  `reviewed_by: Hsin-Yu Chang`, `reviewed_date: 2026-07-04` and a header calling it a "Validated
+  gold-standard curation"; `Curation-Examples-INDEX.md` shows ✅ validated. **The curator states they
+  did not approve it.** Two readings, and the fix differs: (a) the underlying PHI-Canto session
+  *was* curated by Hsin-Yu but the **example file / its use as a gold standard** was never signed
+  off — then `reviewed_by` is the overclaim and the frontmatter needs a weaker status; or (b) the
+  session itself was never approved — then the example should not be `validated` at all. **Resolve
+  with the curator before editing the frontmatter** — this is a provenance record, not a
+  cosmetic field. **Why it matters beyond one file:** examples are retrieved as references during
+  drafting and five of them ship in `docs/phiweaver-judge-handover.md`, so a false approval claim
+  propagates into both drafting and judging. **It is systematic, and the mechanism is a conflated
+  field:** `skills/gold-standard-import/SKILL.md:49` defines `reviewed_by` as *"the PHI-Canto
+  curator"* — i.e. whoever curated the **session**, which is not the same act as reviewing the
+  **example**. All five examples carry `status: validated` (three naming Hsin-Yu Chang, one
+  "Hsin-Yu Chang; Martin Urban", one "Melina Velasquez; Alayne Cuzick"), so any of them may assert a
+  sign-off that never happened. The skill's own rules are right and are being undercut by the field
+  name: `:65` says `validated` is "only for a genuinely curator-reviewed curation" and `:71` says to
+  import as `status: draft` and flip only after review. **Likely fix:** split the field — `curated_by`
+  (session curator, factual, safe to auto-fill) vs `reviewed_by` (example sign-off, set only when it
+  happened) — and re-derive each example's real status. Surfaced while filing `phi-weaver#9`.
 - [ ] **Genotypes have no explicit `strain` — the name is doing two jobs** (added 2026-07-25, found
   while aligning the entry queue to PHI-Canto's UI). PHI-Canto requires **one or more "experimental
   strains" for every organism** in a session *before* any genotype can be created
@@ -917,6 +938,25 @@ decision and re-creating the term silently reopens it. See the `ontology-term-re
 ## Waiting for response (filed — external action)
 _Requests we have submitted and are now blocked on someone else (ontology team, curator). Chase
 periodically; move back to the owning section if reopened, or tick `[x]` when accepted/closed._
+- [ ] **Does the WT control metagenotype get its own phenotype annotation?** — filed 2026-08-02 as
+  [PHI-base/phi-weaver#9](https://github.com/PHI-base/phi-weaver/issues/9), for Hsin-Yu Chang. The
+  convention is settled that WT controls **are** made for metagenotype annotations (one per
+  phenotype, linked via `compared to control` — PHI-base/curation `#78`, `#79`). What is open is
+  whether the control is *itself* annotated. The filed issue cites
+  `07-Standards/PHI-Canto-Framework-Cuzick2023.md:135` — "Wild-type control phenotypes — new
+  `compared to control` AE **+ WT metagenotypes**" — and asks whether the WT metagenotype is
+  annotated, and if so with the same measured term at WT level or a distinct normal/unaffected term.
+  Tagged `#affecting-weaver-drafts` (body text, not a repo label).
+  **Deliberately not cited in the issue:** `PMID39787257-FgKnr4-cell-wall-stress.md:70-71` carries no
+  WT row (the control appears only as the extension value `compared_to_control *FgKnr4+*[WT level]`),
+  which looks like a counter-example — but **the curator has not approved that example**, so it is not
+  evidence about what PHI-Canto expects and was correctly left out. See the provenance discrepancy
+  logged under "Curation workflow" (the file's `status: validated` / `reviewed_by: Hsin-Yu Chang`
+  frontmatter overstates its actual sign-off). Once #9 is answered, use the answer to correct the
+  example if needed — not the example to second-guess the answer.
+  **Blocks:** the drafting fix below — weaver currently links a control *where one exists* rather than
+  creating one, and the answer decides what "create" means. Log as a typed `issue` row in
+  `CURATION-LESSONS.md` once answered (the route L3 took via `phi-weaver#8`).
 - [ ] **Free-living "absent / abolished DON" term** — filed 2026-07-16 as
   [PHI-base/phipo#452](https://github.com/PHI-base/phipo/issues/452); **superseded 2026-07-17 by a PR,
   [PHI-base/phipo#454](https://github.com/PHI-base/phipo/pull/454)**, which closes #452. The free-living

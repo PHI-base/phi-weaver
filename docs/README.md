@@ -52,6 +52,10 @@ topic genuinely isn't listed — then add its row here.
   [`PHI-WEAVER-MODULE-TABLE.md`](PHI-WEAVER-MODULE-TABLE.md) (+ its `.html` render). Written for
   publication and frozen to what was true when drafted; correct them when the manuscript is
   revised, not on every code change.
+- **Outreach artefacts** — [`AICatalyst2026-Poster-FAQ.md`](AICatalyst2026-Poster-FAQ.md): what one
+  poster review found and decided, frozen to `Poster-MU16.svg` on 2026-08-02. Carries the agreed
+  benchmark wording and the render-without-Inkscape method; its system counts are a snapshot, not
+  a source.
 - **Generated — do not hand-edit** — [`../skills/REGISTRY.md`](../skills/REGISTRY.md)
   (`python3 -m phiweaver.registry`, verified by `phiweaver.smoke`) and
   [`phiweaver-judge-handover.md`](phiweaver-judge-handover.md)
