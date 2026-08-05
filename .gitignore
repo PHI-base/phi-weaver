@@ -7,13 +7,6 @@
 # Obsidian plugin-managed personal notes (Daily Notes, etc.) — local-only scratch
 __Obsidian-SYSTEM/
 
-# PHI-Canto deployment config — copied from the PRIVATE repo PHI-base/config.
-# James Seager cleared it for local use (2026-07-21: OAuth secrets are stored outside the
-# file, the GA/GTM id is public by construction) and will move it to a public repo in due
-# course. Until he does, weaver may READ it locally but must not republish it here — this
-# repo is public. Refresh instructions: phiweaver/lookup/data/README.md.
-phiweaver/lookup/data/canto_deploy.yaml
-
 # Temporary files and trash
 .tmp/
 *.tmp

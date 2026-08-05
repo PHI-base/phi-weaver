@@ -2,14 +2,15 @@
 """
 Tests for canto_config — PHI-Canto's own configuration, read offline.
 
-Split deliberately in two, because the two config files have different availability:
+Split in two, because until 2026-08-05 the two config files had different availability:
 
   * `canto_base.yaml` is PUBLIC (pombase/canto) and committed, so tests that only need
     the base file run everywhere, including on a fresh clone and in CI.
-  * `canto_deploy.yaml` is from the PRIVATE PHI-base/config repo and is **gitignored**,
-    so it is absent on a fresh clone. Tests needing it are SKIPPED, not failed — a skip
-    reports "couldn't check", which is the truth, whereas a failure would claim weaver
-    is broken when it is merely unconfigured.
+  * `canto_deploy.yaml` is now also PUBLIC (PHI-base/canto-config) and committed, so
+    `TestEffectiveConfig` below runs everywhere too. The `deploy_only` skip guard is kept
+    as defensive behaviour (a skip reports "couldn't check", which is the truth, whereas
+    a failure would claim weaver is broken when the file is merely missing) rather than
+    removed, in case the file is ever absent locally.
 
 The base-only test matters most: it pins the behaviour that a missing deploy file
 degrades *loudly*, since PomBase's defaults are wrong for PHI-base in both directions.
@@ -29,7 +30,7 @@ from phiweaver.lookup.canto_config import (
 HAS_DEPLOY = DEPLOY_CONFIG.exists()
 deploy_only = unittest.skipUnless(
     HAS_DEPLOY,
-    f"canto_deploy.yaml absent (private, gitignored) — expected at {DEPLOY_CONFIG}",
+    f"canto_deploy.yaml absent — expected at {DEPLOY_CONFIG}",
 )
 
 
@@ -72,7 +73,7 @@ class TestBaseConfig(unittest.TestCase):
 
 @deploy_only
 class TestEffectiveConfig(unittest.TestCase):
-    """Needs the private deploy file; skipped when it isn't present."""
+    """Needs the deploy file; skipped when it isn't present."""
 
     def setUp(self):
         load_config.cache_clear()

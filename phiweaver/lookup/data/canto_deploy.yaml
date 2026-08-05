@@ -1,0 +1,650 @@
+---
+Model::TrackModel:
+  connect_info:
+    - dbi:SQLite:dbname=/data/track.sqlite3
+  schema_class: Canto::TrackDB
+data_directory: /data
+
+name: PHI-Canto
+database_name: PHI-base
+long_name: Curation application for PHI-base, the Pathogen-Host Interactions database
+
+email:
+  from_address:    curation@phi-base.org
+  admin_address:   curation@phi-base.org
+  noreply_address: curation@phi-base.org
+
+contact_email:
+  address: curation@phi-base.org
+
+demo_mode: 0
+
+canto_demo_url: "http://demo-canto.phi-base.org"
+
+google_tag_manager_id: G-CSERKLNF4N
+
+oauth:
+  authenticator: ORCID
+  grant_uri: 'https://orcid.org/oauth/authorize'
+  token_uri: 'https://orcid.org/oauth/token'
+  client_id: 'ORCID_CLIENT_ID'
+  client_secret: 'ORCID_CLIENT_SECRET'
+  scope: '/authenticate'
+
+strains_mode: 1
+diploid_mode: 1
+allow_single_wildtype_allele: 1
+show_quick_wild_type_buttons: 1
+
+implementation_classes:
+  gene_adaptor:     Canto::UniProt::GeneLookup
+  ontology_adaptor: Canto::Track::OntologyLookup
+  status_adaptor:   Canto::Track::StatusStorage
+  person_adaptor:   Canto::Track::PersonLookup
+  pubs_adaptor:     Canto::Track::PubsLookup
+  ontology_annotation_adaptor: Canto::UniProt::OntologyAnnotationLookup
+
+allele_type_list:
+  - name: wild type
+    export_type: wild_type
+    show_description: false
+    description_required: false
+    allele_name_required: true
+    allow_expression_change: true
+    expression_required: true
+  - name: deletion
+    export_type: deletion
+    show_description: false
+    description_required: false
+    allele_name_required: true
+    allow_expression_change: false
+  - name: disruption
+    name_hint: "e.g. pom1::ura4+"
+    export_type: disruption
+    show_description: true
+    description_required: false
+    allele_name_required: true
+    allow_expression_change: true
+  - name: unknown
+    export_type: unknown
+    show_description: false
+    description_required: false
+    allele_name_required: true
+    allow_expression_change: true
+    expression_required: true
+  - name: amino acid insertion
+    export_type: amino_acid_insertion
+    show_description: true
+    description_required: true
+    allele_name_required: false
+    allow_expression_change: true
+    expression_required: true
+    placeholder: e.g. 858-MKGYP
+  - name: "amino acid substitution(s)"
+    export_type: amino_acid_mutation
+    show_description: true
+    description_required: true
+    allele_name_required: false
+    allow_expression_change: true
+    expression_required: true
+    placeholder: eg. K132A
+  - name: amino acid insertion and substitution
+    export_type: amino_acid_insertion_and_mutation
+    show_description: true
+    description_required: true
+    allele_name_required: false
+    allow_expression_change: true
+    expression_required: true
+    placeholder: e.g. 858-MKGYP,F124D
+  - name: amino acid insertion and deletion
+    export_type: amino_acid_insertion_and_deletion
+    show_description: true
+    description_required: true
+    allele_name_required: false
+    allow_expression_change: true
+    expression_required: true
+    placeholder: e.g. 858-MKGYP,100-200
+  - name: partial deletion and amino acid change
+    export_type: amino_acid_deletion_and_mutation
+    show_description: true
+    description_required: true
+    allele_name_required: false
+    allow_expression_change: true
+    expression_required: true
+    placeholder: e.g. 100-200,F124D
+  - name: partial deletion, amino acid
+    export_type: partial_amino_acid_deletion
+    show_description: true
+    description_required: true
+    allele_name_required: false
+    allow_expression_change: true
+    expression_required: true
+    placeholder: "Please specify deleted residues - eg. 100-200 OR 10-20,40-50"
+  - name: nucleotide insertion
+    export_type: nucleotide_insertion
+    show_description: true
+    description_required: true
+    allele_name_required: false
+    allow_expression_change: true
+    expression_required: true
+    placeholder: e.g. 132-AATTT
+  - name: "nucleotide substitution(s)"
+    export_type: nucleotide_mutation
+    show_description: true
+    description_required: true
+    allele_name_required: false
+    allow_expression_change: true
+    expression_required: true
+    placeholder: eg. A25G, OR A-25G (for promoter region)
+  - name: partial deletion, nucleotide
+    export_type: partial_nucleotide_deletion
+    show_description: true
+    description_required: true
+    allele_name_required: false
+    allow_expression_change: true
+    expression_required: true
+    placeholder: "Please specify deleted residues - eg. 100-200 OR -20--30 (for promoter region)"
+  - name: nonsense mutation
+    export_type: nonsense_mutation
+    show_description: true
+    description_required: true
+    allow_expression_change: true
+    expression_required: true
+    allele_name_required: false
+    placeholder: 'e.g. aa123->stop, aa1299->amber'
+  - name: transformant
+    export_type: transformant
+    show_description: true
+    description_required: true
+    allow_expression_change: true
+    expression_required: true
+    allele_name_required: false
+    placeholder: 'transformed (strain-gene) e.g. (sn100-Tox1A1)'
+  - name: other
+    export_type: other
+    show_description: true
+    description_required: true
+    allele_name_required: false
+    allow_expression_change: true
+    expression_required: true
+    placeholder: Please provide a description
+
+available_annotation_type_list:
+  - name: molecular_function
+    category: ontology
+    abbreviation: F
+    very_short_display_name: 'function'
+    short_display_name: 'molecular function'
+    display_name: 'GO molecular function'
+    feature_type: 'gene'
+    can_have_with: 1
+    allow_annotation_transfer: 1
+    evidence_codes:
+      - IDA
+      - IGI
+      - IMP
+      - IPI
+      - EXP
+      - TAS
+    admin_evidence_codes: []
+    broad_term_suggestions: "transporter, transferase activity"
+    specific_term_examples: "adenylate cyclase activity or biotin transporter activity"
+    help_text: >
+      A molecular function is a catalytic (e.g. protein
+      serine/threonine kinase activity, pyruvate carboxylase activity)
+      or binding activity, or any other activity that occurs at the
+      molecular level.
+    more_help_text: >
+      GO molecular function terms represent activities, rather than
+      the things that perform the actions (gene products or
+      complexes). As a general rule, molecular functions correspond to
+      single step activities performed by individual gene products.
+    detailed_help_path: /docs/go_annotation
+  - name: biological_process
+    category: ontology
+    abbreviation: P
+    very_short_display_name: 'process'
+    short_display_name: 'biological process'
+    display_name: 'GO biological process'
+    feature_type: 'gene'
+    can_have_with: 1
+    allow_annotation_transfer: 1
+    evidence_codes:
+      - IMP
+      - IDA
+      - IGI
+      - IPI
+      - EXP
+      - TAS
+    admin_evidence_codes: []
+    broad_term_suggestions: "effector-mediated modulation of host process by symbiont, transport"
+    specific_term_examples: "pyrimidine metabolic process or alpha-glucoside transport"
+    help_text: >
+      A biological process is series of events accomplished by one or more
+      ordered assemblies of molecular functions, such as cell cycle regulation,
+      ion transport, or signal transduction.
+    more_help_text: >
+      It can be difficult to distinguish between a biological process
+      and a molecular function, but the general rule is that a process must
+      have more than one distinct step.
+    suggest_term_help_text: >
+      A new term should be differentiated from the parent as a "sub term"  by
+      the mechanism of action, or the genes which are required to perform the
+      action. It should not be differentiated only by its target gene
+      products. For example, histone H2A-S121 phosphorylation
+      is a valid term request because it is performed by a set of genes
+      specific for this process, translation of histone H2A is not a valid
+      term request because there is no translation machinery specifically for
+      histone H2A.
+    detailed_help_path: /docs/go_annotation
+  - name: cellular_component
+    category: ontology
+    abbreviation: C
+    very_short_display_name: 'component'
+    short_display_name: 'cellular component'
+    display_name: 'GO cellular component'
+    feature_type: 'gene'
+    can_have_with: 1
+    allow_annotation_transfer: 1
+    evidence_codes:
+      - IDA
+      - IGI
+      - IMP
+      - IPI
+      - EXP
+      - TAS
+    admin_evidence_codes: []
+    broad_term_suggestions: "rough endoplasmic reticulum, nucleus, ribosome"
+    specific_term_examples: "condensed nuclear chromosome, inner kinetochore and GET complex"
+    help_text: >
+      Cellular components include subcellular structures and
+      macromolecular complexes, such as nucleus, nuclear inner
+      membrane, nuclear pore, and proteasome complex.
+    more_help_text: >
+      Generally, a gene product is located in or is a subcomponent of a
+      particular cellular component. The cellular component ontology includes
+      multi-subunit enzymes and other protein complexes, but not individual
+      proteins or nucleic acids. Cellular component also does not include
+      multicellular anatomical terms.
+    detailed_help_path: /docs/go_annotation
+  - name: host_phenotype
+    category: ontology
+    namespace: 'single_species_phenotype'
+    very_short_display_name: 'host phenotype'
+    short_display_name: 'host phenotype'
+    display_name: 'host phenotype'
+    synonyms_to_display:
+      - exact
+    feature_type: 'genotype'
+    feature_subtype: 'host'
+    can_have_conditions: 1
+    allow_annotation_transfer: 1
+    evidence_codes:
+      - Cell growth assay
+      - Electrophysiology assay
+      - Enzyme assay data
+      - Epitope-tagged protein immunolocalization experiment data
+      - Flow cytometry data
+      - Gel electrophoresis evidence
+      - Immunolocalization experiment data
+      - Macroscopic observation (qualitative observation)
+      - Macroscopic observation (quantitative observation)
+      - Microscopy
+      - Other
+      - Particle size and count assay
+      - Quantitative PCR
+      - Reporter gene assay
+      - Substance quantification evidence
+      - Transcript expression level evidence
+      - Western blot assay
+    broad_term_suggestions: "inviable population, chemical phenotype (sensitivity or resistance), reproductive phenotype"
+    specific_term_examples: "normal transporter activity, abnormal cell wall organization"
+    help_text: >
+      Annotate normal or abnormal phenotypes of host organisms with this genotype.
+    more_help_text: >
+      A host phenotype is any observable characteristic or trait of a host organism; observable characteristics include morphology, development, biochemical or physiological properties, behaviour, and products of behaviour of the organism. Phenotypes result from the expression of the genes of an organism as well as the influence of environmental factors and the interactions between the two.
+    extra_help_text: >
+      Alleles may be annotated with multiple phenotype terms, including both normal and abnormal phenotypes for one allele.
+    detailed_help_path: /docs/phipo_annotation
+  - name: pathogen_phenotype
+    category: ontology
+    namespace: 'single_species_phenotype'
+    very_short_display_name: 'pathogen phenotype'
+    short_display_name: 'pathogen phenotype'
+    display_name: 'pathogen phenotype'
+    synonyms_to_display:
+      - exact
+    feature_type: 'genotype'
+    feature_subtype: 'pathogen'
+    can_have_conditions: 1
+    allow_annotation_transfer: 1
+    evidence_codes:
+      - Asexual sporulation assay
+      - Cell growth assay
+      - Competitive growth assay evidence
+      - Electrophysiology assay
+      - Enzyme assay data
+      - Epitope-tagged protein immunolocalization experiment data
+      - Flow cytometry data
+      - Gel electrophoresis evidence
+      - Immunolocalization experiment data
+      - Macroscopic observation (qualitative observation)
+      - Macroscopic observation (quantitative observation)
+      - Microscopy
+      - Particle size and count assay
+      - Penetration assay
+      - Quantitative PCR
+      - Reporter gene assay
+      - Sexual sporulation assay
+      - Substance quantification evidence
+      - Transcript expression level evidence
+      - Western blot assay
+      - Other
+    broad_term_suggestions: "inviable population, chemical phenotype (sensitivity or resistance), hyphal growth phenotype, reproductive phenotype"
+    specific_term_examples: "decreased protein phosphorylation, increased level of pyocyanin, abolished chitinase activity"
+    help_text: >
+      Annotate normal or abnormal phenotypes of pathogen organisms with this genotype.
+    more_help_text: >
+      A pathogen phenotype is any observable characteristic or trait of a pathogen organism; observable characteristics include morphology, development, biochemical or physiological properties, behaviour, and products of behaviour of the organism. Phenotypes result from the expression of the genes of an organism as well as the influence of environmental factors and the interactions between the two.
+    extra_help_text: >
+      Alleles may be annotated with multiple phenotype terms, including both normal and abnormal phenotypes for one allele.
+    detailed_help_path: /docs/phipo_annotation
+  - name: pathogen_host_interaction_phenotype
+    category: ontology
+    namespace: pathogen_host_interaction_phenotype
+    very_short_display_name: 'PHI phenotype'
+    short_display_name: 'PHI phenotype'
+    display_name: 'pathogen-host interaction phenotype'
+    synonyms_to_display:
+      - exact
+    feature_type: 'metagenotype'
+    can_have_conditions: 1
+    evidence_codes:
+      - Asexual sporulation assay
+      - Cell growth assay
+      - Chromatin immunoprecipitation experiment
+      - Chromatography evidence
+      - Coimmunoprecipitation
+      - Competitive growth assay evidence
+      - Electrophoretic mobility shift assay data
+      - Electrophysiology assay
+      - Enzyme assay data
+      - Epitope-tagged protein immunolocalization experiment data
+      - Flow cytometry data
+      - Gel electrophoresis evidence
+      - Immunolocalization experiment data
+      - Macroscopic observation (qualitative observation)
+      - Macroscopic observation (quantitative observation)
+      - Microscopy
+      - Particle size and count assay
+      - Penetration assay
+      - Quantitative PCR
+      - Reporter gene assay
+      - Sexual sporulation assay
+      - Substance quantification evidence
+      - Transcript expression level evidence
+      - Western blot assay
+      - Other
+    broad_term_suggestions: "pathogen colonization of host phenotype, binding, effector, host lesion"
+    specific_term_examples: "pathogen toxin within host absent, normal pathogen protein localization to host chloroplast"
+    help_text: >
+      Annotate normal or abnormal phenotypes of organisms within this pathogen-host interaction (metagenotype).
+    more_help_text: >
+      A pathogen-host interaction phenotype is any observable characteristic or trait of an interaction between a pathogen organism and a host organism; observable characteristics include morphology, development, biochemical or physiological properties, behaviour, and products of behaviour of the organisms. Pathogen-host interaction phenotypes result from the expression of the genes of any of these organisms, as well as the influence of environmental factors (or the interaction between genes and environmental factors).
+    extra_help_text: >
+      Alleles may be annotated with multiple phenotype terms, including both normal and abnormal phenotypes for one allele.
+    detailed_help_path: /docs/phipo_annotation
+  - name: gene_for_gene_phenotype
+    category: ontology
+    namespace: pathogen_host_interaction_phenotype
+    very_short_display_name: 'GFG phenotype'
+    short_display_name: 'gene-for-gene phenotype'
+    display_name: 'gene-for-gene phenotype'
+    synonyms_to_display:
+      - exact
+    feature_type: 'metagenotype'
+    can_have_conditions: 1
+    evidence_codes:
+      - Asexual sporulation assay
+      - Cell growth assay
+      - Chromatin immunoprecipitation experiment
+      - Chromatography evidence
+      - Coimmunoprecipitation
+      - Competitive growth assay evidence
+      - Electrophoretic mobility shift assay data
+      - Electrophysiology assay
+      - Enzyme assay data
+      - Epitope-tagged protein immunolocalization experiment data
+      - Flow cytometry data
+      - Gel electrophoresis evidence
+      - Immunolocalization experiment data
+      - Macroscopic observation (qualitative observation)
+      - Macroscopic observation (quantitative observation)
+      - Microscopy
+      - Particle size and count assay
+      - Penetration assay
+      - Quantitative PCR
+      - Reporter gene assay
+      - Sexual sporulation assay
+      - Substance quantification evidence
+      - Transcript expression level evidence
+      - Western blot assay
+      - Other
+    broad_term_suggestions: "absence of pathogen-associated host lesions, presence of pathogen-associated host lesions"
+    specific_term_examples: "absence of pathogen host protein-protein interaction, presence of pathogen host protein-protein interaction"
+    help_text: >
+      Annotate normal or abnormal gene-for-gene phenotypes of organisms within this pathogen-host interaction (metagenotype).
+    extra_help_text: >
+      Alleles may be annotated with multiple phenotype terms, including both normal and abnormal phenotypes for one allele.
+    detailed_help_path: /docs/phipo_annotation
+  - name: post_translational_modification
+    category: ontology
+    namespace: PSI-MOD
+    display_name: 'protein modification'
+    feature_type: 'gene'
+    allow_annotation_transfer: 1
+    broad_term_suggestions: "phosphorylated, methylated, lysine"
+    specific_term_examples: "O-phospho-L-serine, monomethylated L-lysine"
+    help_text: >
+      A protein modification is a covalent modification or other change that
+      alters the measured molecular mass of a peptide or protein amino acid
+      residue
+    more_help_text: ~
+    evidence_codes:
+      - IDA
+    detailed_help_path: /docs/modification_annotation
+  - name: physical_interaction
+    category: interaction
+    display_name: 'physical interaction'
+    feature_type: 'gene'
+    allow_annotation_transfer: 1
+    second_feature_organism_selector: 1
+    help_text: 'Examples: co-purification, two-hybrid, affinity capture'
+    evidence_codes:
+      - Affinity Capture-Luminescence
+      - Affinity Capture-MS
+      - Affinity Capture-RNA
+      - Affinity Capture-Western
+      - Co-crystal Structure
+      - Co-fractionation
+      - Co-purification
+      - Far Western
+      - FRET
+      - PCA
+      - Protein-peptide
+      - Protein-RNA
+      - Reconstituted Complex
+      - Two-hybrid
+    detailed_help_path: /docs/physical_interaction_annotation
+  - name: wt_rna_expression
+    category: ontology
+    ontology_size: small
+    namespace: PomGeneExRNA
+    display_name: 'Wild-type RNA level'
+    feature_type: 'gene'
+    broad_term_suggestions: ~
+    specific_term_examples: ~
+    help_text: >
+      Qualitative descriptions of presence, absence, increase, decrease, etc.
+      of the RNA transcribed from a gene. Note: if you need to capture changes
+      in RNA level observed in a mutant in a single species, please use the
+      single-species 'RNA level' phenotypes, or for changes in RNA level in a
+      pathogen-host interaction, please use the pathogen-host interaction
+      'altered RNA level' phenotypes.
+    more_help_text: ~
+    annotation_table_columns_to_hide: [term_ontid]
+    evidence_codes:
+      - Microarray
+      - Northern blot
+      - Quantitative PCR
+      - Reporter gene assay
+  - name: wt_protein_expression
+    category: ontology
+    ontology_size: small
+    namespace: PomGeneExProt
+    display_name: 'Wild-type protein level'
+    feature_type: 'gene'
+    broad_term_suggestions: ~
+    specific_term_examples: ~
+    help_text: >
+      Qualitative descriptions of presence, absence, increase, decrease, etc.
+      of the protein translated from a gene. Note: if you need to capture
+      changes in protein level observed in a mutant in a single species, please
+      use the single-species 'protein level' phenotypes, or for changes in
+      protein level in a pathogen-host interaction, please use the pathogen-host
+      interaction 'level of pathogen protein' or 'level of host protein'
+      phenotypes.
+    more_help_text: ~
+    annotation_table_columns_to_hide: [term_ontid]
+    evidence_codes:
+      - Reporter gene assay
+      - Western blot
+  - name: disease_name
+    category: ontology
+    namespace: phido
+    very_short_display_name: 'disease'
+    short_display_name: 'disease'
+    display_name: 'disease name'
+    synonyms_to_display:
+      - exact
+    feature_type: 'metagenotype'
+    can_have_conditions: 0
+    broad_term_suggestions: ""
+    specific_term_examples: ""
+    help_text:
+      Annotate the expected disease for this pathogen-host interaction, where 'expected' refers to the case of a pathogen strain interacting with a host strain with no experimentally-induced mutations, and where the interaction between the pathogen and the host is compatible (i.e. the interaction results in disease).
+    more_help_text: ~
+    extra_help_text: ~
+    detailed_help_path: /docs/disease_annotation
+
+enabled_annotation_type_list:
+  - pathogen_phenotype
+  - host_phenotype
+  - pathogen_host_interaction_phenotype
+  - gene_for_gene_phenotype
+  - molecular_function
+  - biological_process
+  - cellular_component
+  - post_translational_modification
+  - physical_interaction
+  - wt_rna_expression
+  - wt_protein_expression
+  - disease_name
+
+extension_conf_files:
+  - /import_export/phipo_extensions.tsv
+  - /import_export/phibase_go_extensions.tsv
+  - /import_export/GO_BP_A_E_config.tsv
+  - /import_export/GO_CC_A_E_config.tsv
+  - /import_export/GO_MF_A_E_config.tsv
+  - /import_export/PomGeneEx_A_E_config.tsv
+  - /import_export/PSI-MOD_A_E_config.tsv
+  - /import_export/phido_extensions.tsv
+
+ontology_namespace_config:
+  subsets_to_ignore:
+    primary_autocomplete:
+      - "is_a(Grouping_terms)"
+      - "is_a(qc_do_not_annotate)"
+      - "is_a(qc_extension_only)"
+    primary_select:
+      - "is_a(Grouping_terms)"
+      - "is_a(qc_do_not_annotate)"
+      - "is_a(qc_extension_only)"
+    extension:
+      - "is_a(canto_root_subset)"
+      - "is_a(qc_do_not_annotate)"
+  do_not_annotate_subsets:
+    - "is_a(canto_root_subset)"
+    - "is_a(qc_do_not_annotate)"
+    - "is_a(gocheck_do_not_annotate)"
+    - "is_a(gocheck_do_not_manually_annotate)"
+
+phenotype_condition_namespace: phenotype_condition
+
+load:
+  ontology:
+    term_boosts:
+      "PHIPO:0000022": 2.0
+      "PHIPO:0000021": 2.0
+      "PHIPO:0001308": 2.0
+
+export:
+  canto_json:
+    set_deletion_names_from_gene: 0
+  gene_association_fields:
+    db: "UniProtKB"
+    assigned_by: "PHI-base"
+
+instance_front_mhtml: /phi_base_docs/phibase_instance_front.mhtml
+instance_front_subtitle: Currently curating fungal, protist, and bacterial pathogens
+base_docs_path: phi_base_docs
+
+messages:
+  gene_upload:
+    systematic_identifier_desc: UniProt identifier
+    primary_name_desc: ~
+    examples:
+      gene_identifier: 'Q00909'
+      gene_name: ~
+
+email_signature: "Kim Hammond-Kosack and the PHI-base team"
+
+curs_config:
+  gene_page_top_message: >
+    <p><b>Note:</b> PHI-Canto groups UniProt identifiers by their nearest corresponding NCBI Taxonomy identifier (at the rank of species), so the organism name may not match what is shown in UniProt. Please use the 'experimental strains' field to specify lower taxonomic ranks (such as strains, subspecies, and pathovars).</p>
+    <p><b>Note:</b> Do not add species here if their only use is as a delivery mechanism. Information about delivery mechanisms should be added later, as an experimental condition.</p>
+  experimental_conditions_help_text: >
+    Please add experimental conditions (including delivery mechanism). Conditions are the aspects of the experimental setup that are independent of what cells (strain, genotype, constructs, etc.) are used.
+  finish_form:
+    extra_text_gene_information: >
+      <p>
+        Examples include:
+        <ul>
+        <li> protein domain data or other protein sequence features
+        <li> missing gene names (synonyms)
+        <li> transcriptional regulation (of the wild-type allele - transcriptional changes due to mutations can be captured in Canto)
+        <li> complementation data (whether the gene complements a homologue in a different organism or vice versa; complementation may be full, partial or absent)
+        <li> gene product name updates
+        </ul>
+        Most of these annotation types will be handled in future releases of the
+        curation tool.
+      </p>
+
+privacy_policy_url: "https://github.com/PHI-base/PHI5_web_display/wiki/Privacy-Policy"
+
+extra_sponsors:
+  - link_url: "https://bbsrc.ukri.org/"
+    logo_url: "/logos/bbsrc_logo.png"
+  - link_url: "http://www.elixiruknode.org/"
+    logo_url: "/logos/elixir_uk_logo.png"
+  - link_url: "http://www.phi-base.org/"
+    logo_url: "/logos/phi-base_logo.png"
+  - link_url: "http://www.phytopathdb.org/"
+    logo_url: "/logos/phytopath_logo.png"
+  - link_url: "https://www.rothamsted.ac.uk/"
+    logo_url: "/logos/rres_logo.png"
+
+extra_config_files:
+  - /import_export/host_organism_taxon_ids.yaml
+  - /import_export/species_strain_map.yaml

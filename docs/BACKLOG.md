@@ -334,27 +334,40 @@ done.) Larger design items live in `DESIGN-DECISIONS.md` (D11 deferred) and
     stub — do NOT source the full ontologies or the real extension config from there. FYPO_EXT is the
     lone exception because the ontology is genuinely tiny.
 
-- [ ] **PHI-Canto config wired in — follow-ups for James** (added 2026-07-21). James Seager
-  pointed us at `canto_deploy.yaml` in the **private** PHI-base/config repo (email 2026-07-21),
-  which is PHI-Canto's own configuration. Now read by **`phiweaver/lookup/canto_config.py`**
-  (+ `tests/test_canto_config.py`, 16 tests): enabled annotation types, allele types, evidence
-  codes, do-not-annotate subsets. **Weaver previously inferred all of this from gold-standard
-  examples**, so a draft could name an annotation type PHI-Canto doesn't have and nothing caught it.
-  Config = **two files merged** (public `canto_base.yaml` from pombase/canto + private overrides);
-  provenance, source commits and refresh commands in `phiweaver/lookup/data/README.md`.
-  - **① ⏰ REMINDER — ask James to tell us once the private repos become public.** He said he
-    intends to move `canto_deploy.yaml` to a public repo. **Message to send:** *"Please let me know
-    once the private repos become public. While they are private, a fresh clone of Weaver falls
-    back to pombase's defaults, which are wrong for us, so the checks only work on my machine."*
-    Until then the file is **gitignored** — cleared for *use*, not for *republication*, and this
-    repo is public — so a fresh clone or CI has the base file only. That matters more than it
-    sounds: base-only is wrong in **both** directions, missing 5 of the 12 types (including
-    `pathogen_phenotype` and `host_phenotype`) while permitting 4 PHI-Canto rejects
-    (`genetic_interaction`, bare `phenotype`, …). Handled by reporting `deploy_loaded = False` +
-    warning on every check, and by **skipping** rather than failing the 10 tests that need it — but
-    it's a real capability gap on any machine without the file. **When published: commit it, drop
-    the `.gitignore` entry, and record the source commit in `data/README.md`.** Same applies to the
-    extension TSVs (`phipo_extensions.tsv`) hand-copied from the same private repo.
+- [x] **PHI-Canto config wired in — follow-ups for James** — *rewired to the public repo
+  2026-08-05* (added 2026-07-21). James Seager pointed us at `canto_deploy.yaml` in the private
+  PHI-base/config repo (email 2026-07-21), which is PHI-Canto's own configuration. Read by
+  **`phiweaver/lookup/canto_config.py`** (+ `tests/test_canto_config.py`, 16 tests): enabled
+  annotation types, allele types, evidence codes, do-not-annotate subsets. **Weaver previously
+  inferred all of this from gold-standard examples**, so a draft could name an annotation type
+  PHI-Canto doesn't have and nothing caught it. Config = **two files merged** (public
+  `canto_base.yaml` from pombase/canto + deploy overrides); provenance, source commits and
+  refresh commands in `phiweaver/lookup/data/README.md`.
+  - **① ✅ DONE 2026-08-05 — James Seager published the repo, and we rewired to it.** New public
+    repo **`PHI-base/canto-config`** ("Configuration and other files for PHI-Canto") is a filtered
+    copy of the private `PHI-base/config` with sensitive-file history stripped. The old private
+    repo still exists for now but James will **rename it to `PHI-base/canto-config-private`** once
+    the PHI-Canto server is switched over to `canto-config`, then **remove the migrated files from
+    `PHI-base/config`** to kill the duplication (so don't treat `PHI-base/config` paths in older
+    provenance notes as durable — re-check after the rename). He may also transfer relevant issues
+    across. The private repo stays available for any future PHI-Canto file that genuinely needs to
+    stay private. **Confirmed present** in `PHI-base/canto-config` at commit
+    `3972a9be2aacbd0c0a7064d237e7efbd1c39bd52`: `canto_deploy.yaml` (byte-identical to our vendored
+    copy) and `annotation_extension/{phipo_extensions.tsv, phibase_go_extensions.tsv,
+    phido_extensions.tsv, phipo_extension_relations.obo}` — the latter two extension files had
+    picked up a new `host_susceptibility` relation upstream since our 2026-07-15 hand-copy, now
+    incorporated (see `Ontology-Terms-Reference.md`'s attested-relations table; its range term
+    `PHIPO:0001456` is not yet in our vendored PHIPO release, same as the existing `PHIPO:0001456`
+    caveat in `data/README.md`'s `phipo-base.obo` section).
+    **Done:** un-gitignored `canto_deploy.yaml` and committed it; repointed every "Source" line in
+    `phiweaver/lookup/data/README.md` at `PHI-base/canto-config` with the pinned commit and real
+    `curl` recipes (resolves the sibling backlog item below, "Rewire the 4 hand-vendored extension
+    configs…"); updated the now-stale "private"/"gitignored" language in `canto_config.py`,
+    `extension_config.py`, `refresh_ontologies.py`, `entry_queue.py`, `test_canto_config.py`,
+    `test_entry_queue.py`, `Ontology-Terms-Reference.md` and `docs/DESIGN-DECISIONS.md` (D18/D20);
+    regenerated `docs/phiweaver-judge-handover.md`. Base-only fallback (`deploy_loaded = False`,
+    the `test_canto_config`/`test_entry_queue` skips) no longer fires on a fresh clone or CI — kept
+    as defensive behaviour only. Full suite green (619 tests).
   - **② Feed back one review note.** His clearance checks out independently (OAuth secret is only
     an env-var *name*, DB ref is a local SQLite path, all 4 emails are role accounts, GA/GTM id is
     public by construction — it's in the live site's page source). Worth telling him the reasoning
@@ -1014,12 +1027,21 @@ periodically; move back to the owning section if reopened, or tick `[x]` when ac
 - [ ] Full machine-readable curation-record schema (first slice done: the draft `auto_check` block).
 - [ ] Plug-in host + local AI on ROGER (long-term; needs collaborator / research-computing help).
 - [ ] Optional: UniProt mapping for Zhang-2024 from its genome IDs; read Zhang supplementary S1–S7.
-- [ ] **Rewire the 4 hand-vendored extension configs to a public source when available** (added
-  2026-07-15; deferred 2026-07-16). `phiweaver/lookup/data/{phipo_extensions.tsv,
-  phibase_go_extensions.tsv, phido_extensions.tsv, phipo_extension_relations.obo}` were **copied in
-  by hand** from the **private** PHI-base/config repo (`config/annotation_extension/`) — no
-  `curl`-able source, unlike the public `phido.obo` / `phi-eco.obo`. **When
-  `config/annotation_extension/` is published to a public GitHub repo:** point the refresh
-  instructions in `data/README.md` at the public raw URLs, pin the source commit, and drop the
-  "copied by hand" provenance. Until then these are static snapshots that only update when the
-  curator re-supplies them.
+- [x] **Rewire the 4 hand-vendored extension configs to a public source** — *done 2026-08-05*
+  (added 2026-07-15; deferred 2026-07-16; unblocked and resolved 2026-08-05, together with ①
+  in "PHI-Canto config wired in — follow-ups for James" above). `phiweaver/lookup/data/
+  {phipo_extensions.tsv, phibase_go_extensions.tsv, phido_extensions.tsv,
+  phipo_extension_relations.obo}` had been **copied in by hand** from the private PHI-base/config
+  repo (`config/annotation_extension/`) — no `curl`-able source, unlike the public `phido.obo` /
+  `phi-eco.obo`. James Seager published `config/annotation_extension/` (and `canto_deploy.yaml`)
+  in the new public **`PHI-base/canto-config`** repo (2026-08-05). Verified present at commit
+  `3972a9be2aacbd0c0a7064d237e7efbd1c39bd52`; `phibase_go_extensions.tsv`/`phido_extensions.tsv`
+  were byte-identical to our 2026-07-15 copies, `phipo_extensions.tsv`/`phipo_extension_relations
+  .obo` had gained a `host_susceptibility` relation upstream (now incorporated). Refresh
+  instructions in `data/README.md` now point at `raw.githubusercontent.com/PHI-base/canto-config`
+  with real `curl` recipes, and the "copied by hand" provenance is gone. `refresh_ontologies.py`
+  still lists these four as `UNSOURCED` — not because they're unavailable, but because they're
+  TSV/`[Typedef]`-shaped, not the `[Term]`-block OBO this tool's plausibility check understands;
+  its reason text now says so instead of citing a private repo. James intends to later delete the
+  duplicated files from `PHI-base/config` and rename that repo to `PHI-base/canto-config-private`
+  — re-verify the source URLs still resolve after that happens.

@@ -79,10 +79,16 @@ SOURCES: Tuple[Source, ...] = (
 UNSOURCED = {
     "pomgeneex.obo": "hand-written from curator-supplied IDs (2026-07-24); no upstream "
                      "release artifact exists",
-    "phipo_extensions.tsv": "private PHI-base/config; copied in by hand",
-    "phibase_go_extensions.tsv": "private PHI-base/config; copied in by hand",
-    "phido_extensions.tsv": "private PHI-base/config; copied in by hand",
-    "phipo_extension_relations.obo": "private PHI-base/config; copied in by hand",
+    "phipo_extensions.tsv": "public PHI-base/canto-config, but TSV-shaped, not [Term]-block "
+                            "OBO — this tool's plausibility check doesn't apply; refresh via "
+                            "the curl recipe in data/README.md",
+    "phibase_go_extensions.tsv": "public PHI-base/canto-config, but TSV-shaped, not [Term]-block "
+                                 "OBO — refresh via the curl recipe in data/README.md",
+    "phido_extensions.tsv": "public PHI-base/canto-config, but TSV-shaped, not [Term]-block "
+                            "OBO — refresh via the curl recipe in data/README.md",
+    "phipo_extension_relations.obo": "public PHI-base/canto-config, but [Typedef]-shaped, not "
+                                     "[Term]-block OBO — refresh via the curl recipe in "
+                                     "data/README.md",
 }
 
 

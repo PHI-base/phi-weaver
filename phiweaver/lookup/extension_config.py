@@ -12,7 +12,7 @@ Until now weaver only *inferred* relation names from gold-standard examples, so 
 could invent a relation (or use the wrong value shape) with nothing to catch it. This
 module closes that gap the same way `validate_ontology_ids` closes the PHIDO/PECO gap:
 by validating **offline against a bundled copy** of the config —
-`data/phipo_extensions.tsv`, vendored from the private PHI-base/config repo (see
+`data/phipo_extensions.tsv`, vendored from the public PHI-base/canto-config repo (see
 data/README.md).
 
 Scope (deliberately staged, mirroring validate_ontology_ids' FORMAT-vs-EXISTENCE split):

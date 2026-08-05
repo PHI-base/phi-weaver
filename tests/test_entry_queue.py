@@ -499,7 +499,7 @@ class EvidenceCodeFlaggingTests(unittest.TestCase):
         return md.split("Evidence strings PHI-Canto will not accept")[1].split("\n## ", 1)[0]
 
     def test_the_code_list_is_machine_independent(self):
-        """It comes from the committed public base config, not the gitignored deploy file.
+        """It comes from the committed public base config, not the deploy file's overrides.
 
         That is why this check is unconditional, unlike the annotation display names: every
         machine flags the same rows.
@@ -576,18 +576,19 @@ class EvidenceCodeFlaggingTests(unittest.TestCase):
 class CantoDisplayNamesMatchTheLiveConfigTests(unittest.TestCase):
     """Our hardcoded display names must still match PHI-Canto's own.
 
-    The labels are hardcoded so the queue renders identically on every machine (the deploy
-    config is gitignored, so a config-driven heading would differ on a fresh clone). The cost
-    of hardcoding is drift, so this check pays it back: where the private deploy file *is*
-    present, an upstream rename or a new type fails here instead of silently diverging.
-    Skipped rather than failed when the file is absent — a skip says "couldn't check", which
-    is the truth, whereas a failure would claim weaver is broken when it is merely unconfigured.
+    The labels are hardcoded rather than read live for simplicity, not availability — as of
+    2026-08-05 canto_deploy.yaml is public (PHI-base/canto-config) and committed, so it is
+    present on every machine. The cost of hardcoding is drift, so this check pays it back: an
+    upstream rename or a new type fails here instead of silently diverging. Skipped rather than
+    failed when the file is absent — a skip says "couldn't check", which is the truth, whereas
+    a failure would claim weaver is broken when it is merely unconfigured; this should no longer
+    fire in normal use.
     """
 
     def setUp(self):
         from phiweaver.lookup.canto_config import DEPLOY_CONFIG, load_config
         if not DEPLOY_CONFIG.exists():
-            self.skipTest("private canto_deploy.yaml absent; cannot compare display names")
+            self.skipTest("canto_deploy.yaml absent; cannot compare display names")
         self.raw = load_config().raw
 
     def test_display_names_and_order_match_canto(self):

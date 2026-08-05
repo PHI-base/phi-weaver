@@ -263,12 +263,16 @@ has no section is now **parked with the reason "no entry-queue section for annot
 so a future 13th type fails loudly instead of disappearing. Adding only the two missing sections
 would have left the same trap for the next one.
 
-**Display names are hardcoded, not read from `canto_config` at render time.** The deploy config is
-gitignored (private PHI-base/config repo), so config-driven headings would differ between a machine
-that has it and a fresh clone falling back to pombase's base — handing two curators
-differently-shaped queues for the same paper. Same reasoning that keeps `map_phenotype`'s subset
-filter on the committed ontology. The cost of hardcoding is drift, paid back by a test that compares
-the list against the live config **when the deploy file is present** and *skips* when it is not.
+**Display names are hardcoded, not read from `canto_config` at render time.** At the time of this
+decision the deploy config was gitignored (private PHI-base/config repo), so config-driven headings
+would differ between a machine that had it and a fresh clone falling back to pombase's base —
+handing two curators differently-shaped queues for the same paper. Same reasoning that keeps
+`map_phenotype`'s subset filter on the committed ontology. The cost of hardcoding is drift, paid back
+by a test that compares the list against the live config **when the deploy file is present** and
+*skips* when it is not. **Update 2026-08-05:** `canto_deploy.yaml` is now public
+(PHI-base/canto-config) and committed, so the machine-independence risk that motivated this is gone
+— but the hardcoded list stands, since it's simpler and the drift test still runs on every machine
+now instead of conditionally.
 
 **Columns and capitalisation followed, from a captured session (2026-07-25).** The curator saved the
 PMID:9927411 session page into `active/`, which gave the *rendered* tables a static fetch cannot
@@ -293,7 +297,7 @@ evidence string is checked against the 82 codes; a mismatch marks the row `⚠` 
 advisory table with near matches, while the annotation stays enterable, because an otherwise sound
 annotation should not be withheld over a vocabulary slip. Unconditional, unlike the ontology check:
 the code list comes from the **committed public** `canto_base.yaml` (verified identical with and
-without the gitignored deploy file), so it is both machine-independent and offline. Near matches
+without the deploy file's overrides), so it is both machine-independent and offline. Near matches
 require a **5-character overlap** — without that floor the short GO-style codes match anything (`IC`
 is inside "macroscop*ic* observation", and was being suggested for a microscopy phrase), and a
 misleading suggestion is worse than "no near match".
@@ -370,12 +374,16 @@ a copy of the provenance table. Four constraints bind whoever implements it:
    its logic is a permanent maintenance obligation — the failure mode **D16** already corrected once.
 3. **Generated, regenerated on demand.** Inherits the existing builder's rule (output is a generated
    artifact; edit the sources and rerun), so a stale bundle is never authoritative.
-4. **No gitignored path in any profile** — today `canto_deploy.yaml` (private PHI-base/config,
-   cleared for local reading, **not** for republication; this repo is public). Enforce with a test
-   asserting every profile path is git-tracked, not with someone remembering. Licensing is mixed
-   even among tracked files: `phipo_ext.obo` is CC-BY 4.0 and redistributable, while the four
-   `*_extensions.tsv` / `phipo_extension_relations.obo` configs were hand-copied from the private
-   repo and have no public source yet.
+4. **No gitignored path in any profile.** At the time of this decision that meant
+   `canto_deploy.yaml` (private PHI-base/config, cleared for local reading, **not** for
+   republication; this repo is public). Enforce with a test asserting every profile path is
+   git-tracked, not with someone remembering — that constraint outlives any one file's status.
+   **Update 2026-08-05:** James Seager published a filtered, sensitive-history-stripped copy of
+   PHI-base/config as the public **PHI-base/canto-config** repo; `canto_deploy.yaml` and the four
+   `*_extensions.tsv` / `phipo_extension_relations.obo` configs are now sourced from there,
+   committed, and no longer gitignored — see `phiweaver/lookup/data/README.md`. Licensing is
+   still mixed: `phipo_ext.obo` is CC-BY 4.0, PHI-base/canto-config is MIT (sponsor/institutional
+   logos in it excluded, per its `NOTICE.md`) — neither of which weaver vendors here.
 **Why:** the clutter risk is real and specific — a parallel export doc, a second builder, and a
 third copy of the provenance table, each half-maintained. Pinning the shape now costs nothing and
 removes the decision from whoever is in a hurry later. **Alternatives:** a dedicated export script

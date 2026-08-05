@@ -5,8 +5,8 @@ canto_config.py — what PHI-Canto actually accepts, read from its own configura
 PHI-Canto is a deployment of PomBase's Canto. Its configuration is therefore **two
 files merged**, and neither one alone is correct:
 
-    canto_base.yaml    pombase/canto, PUBLIC   — the defaults (2735 lines)
-    canto_deploy.yaml  PHI-base/config, PRIVATE — the PHI-base overrides (650 lines)
+    canto_base.yaml    pombase/canto, PUBLIC        — the defaults (2735 lines)
+    canto_deploy.yaml  PHI-base/canto-config, PUBLIC — the PHI-base overrides (650 lines)
 
 Effective config = base, with deploy's top-level keys replacing base's.
 
@@ -36,14 +36,17 @@ module reports `deploy_loaded = False` and every accessor is explicit that the v
 PomBase defaults, not PHI-base's. Callers should treat that as "cannot validate", not as
 "validated OK".
 
-**On the missing deploy file.** `canto_deploy.yaml` comes from the **private** repo
-PHI-base/config. James Seager cleared it for local use on 2026-07-21 (the ORCID OAuth
+**On the deploy file.** `canto_deploy.yaml` now comes from the **public** repo
+PHI-base/canto-config, and is committed here. Until 2026-08-05 it came from the private
+PHI-base/config repo; James Seager cleared it for local use on 2026-07-21 (the ORCID OAuth
 secret is stored outside the file — the config holds only the env-var name — and the
 GA/GTM measurement id is public by construction, being served in the page source of the
-live site). It is **gitignored**, because clearing a file for use is not the same as
-clearing it for republication, and this repo is public. Consequence: a fresh clone has
-the base file only, until PHI-base publishes the deploy file or the curator copies it in.
-See data/README.md for the refresh command.
+live site), so weaver read it locally without committing it. James then published a
+filtered, sensitive-history-stripped copy of PHI-base/config as the public
+PHI-base/canto-config repo; once confirmed byte-identical, the file was committed and the
+`.gitignore` entry removed. The `deploy_loaded = False` fallback below therefore should not
+fire on a normal clone any more — it remains as defensive behaviour for a missing file.
+See data/README.md for the refresh command and full history.
 
 Scope: this module answers "is this a thing PHI-Canto accepts?" for annotation types,
 allele types, evidence codes and the do-not-annotate subsets. It does not validate

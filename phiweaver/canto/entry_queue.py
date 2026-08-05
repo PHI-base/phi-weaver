@@ -37,8 +37,8 @@ Every evidence string **is** checked against those 82 codes, and a mismatch is *
 parked** (curator instruction, 2026-07-26): the row is marked `⚠` and the distinct offenders are
 listed in an advisory section with any near matches, while the annotation stays enterable. Parking
 would hide sound curation behind a vocabulary slip. The check is unconditional because the code list
-lives in the **committed public** `canto_base.yaml` — identical with or without the gitignored
-deploy file — so every machine flags the same rows, and it needs no network.
+lives in the **committed public** `canto_base.yaml` — identical with or without the deploy file's
+overrides — so every machine flags the same rows, and it needs no network.
 
 Canto's genotype `Strain` and `Background` columns **are** carried, from optional `strain` /
 `background` fields on a genotype: per the 2026-07-25 ruling a wild type has a strain and a mutant
@@ -107,7 +107,7 @@ def _evidence_codes() -> Optional[frozenset]:
 
     Safe to check unconditionally, unlike the annotation display names: these come from
     ``evidence_types`` in the **public, committed** ``canto_base.yaml`` — verified identical (82
-    codes) with and without the gitignored deploy file — so every machine flags the same rows. It
+    codes) with and without the deploy file's overrides — so every machine flags the same rows. It
     is also offline, so it needs no ``--validate`` opt-in the way the ontology check does.
     """
     try:
@@ -266,13 +266,15 @@ _QUALIFIER_PHRASE_TYPES = {"wt_rna_expression", "wt_protein_expression"}
 # `display_name` the web interface shows — so the queue's headings read like the screen the curator
 # is typing into. `shape` picks the column set below.
 #
-# Hardcoded rather than read from `canto_config` at render time, deliberately: the deploy config is
-# gitignored (it comes from the private PHI-base/config repo), so config-driven headings would
-# differ between a machine that has the file and a fresh clone that falls back to pombase's base —
-# handing two curators differently-shaped queues for the same paper. Same reasoning that keeps
-# `map_phenotype`'s subset filter on the committed ontology rather than the deploy file.
-# `tests/test_entry_queue.py` checks this list against the live config whenever the deploy file
-# *is* present, so an upstream rename or a new type fails a test instead of drifting silently.
+# Hardcoded rather than read from `canto_config` at render time. Originally this was because the
+# deploy config was gitignored (it came from the private PHI-base/config repo), so config-driven
+# headings would differ between a machine that had the file and a fresh clone that fell back to
+# pombase's base — handing two curators differently-shaped queues for the same paper. As of
+# 2026-08-05 canto_deploy.yaml is public (PHI-base/canto-config) and committed, so that specific
+# risk is gone — but the hardcoded list is kept anyway: it's simpler to read, and
+# `tests/test_entry_queue.py` checks it against the live config on every run (previously only
+# "whenever the deploy file is present"), so an upstream rename or a new type still fails a test
+# instead of drifting silently. Revisit if the two ever need to diverge deliberately.
 ANNOTATION_SECTIONS = (
     ("molecular_function",                  "GO molecular function",               "go"),
     ("biological_process",                  "GO biological process",               "go"),

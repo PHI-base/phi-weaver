@@ -38,3 +38,8 @@ property_value: local_domain FYPO:0000001 ! phenotype
 id: infective_ability
 name: infective_ability
 def: "Relation between a pathogen-host interaction phenotype and its observed pathogenicity and virulence. Pathogenicity is the ability of a pathogen to produce infectious disease. Virulence is the severity of an infectious disease."
+
+[Typedef]
+id: host_susceptibility
+name: host_susceptibility
+def: "A quality of an organism describing the extent to which it is prone to infection, colonization, or disease development following exposure to a pathogen."

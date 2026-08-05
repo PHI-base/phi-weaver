@@ -27,6 +27,7 @@ PHIPO:0000127	is_a	has_severity	FYPO_EXT:1000001	severity		0,1	user
 PHIPO:0000509	is_a	has_severity	FYPO_EXT:1000001	severity		0,1	user	
 PHIPO:0001215	is_a	has_severity	FYPO_EXT:1000001	severity		0,1	user	
 PHIPO:0001218	is_a	has_severity	FYPO_EXT:1000001	severity		0,1	user	
+PHIPO:0000001	is_a	host_susceptibility	PHIPO:0001456	host susceptibility to pathogen	the extent to which the host is prone to infection, colonization, or disease development following exposure to a pathogen	0,1	user	
 PHIPO:0000001	is_a	infective_ability	PHIPO:0001179	extent of infectivity	extent of change in pathogenicity and virulence	0,1	user	pathogen_host_interaction_phenotype
 PHIPO:0000001	is_a	infects_tissue	BTO:0000000	host tissue infected		*	user	
 PHIPO:0000001	is_a	interaction_outcome	PHIPO:0001198	outcome of interaction		0,1	user	pathogen_host_interaction_phenotype
