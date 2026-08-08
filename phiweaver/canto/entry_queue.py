@@ -45,6 +45,15 @@ Canto's genotype `Strain` and `Background` columns **are** carried, from optiona
 has a background (its parent strain plus the endogenous copy's status), never both. Canto's
 `Comment` column has no counterpart — `note` is deliberately kept out of the lean queue (D14).
 
+**Every annotation's `extensions` are carried, not just `compared_to_control`.** Each shape but
+`physical` ends in an `Extensions` column: every extension relation the shape doesn't already
+give its own column (`compared_to_control` → `Compared with` in `interaction`, `interactor` →
+`Interactor B` in `physical`), rendered as `relation=value` pairs. Before this, `observed_organ`,
+`infects_tissue`, `infective_ability` and the like were silently dropped — present in the draft's
+`canto` block, absent from the rendered queue, with no advisory either (unlike a bad evidence
+string). Caught on PMID:39787257: two `pathogen_phenotype` rows losing `observed_organ` and two
+`pathogen_host_interaction_phenotype` rows losing `infects_tissue`/`infective_ability`.
+
 Pure stdlib; emits markdown.
 
 Usage (from the repo root):
@@ -296,21 +305,27 @@ ANNOTATION_SECTIONS = (
 # 2026-07-25): `Term name` and `Term ID` are two columns there, not one cell; `Conditions` is
 # plural; the figure column is just `Figure`. `Evidence summary` is deliberately NOT renamed to
 # Canto's `Evidence code` — see the note in the module docstring.
+#
+# `Extensions` is last in every shape but `physical`, matching the curation-example library's own
+# convention (Extension trails Figure there too). It carries every extension relation the shape
+# doesn't already give its own column — `compared_to_control` (interaction) and `interactor`
+# (physical) stay out of it so a value never appears twice.
 _ANNOTATION_HEADERS = {
-    "go":             ["Tick", "Gene", "Term name", "Term ID", "Evidence summary", "Figure"],
+    "go":             ["Tick", "Gene", "Term name", "Term ID", "Evidence summary", "Figure",
+                       "Extensions"],
     "host_phenotype": ["Tick", "Host genotype", "Term name", "Term ID", "Evidence summary",
-                       "Conditions", "Figure"],
+                       "Conditions", "Figure", "Extensions"],
     "phenotype":      ["Tick", "Genotype", "Term name", "Term ID", "Evidence summary",
-                       "Conditions", "Figure"],
+                       "Conditions", "Figure", "Extensions"],
     "interaction":    ["Tick", "Metagenotype", "Term name", "Term ID", "Compared with",
-                       "Evidence summary", "Figure"],
+                       "Evidence summary", "Figure", "Extensions"],
     "modification":   ["Tick", "Gene", "Term name", "Term ID", "Evidence summary", "Conditions",
-                       "Figure"],
+                       "Figure", "Extensions"],
     "physical":       ["Tick", "Interactor A", "Interactor B", "Term name", "Evidence code",
                        "Figure", "Status"],
     "level":          ["Tick", "Gene", "Level qualifier", "Evidence summary", "Conditions",
-                       "Figure"],
-    "disease":        ["Tick", "Metagenotype", "Term name", "Term ID", "Comment"],
+                       "Figure", "Extensions"],
+    "disease":        ["Tick", "Metagenotype", "Term name", "Term ID", "Comment", "Extensions"],
 }
 
 
@@ -320,36 +335,50 @@ def _interactor(a: dict) -> str:
                            if _s(e.get("relation")) == "interactor"))
 
 
+def _extensions_cell(a: dict, exclude: frozenset = frozenset()) -> str:
+    """Every annotation extension not already given its own column, as PHI-Canto's own
+    `relation=value` pairs (`_fmt_extensions`). `—` when there are none.
+
+    Nothing is invented or relabelled here — it only surfaces what the draft's `canto` block
+    already carries, the same way the curation-example library's own Extension column does.
+    """
+    exts = [e for e in (a.get("extensions") or []) if _s(e.get("relation")) not in exclude]
+    return _cell(_fmt_extensions(exts)) or "—"
+
+
 # One row builder per shape. Signatures match so the renderer can dispatch on `shape` alone.
 _ANNOTATION_ROWS = {
     "go": lambda a: ["☐", _cell(a.get("feature")), _term_name(a), _term_id(a),
-                     _evidence(a), _cell(a.get("figure"))],
+                     _evidence(a), _cell(a.get("figure")), _extensions_cell(a)],
     "host_phenotype": lambda a: ["☐", _cell(a.get("feature")), _term_name(a), _term_id(a),
                                  _evidence(a), _cell(a.get("conditions")),
-                                 _cell(a.get("figure"))],
+                                 _cell(a.get("figure")), _extensions_cell(a)],
     "phenotype": lambda a: ["☐", _cell(a.get("feature")), _term_name(a), _term_id(a),
                             _evidence(a), _cell(a.get("conditions")),
-                            _cell(a.get("figure"))],
+                            _cell(a.get("figure")), _extensions_cell(a)],
     "interaction": lambda a: ["☐", _cell(a.get("feature")), _term_name(a), _term_id(a),
                               _compared_with(a) or "—", _evidence(a),
-                              _cell(a.get("figure"))],
+                              _cell(a.get("figure")),
+                              _extensions_cell(a, exclude=frozenset({"compared_to_control"}))],
     # No "pick the term at entry" fallback here, unlike physical interaction: PI is exempt from
     # the term requirement because it genuinely has no ontology term (the evidence method carries
     # it), whereas a protein-modification annotation *does* take a PSI-MOD term, so a term-less
     # one is correctly parked by _park_reason and never reaches this row builder.
     "modification": lambda a: ["☐", _cell(a.get("feature")), _term_name(a), _term_id(a),
                                _evidence(a), _cell(a.get("conditions")),
-                               _cell(a.get("figure"))],
+                               _cell(a.get("figure")), _extensions_cell(a)],
     # Canto's physical-interaction table is Interactor A / Interactor B, and its evidence field
     # really is a controlled code here (Co-purification / PCA / Two-hybrid), so the label is exact.
+    # `interactor` is its only extension relation, already in its own column, so no generic
+    # Extensions column here.
     "physical": lambda a: ["☐", _cell(a.get("feature")), _interactor(a) or "—",
                            _term_name(a) if _s(a.get("term_id")) else "pick PSI-MI at entry",
                            _evidence(a), _cell(a.get("figure")), "enter"],
     "level": lambda a: ["☐", _cell(a.get("feature")), _cell(a.get("term_name")),
                         _evidence(a), _cell(a.get("conditions")),
-                        _cell(a.get("figure"))],
+                        _cell(a.get("figure")), _extensions_cell(a)],
     "disease": lambda a: ["☐", _cell(a.get("feature")), _term_name(a), _term_id(a),
-                          _cell(a.get("conditions") or a.get("figure"))],
+                          _cell(a.get("conditions") or a.get("figure")), _extensions_cell(a)],
 }
 
 

@@ -159,6 +159,59 @@ class PhysicalInteractionAndTableSafetyTests(unittest.TestCase):
         self.assertIn("PHIDO:0000162", _section(self.md, "disease name"))
 
 
+class ExtensionsColumnTests(unittest.TestCase):
+    """Regression: PMID:39787257 lost observed_organ/infects_tissue/infective_ability — every
+    shape but `physical` must carry non-dedicated extensions into a rendered `Extensions` cell."""
+
+    def _render(self, annotation):
+        rec = _rec()
+        rec["canto"]["annotations"] = rec["canto"]["annotations"] + [annotation]
+        return eq.render_entry_queue(rec)
+
+    def test_pathogen_phenotype_extension_is_rendered(self):
+        md, _ = self._render({
+            "feature_type": "genotype", "feature": "geneAΔ",
+            "annotation_type": "pathogen_phenotype", "term_id": "PHIPO:0000379",
+            "term_name": "abnormal cell wall organization", "evidence": "Microscopy",
+            "extensions": [{"relation": "observed_organ", "value": "conidium"}],
+            "conditions": "", "figure": "Fig 6C"})
+        f = _section(md, "pathogen phenotype")
+        self.assertIn("observed_organ=conidium", f)
+
+    def test_interaction_extension_is_rendered_alongside_compared_with(self):
+        md, _ = self._render({
+            "feature_type": "metagenotype", "feature": "geneAΔ x host",
+            "annotation_type": "pathogen_host_interaction_phenotype", "term_id": "PHIPO:0000365",
+            "term_name": "decreased pathogen growth within host", "evidence": "Macroscopic",
+            "extensions": [{"relation": "infects_tissue", "value": "BTO:0001278"},
+                           {"relation": "infective_ability", "value": "reduced virulence"},
+                           {"relation": "compared_to_control", "value": "WT x host"}],
+            "conditions": "", "figure": "Fig 5"})
+        f = _section(md, "pathogen-host interaction phenotype")
+        self.assertIn("infects_tissue=BTO:0001278", f)
+        self.assertIn("infective_ability=reduced virulence", f)
+        # compared_to_control still has its own dedicated column, not duplicated in Extensions
+        self.assertIn("WT x host", f)
+        self.assertNotIn("compared_to_control=", f)
+
+    def test_no_extensions_renders_an_em_dash_not_a_blank_cell(self):
+        md, _ = self._render({
+            "feature_type": "genotype", "feature": "geneAΔ",
+            "annotation_type": "pathogen_phenotype", "term_id": "PHIPO:0000943",
+            "term_name": "sensitive to hydrogen peroxide", "evidence": "Cell growth assay",
+            "extensions": [], "conditions": "", "figure": "Fig 6A"})
+        f = _section(md, "pathogen phenotype")
+        self.assertIn("sensitive to hydrogen peroxide", f)
+        rows = [r for r in f.splitlines() if "sensitive to hydrogen peroxide" in r]
+        self.assertEqual(len(rows), 1)
+        self.assertTrue(rows[0].rstrip().endswith("| — |"))
+
+    def test_physical_interaction_has_no_generic_extensions_column(self):
+        md, _ = eq.render_entry_queue(_rec())
+        f = _section(md, "physical interaction")
+        self.assertNotIn("Extensions", f)
+
+
 class QualifierPhraseAnnotationTests(unittest.TestCase):
     """RNA/protein-level annotations carry a controlled phrase, not an ontology ID."""
 
