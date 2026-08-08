@@ -54,7 +54,7 @@ class TestBaseConfig(unittest.TestCase):
         for result in (
             self.base_only.validate_annotation_type("molecular_function"),
             self.base_only.validate_allele_type("deletion"),
-            self.base_only.validate_evidence_code("IMP"),
+            self.base_only.validate_evidence_code("IMP", "molecular_function"),
         ):
             self.assertTrue(result["valid"])
             self.assertIn("warning", result)
@@ -106,6 +106,34 @@ class TestEffectiveConfig(unittest.TestCase):
         """The deploy file doesn't override evidence_types, so these come from base."""
         self.assertIn("IMP", self.cfg.evidence_codes)
         self.assertIn("IDA", self.cfg.evidence_codes)
+
+    def test_evidence_codes_for_is_per_type_not_the_generic_catalog(self):
+        """The bug this was built to fix: `evidence_codes` (generic) is missing values
+        several types actually accept, and accepts values a type's real dropdown does not
+        offer. `evidence_codes_for` must answer what a curator would actually see."""
+        go_codes = self.cfg.evidence_codes_for("molecular_function")
+        self.assertEqual(set(go_codes), {"IDA", "IGI", "IMP", "IPI", "EXP", "TAS"})
+        self.assertNotIn("IEA", go_codes)              # not offered for this type...
+        self.assertIn("IEA", self.cfg.evidence_codes)  # ...despite being in the generic catalog
+
+        pheno_codes = self.cfg.evidence_codes_for("pathogen_phenotype")
+        self.assertIn("Macroscopic observation (qualitative observation)", pheno_codes)
+        self.assertIn("Macroscopic observation (quantitative observation)", pheno_codes)
+        # ...but that pair is NOT in the generic catalog at all — the actual bug.
+        self.assertNotIn("Macroscopic observation (quantitative observation)",
+                         self.cfg.evidence_codes)
+
+        self.assertEqual(self.cfg.evidence_codes_for("disease_name"), [])  # no evidence field
+        self.assertEqual(self.cfg.evidence_codes_for("not_a_real_type"), [])
+
+    def test_validate_evidence_code_is_scoped_to_the_type_given(self):
+        ok = self.cfg.validate_evidence_code(
+            "Macroscopic observation (quantitative observation)",
+            "pathogen_host_interaction_phenotype")
+        self.assertTrue(ok["valid"])
+        wrong_type = self.cfg.validate_evidence_code(
+            "Macroscopic observation (quantitative observation)", "molecular_function")
+        self.assertFalse(wrong_type["valid"])
 
     def test_do_not_annotate_subsets(self):
         subsets = self.cfg.do_not_annotate_subsets

@@ -536,8 +536,8 @@ class EvidenceCodeFlaggingTests(unittest.TestCase):
     sound, so parking it would hide good curation behind a vocabulary slip.
     """
 
-    VALID = "Cell growth assay"        # a real code in canto_base.yaml
-    INVALID = "Penetration assay"      # measured on PMID:9927411; not a code
+    VALID = "Cell growth assay"        # a real pathogen_phenotype code (canto_deploy.yaml)
+    INVALID = "Disease severity index"  # not a code anywhere — generic or per-type
 
     def _render(self, evidence):
         rec = _rec()
@@ -551,18 +551,29 @@ class EvidenceCodeFlaggingTests(unittest.TestCase):
     def _advisory(self, md):
         return md.split("Evidence strings PHI-Canto will not accept")[1].split("\n## ", 1)[0]
 
-    def test_the_code_list_is_machine_independent(self):
-        """It comes from the committed public base config, not the deploy file's overrides.
-
-        That is why this check is unconditional, unlike the annotation display names: every
-        machine flags the same rows.
-        """
+    def test_the_generic_catalog_is_machine_independent(self):
+        """`canto_config.evidence_codes` (the generic `evidence_types` catalog, NOT what's
+        checked per-row — see `evidence_codes_for`) comes from the committed public base
+        config, not the deploy file's overrides, so every machine sees the same catalog."""
         from phiweaver.lookup.canto_config import load_config
         with_deploy = load_config().evidence_codes
         base_only = load_config(deploy_path=Path("/nonexistent/canto_deploy.yaml")).evidence_codes
         self.assertEqual(with_deploy, base_only)
-        self.assertIn(self.VALID, base_only)
-        self.assertNotIn(self.INVALID, base_only)
+
+    def test_evidence_is_checked_per_annotation_type_not_globally(self):
+        """The actual regression: a string valid for one type and not another must be judged
+        by the annotation's own type, not a single flat list. `Northern blot` is a real
+        `wt_rna_expression` code but not a `pathogen_phenotype` one."""
+        from phiweaver.lookup.canto_config import load_config
+        cfg = load_config()
+        self.assertIn("Northern blot", cfg.evidence_codes_for("wt_rna_expression"))
+        self.assertNotIn("Northern blot", cfg.evidence_codes_for("pathogen_phenotype"))
+        # And the bug this was caught by: valid for the type it's actually used on.
+        self.assertIn("Macroscopic observation (quantitative observation)",
+                      cfg.evidence_codes_for("pathogen_host_interaction_phenotype"))
+        self.assertIn(self.VALID, cfg.evidence_codes_for("pathogen_phenotype"))
+        self.assertNotIn(self.INVALID, cfg.evidence_codes_for("pathogen_phenotype"))
+        self.assertNotIn(self.INVALID, cfg.evidence_codes)
 
     def test_a_valid_code_is_not_flagged(self):
         md = self._render(self.VALID)
@@ -604,8 +615,10 @@ class EvidenceCodeFlaggingTests(unittest.TestCase):
         """
         self.assertEqual(
             eq._near_codes("Macroscopic observation (quantitative observation)",
-                           eq._evidence_codes()), [])
-        md = self._render("Macroscopic observation (quantitative observation)")
+                           frozenset({"IC", "Microscopy"})), [])
+        # A string with no real overlap with any pathogen_phenotype code still exercises the
+        # no-near-match advisory path.
+        md = self._render(self.INVALID)
         self.assertIn("no near match", self._advisory(md))
 
     def test_blank_evidence_is_not_flagged(self):
@@ -615,12 +628,12 @@ class EvidenceCodeFlaggingTests(unittest.TestCase):
 
     def test_rendering_survives_an_unreadable_config(self):
         # No config → no flags, and certainly no traceback.
-        original = eq._evidence_codes
-        eq._evidence_codes = lambda: None
+        original = eq._evidence_codes_for
+        eq._evidence_codes_for = lambda annotation_type: None
         try:
             md = self._render(self.INVALID)
         finally:
-            eq._evidence_codes = original
+            eq._evidence_codes_for = original
         self.assertIn(self.INVALID, md)
         self.assertNotIn(f"⚠ {self.INVALID}", md)
         self.assertNotIn("Evidence strings PHI-Canto will not accept", md)

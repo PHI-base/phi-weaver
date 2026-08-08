@@ -26,19 +26,29 @@ Section and column labels follow PHI-Canto's own (D19), captured from a saved se
 plural, the figure column is `Figure`.
 
 **One column is deliberately NOT Canto's wording.** Canto's phenotype tables head that column
-`Evidence code`, because the field takes a controlled code from `canto_config`'s `evidence_codes`.
-A phiweaver draft carries a prose *summary* of the evidence ("growth assay", "disease index"), so
-this queue says **`Evidence summary`** — labelling prose as a code would tell the curator the cell
-is ready to paste into a controlled field when it is not. The exception is `Physical interaction`,
-whose evidence genuinely is a code there (Co-purification / PCA / Two-hybrid), so that column *is*
-`Evidence code`.
+`Evidence code`, because the field takes a controlled code from `canto_config`'s
+`evidence_codes_for(annotation_type)`. A phiweaver draft carries a prose *summary* of the
+evidence ("growth assay", "disease index"), so this queue says **`Evidence summary`** — labelling
+prose as a code would tell the curator the cell is ready to paste into a controlled field when it
+is not. The exception is `Physical interaction`, whose evidence genuinely is a code there
+(Co-purification / PCA / Two-hybrid), so that column *is* `Evidence code`.
 
-Every evidence string **is** checked against those 82 codes, and a mismatch is **flagged, not
-parked** (curator instruction, 2026-07-26): the row is marked `⚠` and the distinct offenders are
-listed in an advisory section with any near matches, while the annotation stays enterable. Parking
-would hide sound curation behind a vocabulary slip. The check is unconditional because the code list
-lives in the **committed public** `canto_base.yaml` — identical with or without the deploy file's
-overrides — so every machine flags the same rows, and it needs no network.
+Every evidence string **is** checked, and a mismatch is **flagged, not parked** (curator
+instruction, 2026-07-26): the row is marked `⚠` and the distinct offenders are listed in an
+advisory section (with the annotation type, since the same string can be valid for one type and
+not another) and any near matches, while the annotation stays enterable. Parking would hide sound
+curation behind a vocabulary slip.
+
+**Checked per annotation type, not against one global list.** Canto has no single evidence-code
+vocabulary — each type in `available_annotation_type_list` (`canto_deploy.yaml`, public,
+committed) declares its own: GO types allow 6 codes, the four PHIPO phenotype/interaction types
+share a ~20-code assay vocabulary (including `Macroscopic observation (qualitative observation)` /
+`(quantitative observation)`), `physical_interaction` has its own PSI-MI-style set, and so on.
+`canto_config.evidence_codes` is a *different*, coarser catalog (`evidence_types`: short code ->
+full name) that governs no type's dropdown; checking against it was a real bug, caught when a user
+correctly flagged that `Macroscopic observation (quantitative observation)` was being rejected for
+`pathogen_host_interaction_phenotype` on PMID:39787257, where it is in fact valid. Fixed by
+`canto_config.evidence_codes_for(annotation_type)`; still fully offline, still needs no network.
 
 Canto's genotype `Strain` and `Background` columns **are** carried, from optional `strain` /
 `background` fields on a genotype: per the 2026-07-25 ruling a wild type has a strain and a mutant
@@ -110,25 +120,37 @@ def _term_id(a: dict) -> str:
     return _cell(a.get("term_id")) or "—"
 
 
-@lru_cache(maxsize=1)
-def _evidence_codes() -> Optional[frozenset]:
-    """PHI-Canto's controlled evidence codes, or ``None`` if the config can't be read.
+@lru_cache(maxsize=None)
+def _evidence_codes_for(annotation_type: str) -> Optional[frozenset]:
+    """One annotation type's own controlled evidence codes, or ``None`` if unreadable/unknown.
 
     Safe to check unconditionally, unlike the annotation display names: these come from
-    ``evidence_types`` in the **public, committed** ``canto_base.yaml`` — verified identical (82
-    codes) with and without the deploy file's overrides — so every machine flags the same rows. It
-    is also offline, so it needs no ``--validate`` opt-in the way the ontology check does.
+    ``available_annotation_type_list`` in the **public, committed** ``canto_deploy.yaml`` (or
+    base, for a type deploy doesn't override), and are offline, so no ``--validate`` opt-in is
+    needed the way the ontology check has.
+
+    **There is no single global evidence-code list** — every annotation type declares its own
+    (`canto_config.evidence_codes_for`), and they genuinely differ: GO types allow 6 codes,
+    `pathogen_phenotype`/`host_phenotype`/`pathogen_host_interaction_phenotype`/
+    `gene_for_gene_phenotype` share a ~20-code assay vocabulary including `Macroscopic
+    observation (qualitative observation)` / `(quantitative observation)`, `physical_interaction`
+    has its own PSI-MI-style set, and so on. Checking every evidence string against one flat list
+    (this function's predecessor did, against ``canto_config.evidence_codes`` — a *different*,
+    coarser short-code catalog) gives wrong answers in both directions: a user correctly flagged
+    that PMID:39787257's `Macroscopic observation (quantitative observation)` was being rejected
+    for `pathogen_host_interaction_phenotype`, where it is in fact valid.
     """
     try:
         from phiweaver.lookup.canto_config import load_config
-        codes = load_config().evidence_codes
+        codes = load_config().evidence_codes_for(annotation_type)
     except Exception:            # a broken/absent config must not break rendering
         return None
     return frozenset(codes) or None
 
 
 def _evidence(a: dict) -> str:
-    """The evidence cell, marked ``⚠`` when the string is not one of Canto's codes.
+    """The evidence cell, marked ``⚠`` when the string is not one of *this annotation's own
+    type's* codes — evidence codes are per-type, so the check needs ``a``'s ``annotation_type``.
 
     **Flagged, never parked** (curator instruction): an annotation with a mis-worded evidence
     string is otherwise sound, and parking it would hide good curation behind a vocabulary slip.
@@ -136,29 +158,33 @@ def _evidence(a: dict) -> str:
     distinct offenders with near matches.
     """
     text = _s(a.get("evidence"))
-    codes = _evidence_codes()
+    codes = _evidence_codes_for(_s(a.get("annotation_type")))
     if not text or codes is None or text in codes:
         return _cell(text)
     return _cell(f"⚠ {text}")
 
 
-def _bad_evidence(annotations: List[dict]) -> List[Tuple[str, int, str]]:
-    """Distinct unrecognised evidence strings → ``(value, n_annotations, suggestions)``.
+def _bad_evidence(annotations: List[dict]) -> List[Tuple[str, str, int, str]]:
+    """Distinct unrecognised (evidence string, annotation type) pairs →
+    ``(value, annotation_type, n_annotations, suggestions)``.
 
-    Deduplicated on purpose: one wrong string typically repeats across several annotations (5
-    distinct values over 11 annotations on PMID:9927411), so a per-row list would be noise.
+    Keyed by **(text, type)**, not text alone: the same string can be valid for one annotation
+    type and not another (`Northern blot` is a `wt_rna_expression` code, not a
+    `pathogen_phenotype` one), so collapsing across types would both hide real mismatches and
+    wrongly flag valid ones. Deduplicated on purpose within a type: one wrong string typically
+    repeats across several annotations (5 distinct values over 11 annotations on PMID:9927411),
+    so a per-row list would be noise.
     """
-    codes = _evidence_codes()
-    if codes is None:
-        return []
-    counts: Dict[str, int] = {}
+    counts: Dict[Tuple[str, str], int] = {}
     for a in annotations:
-        text = _s(a.get("evidence"))
-        if text and text not in codes:
-            counts[text] = counts.get(text, 0) + 1
+        text, atype = _s(a.get("evidence")), _s(a.get("annotation_type"))
+        codes = _evidence_codes_for(atype)
+        if text and codes is not None and text not in codes:
+            counts[(text, atype)] = counts.get((text, atype), 0) + 1
     out = []
-    for value, n in sorted(counts.items()):
-        out.append((value, n, "; ".join(_near_codes(value, codes)[:3])))
+    for (value, atype), n in sorted(counts.items()):
+        codes = _evidence_codes_for(atype) or frozenset()
+        out.append((value, atype, n, "; ".join(_near_codes(value, codes)[:3])))
     return out
 
 
@@ -695,13 +721,17 @@ def render_entry_queue(rec: dict, status: Optional[str] = None,
     bad_ev = _bad_evidence(enter)
     if bad_ev:
         n += 1
+        display_for = {atype: display for atype, display, _ in ANNOTATION_SECTIONS}
         out += [f"### F{n}. Evidence strings PHI-Canto will not accept", "",
-                "*Canto's evidence field is a controlled list, so these will not be in the "
-                "dropdown. The annotations themselves are fine — they are marked ⚠ in the tables "
-                "above and stay enterable; pick the closest real code as you go.*", ""]
-        out += _table(["Evidence string in the draft", "Rows", "Nearest PHI-Canto code(s)"],
-                      [[_cell(v), str(count), _cell(near) or "— no near match"]
-                       for v, count, near in bad_ev]) + [""]
+                "*Canto's evidence field is a controlled list — different for every annotation "
+                "type — so these will not be in that type's dropdown. The annotations themselves "
+                "are fine — they are marked ⚠ in the tables above and stay enterable; pick the "
+                "closest real code as you go.*", ""]
+        out += _table(["Evidence string in the draft", "Annotation type", "Rows",
+                       "Nearest PHI-Canto code(s)"],
+                      [[_cell(v), _cell(_heading(display_for.get(atype, atype))), str(count),
+                        _cell(near) or "— no near match"]
+                       for v, atype, count, near in bad_ev]) + [""]
 
     # --- Figure-evidence advisories ---
     # Deliberately NOT the parked table: parked means "do not enter", and an annotation

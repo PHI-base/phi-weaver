@@ -60,6 +60,7 @@ Index of all Claude Code session logs for OBS-PHI-Canto vault.
 | 2026-08-02 | [[2026-08-02-export-constraint-faq-answers-wt-control-provenance]] | Export constraint (D20), three FAQ answers, WT-control question + example-provenance bug | Four "should weaver do X" questions answered with a recorded constraint instead of code (D20). Verified phipo_ext OWL and OBO are identical. Filed phi-weaver#9 on WT controls, which exposed a systematic reviewed_by provenance bug. |
 | 2026-08-02 | [[2026-08-02-aicatalyst-poster-review]] | AI Catalyst 2026 poster reviewed against the repo + benchmark wording pinned | Poster checked as XML, not just rendered: four rasters under 70 dpi, aspect distortion, stale module counts frozen in pixels. Pinned accuracy/completeness definitions and the "13 items" mapping. Send SVG, not PDF. |
 | 2026-08-05 | [[2026-08-05-canto-config-public-rewire]] | James's canto-config repo announcement logged, then wired in | Un-gitignored `canto_deploy.yaml`, repointed 4 extension configs at the new public `PHI-base/canto-config`, picked up a new `host_susceptibility` relation, fixed stale "private repo" text repo-wide. 619 tests green. |
+| 2026-08-08 | [[2026-08-08-canto-entry-queue-extensions-and-leakage-control]] | PMID:39787257 entry-queue request → E2E leakage-control detour → two entry-queue bugs | "Curate in sandbox" became "just the entry-queue file." Generating it found two real `entry_queue.py`/`canto_config.py` bugs — dropped annotation extensions, and evidence codes checked against the wrong, non-per-type list. Both fixed, tested, pushed. |
 
 ## Tags / Topics
 - **Vault setup**: 2026-04-11
@@ -93,3 +94,5 @@ Index of all Claude Code session logs for OBS-PHI-Canto vault.
 - **System Framing (self-evolving, naming, graph DBs)**: 2026-08-02
 - **WT Control Metagenotypes (phi-weaver#9)**: 2026-08-02
 - **Example-Library Provenance (`reviewed_by`)**: 2026-08-02
+- **E2E Harness Leakage Control**: 2026-08-08
+- **Entry Queue ↔ Draft Fidelity (extensions, evidence codes)**: 2026-08-08

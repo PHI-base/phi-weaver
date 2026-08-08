@@ -133,8 +133,50 @@ class CantoConfig:
 
     @property
     def evidence_codes(self) -> List[str]:
-        """Evidence codes, e.g. IMP / IDA / IGI. Defined in the base config only."""
+        """The generic evidence-code catalog (`evidence_types`: short code -> full name,
+        e.g. `IMP: Inferred from Mutant Phenotype`) — defined in the base config only.
+
+        This is **not** what governs any one annotation type's evidence dropdown in the
+        live PHI-Canto UI, and checking a real evidence string against it gives wrong
+        answers in both directions: it is missing values several types actually accept
+        (neither `Macroscopic observation (qualitative observation)` nor `(quantitative
+        observation)` is here, despite being valid for `pathogen_phenotype`,
+        `host_phenotype`, `pathogen_host_interaction_phenotype` and
+        `gene_for_gene_phenotype`), and it accepts values a given type's own dropdown
+        does not offer (e.g. `IEA`/`NAS` for a GO annotation type, whose real list caps
+        at IDA/IGI/IMP/IPI/EXP/TAS). Use `evidence_codes_for(annotation_type)` instead to
+        validate a real evidence string — see its docstring for the fuller story.
+        """
         return sorted(self.raw.get("evidence_types", {}).keys())
+
+    @property
+    def annotation_type_configs(self) -> Dict[str, Dict]:
+        """`available_annotation_type_list`, keyed by `name`. Each entry is PHI-Canto's real
+        definition for that type — the deploy file replaces base's list wholesale when
+        present (see `load_config`), so this reflects the live instance, not PomBase defaults."""
+        entries = self.raw.get("available_annotation_type_list") or []
+        return {e["name"]: e for e in entries if isinstance(e, dict) and e.get("name")}
+
+    def evidence_codes_for(self, annotation_type: str) -> List[str]:
+        """The evidence codes PHI-Canto's own dropdown actually offers for ONE annotation type.
+
+        There is no single global evidence-code list — each `available_annotation_type_list`
+        entry declares its own, and they differ a lot: the three GO types allow only 6 codes
+        (IDA/IGI/IMP/IPI/EXP/TAS); `pathogen_phenotype`/`host_phenotype`/
+        `pathogen_host_interaction_phenotype`/`gene_for_gene_phenotype` share a ~20-code assay
+        vocabulary that includes `Macroscopic observation (qualitative observation)` and
+        `(quantitative observation)`; `physical_interaction` has its own PSI-MI-style set
+        (Co-purification, PCA, Two-hybrid, ...); `post_translational_modification` allows only
+        `IDA`; `wt_rna_expression`/`wt_protein_expression` allow a handful each; `disease_name`
+        has no evidence field in Canto's UI at all (empty list here).
+
+        Empty list if `annotation_type` is unknown. Confirmed against `canto_deploy.yaml`
+        (PHI-base/canto-config) after a user correctly flagged that `entry_queue.py` was
+        wrongly rejecting `Macroscopic observation (...)` on PMID:39787257 — it checked
+        `evidence_codes` (above), the wrong, coarser list.
+        """
+        entry = self.annotation_type_configs.get(annotation_type)
+        return list((entry or {}).get("evidence_codes") or [])
 
     @property
     def do_not_annotate_subsets(self) -> List[str]:
@@ -173,8 +215,16 @@ class CantoConfig:
     def validate_allele_type(self, value: str) -> Dict:
         return self._check(value, self.allele_types, "allele_type_list")
 
-    def validate_evidence_code(self, value: str) -> Dict:
-        return self._check(value, self.evidence_codes, "evidence_types")
+    def validate_evidence_code(self, value: str, annotation_type: str) -> Dict:
+        """Validate an evidence string against the ONE annotation type it's used in.
+
+        Evidence codes are per-type in the real Canto UI (see `evidence_codes_for`), so
+        there is no type-less check that means anything — a value valid for
+        `pathogen_phenotype` may not be offered for `molecular_function`, and vice versa.
+        """
+        codes = self.evidence_codes_for(annotation_type)
+        what = f"available_annotation_type_list.{annotation_type}.evidence_codes"
+        return self._check(value, codes, what)
 
 
 @lru_cache(maxsize=4)
@@ -224,7 +274,14 @@ def main(argv=None):
     p.add_argument("--check-annotation-type", metavar="NAME")
     p.add_argument("--check-allele-type", metavar="NAME")
     p.add_argument("--check-evidence", metavar="CODE")
+    p.add_argument("--annotation-type", metavar="TYPE",
+                   help="scopes --check-evidence and --list evidence to one annotation "
+                        "type's own evidence-code list — evidence codes are per-type, "
+                        "there is no single global list (see evidence_codes_for)")
     args = p.parse_args(argv)
+
+    if args.check_evidence and not args.annotation_type:
+        p.error("--check-evidence requires --annotation-type (evidence codes are per-type)")
 
     cfg = load_config()
 
@@ -237,14 +294,19 @@ def main(argv=None):
             file=sys.stderr,
         )
 
+    evidence_list = (cfg.evidence_codes_for(args.annotation_type) if args.annotation_type
+                     else cfg.evidence_codes)
     lists = {
         "annotation-types": cfg.annotation_types,
         "allele-types": cfg.allele_types,
-        "evidence": cfg.evidence_codes,
+        "evidence": evidence_list,
         "subsets": cfg.do_not_annotate_subsets,
         "extensions": cfg.extension_conf_files,
     }
     if args.list:
+        if args.list == "evidence" and not args.annotation_type:
+            print("(generic evidence_types catalog — pass --annotation-type for the real "
+                  "per-type list a curator would see)", file=sys.stderr)
         for item in lists[args.list]:
             print(item)
         return 0
@@ -252,7 +314,8 @@ def main(argv=None):
     checks = [
         (args.check_annotation_type, cfg.validate_annotation_type),
         (args.check_allele_type, cfg.validate_allele_type),
-        (args.check_evidence, cfg.validate_evidence_code),
+        (args.check_evidence,
+         lambda v: cfg.validate_evidence_code(v, args.annotation_type)),
     ]
     ran = False
     for value, fn in checks:
